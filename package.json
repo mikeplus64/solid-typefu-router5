@@ -7,9 +7,7 @@
   "author": "Mike Ledger <mike@quasimal.com>",
   "license": "MIT",
   "private": false,
-  "files": [
-    "dist"
-  ],
+  "files": [ "dist/**/*" ],
   "types": "dist/index.d.ts",
   "module": "dist/index.es.js",
   "devDependencies": {
