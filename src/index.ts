@@ -7,7 +7,7 @@ import createLink, { LinkProps, RouteNameOf } from './components/Link';
 import RouteStateMachine, { RenderTreeOf, RenderTreeLike } from './components/RouteTree';
 import { DefaultDependencies } from 'router5/dist/types/router';
 
-export { LinkNav } from './components/Link';
+export { isActive, LinkNav } from './components/Link';
 export { MatchRoute, ShowRoute } from './components/MatchRoute';
 export { passthru } from './components/RouteTree';
 export { useRoute, useRouteName } from './context';
