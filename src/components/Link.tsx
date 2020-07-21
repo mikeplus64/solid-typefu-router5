@@ -74,7 +74,7 @@ export const defaultLinkConfig: LinkConfig = {
   navActiveClassName: 'is-active',
 };
 
-export default function createLink<Deps, Routes extends readonly RouteNode[], RouteName extends RouteNameOf<Routes> & RouteLike>(
+export default function createLink<Deps, Routes extends readonly Partial<RouteNode>[], RouteName extends RouteNameOf<Routes> & RouteLike>(
   self: SharedRouterValue<Deps, Routes>,
   config: Partial<LinkConfig> = defaultLinkConfig,
 ): (props: LinkProps<RouteName>) => JSX.Element {

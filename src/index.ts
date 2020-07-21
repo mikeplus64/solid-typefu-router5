@@ -41,9 +41,9 @@ export type { SharedRouterValue, RouterContextValue } from './types';
  * }, performInitialRedirect);
  * ```
  */
-export default function createSolidRouter<Deps, Routes extends readonly RouteNode[]>(
+export default function createSolidRouter<Deps, Routes extends readonly Partial<RouteNode>[]>(
   routes: Routes,
-  createRouter5: (routes: RouteNode[]) => Router5<Deps>,
+  createRouter5: (routes: Partial<RouteNode>[]) => Router5<Deps>,
   onStart?: (router: Router5<Deps>) => void,
 ): {
   Provider(props: { children: JSX.Element }): JSX.Element,
@@ -51,7 +51,7 @@ export default function createSolidRouter<Deps, Routes extends readonly RouteNod
   Router(props: { children: RenderTreeOf<Routes> }): JSX.Element,
   router: SharedRouterValue<Deps, Routes>
 } {
-  const router5: Router5<Deps> = createRouter5(routes as any as RouteNode[]);
+  const router5: Router5<Deps> = createRouter5(routes as any as Partial<RouteNode>[]);
   // yolo, hopefully router5 doesn't actually mutate routes =)
 
   const self: SharedRouterValue<Deps, Routes> = { routes, router5 };
