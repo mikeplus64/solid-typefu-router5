@@ -72,7 +72,7 @@ export default function createSolidRouter<Routes extends RoutesLike<Deps>, Deps 
     },
 
     Provider(props: { children: JSX.Element }): JSX.Element {
-      const initialState = router5.getState();
+      const initialState = router5.getState() ?? { name: '' };
       const [getRoute, setRoute] = createSignal<RouteState>(initialState);
 
       // create a signal for just the name as a `string` since strings are very
