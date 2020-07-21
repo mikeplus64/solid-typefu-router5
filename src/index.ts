@@ -10,6 +10,7 @@ import { DefaultDependencies } from 'router5/dist/types/router';
 export { LinkNav } from './components/Link';
 export { MatchRoute, ShowRoute } from './components/MatchRoute';
 export { passthru } from './components/RouteTree';
+export { useRoute, useRouteName } from './context';
 
 export type { MatchRouteProps, ShowRouteProps } from './components/MatchRoute';
 export type { LinkProps, RouteNameOf } from './components/Link';
@@ -50,7 +51,12 @@ export default function createSolidRouter<Routes extends RoutesLike<Deps>, Deps 
   Provider(props: { children: JSX.Element }): JSX.Element,
   Link(props: LinkProps<RouteNameOf<Routes>>): JSX.Element,
   Router(props: { children: RenderTreeOf<Routes> }): JSX.Element,
-  router: SharedRouterValue<Deps, Routes>
+  router: SharedRouterValue<Deps, Routes>,
+  hints: Phantom<{
+    routes: Routes,
+    name: RouteNameOf<Routes>,
+    tree: RenderTreeOf<Routes>
+  }>,
 } {
   const router5: Router5<Deps> = createRouter5(routes as any as Route<Deps>[]);
   // yolo, hopefully router5 doesn't actually mutate routes =)
@@ -95,7 +101,9 @@ export default function createSolidRouter<Routes extends RoutesLike<Deps>, Deps 
         children: props.children,
       });
     },
-
     router: self,
+    hints: {} as any,
   };
 }
+
+export type Phantom<T> = { __phantom__: never } & T;
