@@ -52,11 +52,11 @@ export const defaultLinkConfig: LinkConfig = {
 };
 
 export default function createLink<Deps, Routes extends RoutesLike<Deps>, RouteName extends RouteNameOf<Routes> & RouteLike>(
-  _self: SharedRouterValue<Deps, Routes>,
+  self: SharedRouterValue<Deps, Routes>,
   config: Partial<LinkConfig> = defaultLinkConfig,
 ): (props: LinkProps<RouteName>) => JSX.Element {
 
-  // const { router5 } = self;
+  const { router5 } = self;
 
   const {
     navActiveClassName = defaultLinkConfig.navActiveClassName,
@@ -64,13 +64,9 @@ export default function createLink<Deps, Routes extends RoutesLike<Deps>, RouteN
 
   return (props: LinkProps<RouteName>): JSX.Element => {
     const getRouteName = useRouteName();
+
     const getClassList = createMemo(() => {
       const classList = props.classList ?? {};
-
-      if (getRouteName === undefined) {
-        console.trace('WAT');
-      }
-
       if (props.type === undefined && props.nav) {
         classList[navActiveClassName] = isActive(getRouteName(), props.to as RouteLike);
         return classList;
@@ -78,15 +74,37 @@ export default function createLink<Deps, Routes extends RoutesLike<Deps>, RouteN
       return classList;
     });
 
-    return (
-      <a
+    return () => props.disabled ?
+      <button
+        {...props as JSX.IntrinsicElements['button']}
+        disabled
         classList={getClassList()}
-        onClick={() => {
-          console.trace('yolo');
+      >
+        {props.children}
+      </button> :
+      <a
+        {...props as JSX.IntrinsicElements['a']}
+        classList={getClassList()}
+        onClick={(ev) => {
+          ev.preventDefault();
+          switch (props.type) {
+            case undefined:
+              router5.navigate(renderRouteLike(props.to as RouteLike), props.params ?? {});
+              if (typeof props.onClick === 'function') props.onClick(ev);
+              break;
+
+            case LinkNav.Back:
+              window.history.back();
+              break;
+            case LinkNav.Back:
+              window.history.back();
+              break;
+          }
+          ev.target.blur();
         }}
       >
         {props.children}
-      </a>);
+      </a>;
   };
 }
 
