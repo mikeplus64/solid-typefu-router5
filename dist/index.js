@@ -46,17 +46,24 @@ function isActive(here, link) {
   return true;
 }
 
-const _tmpl$ = dom.template(`<a></a>`, 2);
+const _tmpl$ = dom.template(`<button disabled=""></button>`, 2),
+      _tmpl$2 = dom.template(`<a></a>`, 2);
 
 (function (LinkNav) {
   LinkNav[LinkNav["Back"] = 0] = "Back";
   LinkNav[LinkNav["Forward"] = 1] = "Forward";
 })(exports.LinkNav || (exports.LinkNav = {}));
+function renderRouteLike(route) {
+  if (typeof route === 'string') return route;
+  return route.join('.');
+}
 const defaultLinkConfig = {
   navActiveClassName: 'is-active'
 };
-function createLink(_self, config = defaultLinkConfig) {
-  // const { router5 } = self;
+function createLink(self, config = defaultLinkConfig) {
+  const {
+    router5
+  } = self;
   const {
     navActiveClassName = defaultLinkConfig.navActiveClassName
   } = config;
@@ -67,10 +74,6 @@ function createLink(_self, config = defaultLinkConfig) {
 
       const classList = (_props$classList = props.classList) !== null && _props$classList !== void 0 ? _props$classList : {};
 
-      if (getRouteName === undefined) {
-        console.trace('WAT');
-      }
-
       if (props.type === undefined && props.nav) {
         classList[navActiveClassName] = isActive(getRouteName(), props.to);
         return classList;
@@ -78,18 +81,49 @@ function createLink(_self, config = defaultLinkConfig) {
 
       return classList;
     });
-    return (() => {
+    return () => props.disabled ? (() => {
       const _el$ = _tmpl$.cloneNode(true);
 
-      _el$.__click = () => {
-        console.trace('yolo');
-      };
+      dom.spread(_el$, props, false, true);
 
       dom.insert(_el$, () => props.children);
 
       dom.effect(_$p => dom.classList(_el$, getClassList(), _$p));
 
       return _el$;
+    })() : (() => {
+      const _el$2 = _tmpl$2.cloneNode(true);
+
+      _el$2.__click = ev => {
+        var _props$params;
+
+        ev.preventDefault();
+
+        switch (props.type) {
+          case undefined:
+            router5.navigate(renderRouteLike(props.to), (_props$params = props.params) !== null && _props$params !== void 0 ? _props$params : {});
+            if (typeof props.onClick === 'function') props.onClick(ev);
+            break;
+
+          case exports.LinkNav.Back:
+            window.history.back();
+            break;
+
+          case exports.LinkNav.Back:
+            window.history.back();
+            break;
+        }
+
+        ev.target.blur();
+      };
+
+      dom.spread(_el$2, props, false, true);
+
+      dom.insert(_el$2, () => props.children);
+
+      dom.effect(_$p => dom.classList(_el$2, getClassList(), _$p));
+
+      return _el$2;
     })();
   };
 }
@@ -272,7 +306,7 @@ function createSolidRouter(routes, createRouter5, onStart) {
   };
   Object.freeze(self);
   return {
-    Link: createLink(),
+    Link: createLink(self),
 
     Router(props) {
       return RouteStateMachine(props.children);
