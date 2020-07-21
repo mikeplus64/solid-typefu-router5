@@ -55,6 +55,6 @@
     "solid-js": "*"
   },
   "scripts": {
-    "prepare": "rollup -c"
+    "prepare": "echo wat >> src/wat.ts && rollup -c"
   }
 }
