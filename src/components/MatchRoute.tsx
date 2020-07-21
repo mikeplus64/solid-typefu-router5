@@ -14,9 +14,9 @@ const MatchContext = createContext<string>('');
 export type MatchRouteProps =
   ({
     prefix: string,
-    path: undefined,
+    path?: undefined,
   } | {
-    prefix: undefined,
+    prefix?: undefined,
     path: string,
   }) & {
   children: JSX.Element,
