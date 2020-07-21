@@ -10,7 +10,7 @@ import { DefaultDependencies } from 'router5/dist/types/router';
 export { isActive, LinkNav } from './components/Link';
 export { MatchRoute, ShowRoute } from './components/MatchRoute';
 export { passthru } from './components/RouteTree';
-export { useRoute, useRouteName } from './context';
+export { useRoute, useRouteName, useActive } from './context';
 
 export type { MatchRouteProps, ShowRouteProps } from './components/MatchRoute';
 export type { LinkProps, RouteNameOf } from './components/Link';
