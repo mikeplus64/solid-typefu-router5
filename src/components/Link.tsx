@@ -30,7 +30,7 @@ export type LinkProps<Route> = {
 } & ({
   type: LinkNav.Back | LinkNav.Forward
 } | {
-  type: undefined,
+  type?: undefined,
   to: Route,
   params?: Record<string, any>,
 });
