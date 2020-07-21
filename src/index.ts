@@ -1,10 +1,11 @@
 import { State as RouteState, Router as Router5, Route } from 'router5';
 import { createSignal, createEffect, createMemo } from 'solid-js';
 
-import { SharedRouterValue } from './types';
+import { SharedRouterValue, RoutesLike } from './types';
 import Context from './context';
 import createLink, { LinkProps, RouteNameOf } from './components/Link';
 import RouteStateMachine, { RenderTreeOf, RenderTreeLike } from './components/RouteTree';
+import { DefaultDependencies } from 'router5/dist/types/router';
 
 export { LinkNav } from './components/Link';
 export { MatchRoute, ShowRoute } from './components/MatchRoute';
@@ -13,7 +14,7 @@ export { passthru } from './components/RouteTree';
 export type { MatchRouteProps, ShowRouteProps } from './components/MatchRoute';
 export type { LinkProps, RouteNameOf } from './components/Link';
 export type { RenderTreeOf } from './components/RouteTree';
-export type { SharedRouterValue, RouterContextValue } from './types';
+export type { RoutesLike, SharedRouterValue, RouterContextValue } from './types';
 
 /**
  * Create a router for use in solid-js.
@@ -41,7 +42,7 @@ export type { SharedRouterValue, RouterContextValue } from './types';
  * }, performInitialRedirect);
  * ```
  */
-export default function createSolidRouter<Deps, Routes extends readonly Route<Deps>[]>(
+export default function createSolidRouter<Routes extends RoutesLike<Deps>, Deps = DefaultDependencies>(
   routes: Routes,
   createRouter5: (routes: Route<Deps>[]) => Router5<Deps>,
   onStart?: (router: Router5<Deps>) => void,
