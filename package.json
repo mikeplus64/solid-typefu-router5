@@ -7,6 +7,8 @@
   "license": "MIT",
   "private": false,
   "files": [
+    "dist",
+    "dist/",
     "dist/index.js",
     "dist/index.js.map",
     "dist/index.es.js",
