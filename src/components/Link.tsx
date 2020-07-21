@@ -1,5 +1,6 @@
 import { SharedRouterValue, RoutesLike } from '../types';
 import { isActive, useRouteName } from '../context';
+import { createMemo } from 'solid-js';
 
 export enum LinkNav { Back, Forward };
 
@@ -51,63 +52,42 @@ export const defaultLinkConfig: LinkConfig = {
 };
 
 export default function createLink<Deps, Routes extends RoutesLike<Deps>, RouteName extends RouteNameOf<Routes> & RouteLike>(
-  self: SharedRouterValue<Deps, Routes>,
+  _self: SharedRouterValue<Deps, Routes>,
   config: Partial<LinkConfig> = defaultLinkConfig,
 ): (props: LinkProps<RouteName>) => JSX.Element {
 
-  const { router5 } = self;
+  // const { router5 } = self;
 
   const {
     navActiveClassName = defaultLinkConfig.navActiveClassName,
   } = config;
 
   return (props: LinkProps<RouteName>): JSX.Element => {
-    console.log('make link');
     const getRouteName = useRouteName();
-
-    function classList(): undefined | { [k: string]: undefined | boolean } {
+    const getClassList = createMemo(() => {
       const classList = props.classList ?? {};
+
+      if (getRouteName === undefined) {
+        console.trace('WAT');
+      }
+
       if (props.type === undefined && props.nav) {
         classList[navActiveClassName] = isActive(getRouteName(), props.to as RouteLike);
         return classList;
       }
       return classList;
-    }
+    });
 
-    function onClick(ev: MouseEvent & { target: HTMLAnchorElement, currentTarget: HTMLAnchorElement }) {
-      ev.preventDefault();
-      switch (props.type) {
-        case undefined:
-          router5.navigate(renderRouteLike(props.to as RouteLike), props.params ?? {});
-          if (typeof props.onClick === 'function') props.onClick(ev);
-          break;
-        case LinkNav.Back:
-          window.history.back();
-          break;
-        case LinkNav.Back:
-          window.history.back();
-          break;
-      }
-      ev.target.blur();
-    }
-
-    return props.disabled ?
-      <button
-        {...props as JSX.IntrinsicElements['button']}
-        disabled
-        classList={classList()}
-        children={props.children}
-      /> :
+    return (
       <a
-        {...props as JSX.IntrinsicElements['a']}
-        classList={classList()}
-        href={props.type === undefined ?
-          router5.buildPath(renderRouteLike(props.to), props.params) :
-          undefined}
-        onClick={onClick}
-        children={props.children}
-      />;
-  }
+        classList={getClassList()}
+        onClick={() => {
+          console.trace('yolo');
+        }}
+      >
+        {props.children}
+      </a>);
+  };
 }
 
 // Beware, here be dragons

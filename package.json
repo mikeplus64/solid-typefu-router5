@@ -32,7 +32,7 @@
   "peerDependencies": {
     "router5": "^8.0.1",
     "solid-js": "^0.18.14",
-    "solid-js/dom": "*",
+    "solid-js/dom": "^0.18.14",
     "ts-essentials": "^7.0.0"
   },
   "scripts": {

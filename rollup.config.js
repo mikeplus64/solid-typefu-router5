@@ -29,8 +29,5 @@ export default {
   ],
   external: [
     /@babel\/runtime/,
-    ...Object.keys(pkg.dependencies),
-    ...Object.keys(pkg.peerDependencies),
-    ...Object.keys(pkg.devDependencies),
   ],
 };

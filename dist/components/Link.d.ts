@@ -38,7 +38,7 @@ export interface LinkConfig {
 export declare type RouteLike = string | string[];
 export declare function renderRouteLike(route: RouteLike): string;
 export declare const defaultLinkConfig: LinkConfig;
-export default function createLink<Deps, Routes extends RoutesLike<Deps>, RouteName extends RouteNameOf<Routes> & RouteLike>(self: SharedRouterValue<Deps, Routes>, config?: Partial<LinkConfig>): (props: LinkProps<RouteName>) => JSX.Element;
+export default function createLink<Deps, Routes extends RoutesLike<Deps>, RouteName extends RouteNameOf<Routes> & RouteLike>(_self: SharedRouterValue<Deps, Routes>, config?: Partial<LinkConfig>): (props: LinkProps<RouteName>) => JSX.Element;
 export declare type RouteNameOf<A> = UnOne<Exp<TreeOf<A>>>;
 declare type TreeOf<A> = A extends readonly (infer U)[] ? U extends {
     name: infer Name;
