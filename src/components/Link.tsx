@@ -1,5 +1,5 @@
 import { useContext } from 'solid-js';
-import { RouteNode } from 'router5';
+import { Route } from 'router5';
 import { SharedRouterValue } from '../types';
 import Context from '../context';
 
@@ -74,7 +74,7 @@ export const defaultLinkConfig: LinkConfig = {
   navActiveClassName: 'is-active',
 };
 
-export default function createLink<Deps, Routes extends readonly Partial<RouteNode>[], RouteName extends RouteNameOf<Routes> & RouteLike>(
+export default function createLink<Deps, Routes extends readonly Route<Deps>[], RouteName extends RouteNameOf<Routes> & RouteLike>(
   self: SharedRouterValue<Deps, Routes>,
   config: Partial<LinkConfig> = defaultLinkConfig,
 ): (props: LinkProps<RouteName>) => JSX.Element {
