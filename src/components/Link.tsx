@@ -25,7 +25,6 @@ export type LinkProps<Route> = {
     target: HTMLAnchorElement,
     currentTarget: HTMLAnchorElement,
   }) => void,
-  innerProps?: Omit<JSX.IntrinsicElements['a' | 'button'], 'onClick' | 'href' | 'children'>,
   children?: JSX.Element,
 } & ({
   type: LinkNav.Back | LinkNav.Forward
@@ -33,7 +32,9 @@ export type LinkProps<Route> = {
   type?: undefined,
   to: Route,
   params?: Record<string, any>,
-});
+}) &
+  Omit<JSX.IntrinsicElements['a' | 'button'], 'onClick' | 'href' | 'children' | 'type'>
+  ;
 
 export interface LinkConfig {
   navActiveClassName: string,
@@ -89,7 +90,7 @@ export default function createLink<Deps, Routes extends RoutesLike<Deps>, RouteN
     const getRouteName = useContext(Context).getRouteName;
 
     function classList(): undefined | { [k: string]: undefined | boolean } {
-      const classList = props.innerProps?.classList ?? {};
+      const classList = props.classList ?? {};
       if (props.type === undefined && props.nav) {
         classList[navActiveClassName] = isActive(getRouteName(), props.to as RouteLike);
         return classList;
@@ -116,13 +117,13 @@ export default function createLink<Deps, Routes extends RoutesLike<Deps>, RouteN
 
     return props.disabled ?
       <button
-        {...props.innerProps as JSX.IntrinsicElements['button']}
+        {...props as JSX.IntrinsicElements['button']}
         disabled
         classList={classList()}
         children={props.children}
       /> :
       <a
-        {...props.innerProps as JSX.IntrinsicElements['a']}
+        {...props as JSX.IntrinsicElements['a']}
         classList={classList()}
         href={props.type === undefined ?
           router5.buildPath(renderRouteLike(props.to), props.params) :
