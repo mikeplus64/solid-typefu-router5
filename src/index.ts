@@ -98,7 +98,7 @@ export default function createSolidRouter<Routes extends RoutesLike<Deps>, Deps 
           getRouteName: getSplitRouteName,
           router: self as SharedRouterValue<unknown, unknown>
         },
-        children: props.children,
+        children: () => props.children,
       });
     },
     router: self,
