@@ -347,7 +347,7 @@ function createSolidRouter(routes, createRouter5, onStart) {
           getRouteName: getSplitRouteName,
           router: self
         },
-        children: props.children
+        children: () => props.children
       });
     },
 
