@@ -266,8 +266,7 @@ function RouteStateMachine(tree) {
       const next = [...path, key];
       const child = routes[key];
       children.push(MatchRoute({
-        path: key,
-        prefix: undefined,
+        prefix: key,
         children: () => traverse(next, child)
       }));
     }
@@ -282,11 +281,11 @@ function RouteStateMachine(tree) {
     });
   }
 
+  console.log(tree);
   return traverse([], tree);
 }
 
 const _ck$ = ["children"];
-console.log('hello 3');
 /**
  * Create a router for use in solid-js.
  *

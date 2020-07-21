@@ -26,7 +26,8 @@
     "dist/types.d.ts",
     "dist/types.d.ts.map",
     "LICENSE",
-    "package.json"
+    "package.json",
+    ".npmignore"
   ],
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -55,6 +56,6 @@
     "solid-js": "*"
   },
   "scripts": {
-    "prepare": "echo wat >> src/wat.ts && rollup -c"
+    "prepare": "rollup -c"
   }
 }

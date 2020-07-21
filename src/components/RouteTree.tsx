@@ -143,8 +143,7 @@ export default function RouteStateMachine<R extends RenderTreeLike>(tree: R): JS
       const next = [...path, key];
       const child = (routes as any)[key];
       children.push(MatchRoute({
-        path: key,
-        prefix: undefined,
+        prefix: key,
         children: () => traverse(next, child),
       }));
     }
@@ -155,6 +154,8 @@ export default function RouteStateMachine<R extends RenderTreeLike>(tree: R): JS
       }),
     });
   }
+
+  console.log(tree);
 
   return traverse([], tree);
 }
