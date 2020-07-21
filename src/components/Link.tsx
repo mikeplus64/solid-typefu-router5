@@ -83,10 +83,8 @@ export default function createLink<Deps, Routes extends RoutesLike<Deps>, RouteN
         {props.children}
       </button> :
       <a
-        {...props as JSX.IntrinsicElements['a']}
         classList={getClassList()}
         onClick={(ev) => {
-          console.log('hello');
           ev.preventDefault();
           switch (props.type) {
             case undefined:
