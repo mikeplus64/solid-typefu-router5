@@ -1,13 +1,32 @@
 {
   "name": "solid-typefu-router5",
-  "version": "0.0.11",
+  "version": "0.0.14",
   "description": "Router5 based routing library for solid-js with TypeScript",
-  "main": "dist/index.js",
   "repository": "https://github.com/mikeplus64/solid-ts-router5",
   "author": "Mike Ledger <mike@quasimal.com>",
   "license": "MIT",
   "private": false,
-  "files": [ "dist/**/*" ],
+  "files": [
+    "dist/index.js",
+    "dist/index.js.map",
+    "dist/index.es.js",
+    "dist/index.es.js.map",
+    "dist/index.d.ts",
+    "dist/index.d.ts.map",
+    "dist/context.d.ts",
+    "dist/context.d.ts.map",
+    "dist/components/Link.d.ts",
+    "dist/components/Link.d.ts.map",
+    "dist/components/MatchRoute.d.ts",
+    "dist/components/MatchRoute.d.ts.map",
+    "dist/components/RouteTree.d.ts",
+    "dist/components/RouteTree.d.ts.map",
+    "dist/types.d.ts",
+    "dist/types.d.ts.map",
+    "LICENSE",
+    "package.json"
+  ],
+  "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "module": "dist/index.es.js",
   "devDependencies": {
@@ -19,24 +38,21 @@
     "@types/node": "^14.0.23",
     "babel-preset-solid": "^0.18.14",
     "rollup": "^2.22.1",
-    "rollup-plugin-terser": "^6.1.0",
     "rollup-plugin-typescript2": "^0.27.1",
-    "router5": "*",
-    "solid-js": "*",
-    "ts-essentials": "*",
-    "typescript": "4.0.0-beta"
+    "router5": "^8.0.1",
+    "solid-js": "^0.18.14",
+    "typescript": "^4.0.0-beta",
+    "lodash": "*"
   },
   "dependencies": {
+    "ts-essentials": "^7.0.0",
     "@babel/runtime": "*"
   },
   "peerDependencies": {
-    "router5": "^8.0.1",
-    "solid-js": "^0.18.14",
-    "solid-js/dom": "^0.18.14",
-    "ts-essentials": "^7.0.0"
+    "router5": "*",
+    "solid-js": "*"
   },
   "scripts": {
-    "build": "rollup -c",
     "prepare": "rollup -c"
   }
 }

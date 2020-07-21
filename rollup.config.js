@@ -4,14 +4,17 @@ import pkg from './package.json';
 
 export default {
   input: 'src/index.tsx',
+
   output: [
     { file: pkg.main, format: 'cjs', exports: 'named', sourcemap: true },
     { file: pkg.module, format: 'es', sourcemap: true },
   ],
+
   plugins: [
     typescript({
       typescript: require('typescript'),
       clean: true,
+      exclude: 'node_modules/**',
       tsconfig: './tsconfig.json',
     }),
 
@@ -27,7 +30,10 @@ export default {
       ],
     }),
   ],
+
   external: [
     /@babel\/runtime/,
+    /solid-js/,
+    /^router5/,
   ],
 };

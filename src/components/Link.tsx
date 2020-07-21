@@ -86,13 +86,13 @@ export default function createLink<Deps, Routes extends RoutesLike<Deps>, RouteN
         {...props as JSX.IntrinsicElements['a']}
         classList={getClassList()}
         onClick={(ev) => {
+          console.log('hello');
           ev.preventDefault();
           switch (props.type) {
             case undefined:
               router5.navigate(renderRouteLike(props.to as RouteLike), props.params ?? {});
               if (typeof props.onClick === 'function') props.onClick(ev);
               break;
-
             case LinkNav.Back:
               window.history.back();
               break;

@@ -17,6 +17,8 @@ export type { LinkProps, RouteNameOf } from './components/Link';
 export type { RenderTreeOf } from './components/RouteTree';
 export type { RoutesLike, SharedRouterValue, RouterContextValue } from './types';
 
+console.log('hello 3');
+
 /**
  * Create a router for use in solid-js.
  *

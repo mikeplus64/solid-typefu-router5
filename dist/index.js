@@ -97,6 +97,7 @@ function createLink(self, config = defaultLinkConfig) {
       _el$2.__click = ev => {
         var _props$params;
 
+        console.log('hello');
         ev.preventDefault();
 
         switch (props.type) {
@@ -270,6 +271,7 @@ function RouteStateMachine(tree) {
 }
 
 const _ck$ = ["children"];
+console.log('hello 3');
 /**
  * Create a router for use in solid-js.
  *
