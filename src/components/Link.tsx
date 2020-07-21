@@ -25,7 +25,8 @@ export type LinkProps<Route> = {
     target: HTMLAnchorElement,
     currentTarget: HTMLAnchorElement,
   }) => void,
-  innerProps?: Omit<JSX.IntrinsicElements['a' | 'button'], 'onClick' | 'href'>,
+  innerProps?: Omit<JSX.IntrinsicElements['a' | 'button'], 'onClick' | 'href' | 'children'>,
+  children?: JSX.Element,
 } & ({
   type: LinkNav.Back | LinkNav.Forward
 } | {
@@ -118,6 +119,7 @@ export default function createLink<Deps, Routes extends RoutesLike<Deps>, RouteN
         {...props.innerProps as JSX.IntrinsicElements['button']}
         disabled
         classList={classList()}
+        children={props.children}
       /> :
       <a
         {...props.innerProps as JSX.IntrinsicElements['a']}
@@ -126,6 +128,7 @@ export default function createLink<Deps, Routes extends RoutesLike<Deps>, RouteN
           router5.buildPath(renderRouteLike(props.to), props.params) :
           undefined}
         onClick={onClick}
+        children={props.children}
       />;
   }
 }
