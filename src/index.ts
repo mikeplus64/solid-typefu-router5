@@ -41,7 +41,7 @@ export type { SharedRouterValue, RouterContextValue } from './types';
  * }, performInitialRedirect);
  * ```
  */
-export function createSolidRouter<Deps, Routes extends readonly RouteNode[]>(
+export default function createSolidRouter<Deps, Routes extends readonly RouteNode[]>(
   routes: Routes,
   createRouter5: (routes: RouteNode[]) => Router5<Deps>,
   onStart?: (router: Router5<Deps>) => void,
