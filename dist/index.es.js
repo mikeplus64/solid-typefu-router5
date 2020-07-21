@@ -102,7 +102,6 @@ function createLink(self, config = defaultLinkConfig) {
       _el$2.__click = ev => {
         var _props$params;
 
-        console.log('hello?');
         ev.preventDefault();
 
         switch (props.type) {

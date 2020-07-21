@@ -91,7 +91,6 @@ export default function createLink<Deps, Routes extends RoutesLike<Deps>, RouteN
           router5.buildPath(renderRouteLike(props.to), props.params) :
           undefined}
         onClick={(ev) => {
-          console.log('hello?');
           ev.preventDefault();
           switch (props.type) {
             case undefined:
