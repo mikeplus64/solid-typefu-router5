@@ -36,10 +36,6 @@ export interface LinkConfig {
     navActiveClassName: string;
 }
 export declare type RouteLike = string | string[];
-/**
- * Find whether 'link' is an ancestor of, or equal to, 'here'
- */
-export declare function isActive<Route extends RouteLike>(here: string[], link: Route): boolean;
 export declare function renderRouteLike(route: RouteLike): string;
 export declare const defaultLinkConfig: LinkConfig;
 export default function createLink<Deps, Routes extends RoutesLike<Deps>, RouteName extends RouteNameOf<Routes> & RouteLike>(self: SharedRouterValue<Deps, Routes>, config?: Partial<LinkConfig>): (props: LinkProps<RouteName>) => JSX.Element;

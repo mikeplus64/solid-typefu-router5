@@ -1,6 +1,5 @@
-import { useContext } from 'solid-js';
 import { SharedRouterValue, RoutesLike } from '../types';
-import Context from '../context';
+import { isActive, useRouteName } from '../context';
 
 export enum LinkNav { Back, Forward };
 
@@ -42,30 +41,6 @@ export interface LinkConfig {
 
 export type RouteLike = string | string[];
 
-/**
- * Find whether 'link' is an ancestor of, or equal to, 'here'
- */
-export function isActive<Route extends RouteLike>(here: string[], link: Route) {
-  // just use join/startsWith? never!! =)
-  if (typeof link === 'string') {
-    let l: string = link;
-    let i: number = 0;
-    for (; i < here.length; i ++) {
-      const seg = here[i];
-      if (seg !== l.slice(0, seg.length) || l[seg.length] !== '.') return false;
-      l = l.slice(0, seg.length + 1);
-    }
-    return link.length <= i;
-  }
-  // if link has more segments than here then it definitely cannot be an
-  // ancestor of here
-  if (link.length > here.length) return false;
-  for (let i = 0; i < link.length; i ++) {
-    if (link[i] !== here[i]) return false;
-  }
-  return true;
-}
-
 export function renderRouteLike(route: RouteLike) {
   if (typeof route === 'string') return route;
   return route.join('.');
@@ -87,7 +62,8 @@ export default function createLink<Deps, Routes extends RoutesLike<Deps>, RouteN
   } = config;
 
   return (props: LinkProps<RouteName>): JSX.Element => {
-    const getRouteName = useContext(Context).getRouteName;
+    console.log('make link');
+    const getRouteName = useRouteName();
 
     function classList(): undefined | { [k: string]: undefined | boolean } {
       const classList = props.classList ?? {};

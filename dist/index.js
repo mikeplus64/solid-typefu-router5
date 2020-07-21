@@ -2,16 +2,20 @@
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-var solidJs = require('solid-js');
 var dom = require('solid-js/dom');
+var solidJs = require('solid-js');
 
-const _tmpl$ = dom.template(`<button disabled=""></button>`, 2),
-      _tmpl$2 = dom.template(`<a></a>`, 2);
-
-(function (LinkNav) {
-  LinkNav[LinkNav["Back"] = 0] = "Back";
-  LinkNav[LinkNav["Forward"] = 1] = "Forward";
-})(exports.LinkNav || (exports.LinkNav = {}));
+const Context = solidJs.createContext();
+function useRoute() {
+  return solidJs.useContext(Context).getRoute;
+}
+function useRouteName() {
+  return solidJs.useContext(Context).getRouteName;
+}
+function useActive(link) {
+  const getRouteName = useRouteName();
+  return () => isActive(getRouteName(), link);
+}
 /**
  * Find whether 'link' is an ancestor of, or equal to, 'here'
  */
@@ -41,6 +45,14 @@ function isActive(here, link) {
 
   return true;
 }
+
+const _tmpl$ = dom.template(`<button disabled=""></button>`, 2),
+      _tmpl$2 = dom.template(`<a></a>`, 2);
+
+(function (LinkNav) {
+  LinkNav[LinkNav["Back"] = 0] = "Back";
+  LinkNav[LinkNav["Forward"] = 1] = "Forward";
+})(exports.LinkNav || (exports.LinkNav = {}));
 function renderRouteLike(route) {
   if (typeof route === 'string') return route;
   return route.join('.');
@@ -56,7 +68,8 @@ function createLink(self, config = defaultLinkConfig) {
     navActiveClassName = defaultLinkConfig.navActiveClassName
   } = config;
   return props => {
-    const getRouteName = solidJs.useContext(Context).getRouteName;
+    console.log('make link');
+    const getRouteName = useRouteName();
 
     function classList() {
       var _props$classList;
@@ -131,18 +144,6 @@ function createLink(self, config = defaultLinkConfig) {
 }
 
 dom.delegateEvents(["click"]);
-
-const Context = solidJs.createContext();
-function useRoute() {
-  return solidJs.useContext(Context).getRoute;
-}
-function useRouteName() {
-  return solidJs.useContext(Context).getRouteName;
-}
-function useActive(link) {
-  const getRouteName = useRouteName();
-  return () => isActive(getRouteName(), link);
-}
 
 const MatchContext = solidJs.createContext('');
 /**
@@ -283,6 +284,7 @@ function RouteStateMachine(tree) {
   return traverse([], tree);
 }
 
+const _ck$ = ["children"];
 /**
  * Create a router for use in solid-js.
  *
@@ -336,6 +338,11 @@ function createSolidRouter(routes, createRouter5, onStart) {
 
       const [getRouteName, setRouteName] = solidJs.createSignal(initialState.name, (a, b) => a === b);
       const getSplitRouteName = solidJs.createMemo(() => getRouteName().split('.'), initialState.name.split('.'));
+      const value = {
+        getRoute,
+        getRouteName: getSplitRouteName,
+        router: self
+      };
       solidJs.createEffect(() => {
         router5.subscribe(state => {
           setRoute(state.route);
@@ -344,14 +351,10 @@ function createSolidRouter(routes, createRouter5, onStart) {
         router5.start();
         if (typeof onStart === 'function') onStart(router5);
       });
-      return Context.Provider({
-        value: {
-          getRoute,
-          getRouteName: getSplitRouteName,
-          router: self
-        },
+      return dom.createComponent(Context.Provider, {
+        value: value,
         children: () => props.children
-      });
+      }, _ck$);
     },
 
     router: self,

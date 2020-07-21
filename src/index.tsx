@@ -7,10 +7,10 @@ import createLink, { LinkProps, RouteNameOf } from './components/Link';
 import RouteStateMachine, { RenderTreeOf, RenderTreeLike } from './components/RouteTree';
 import { DefaultDependencies } from 'router5/dist/types/router';
 
-export { isActive, LinkNav } from './components/Link';
+export { LinkNav } from './components/Link';
 export { MatchRoute, ShowRoute } from './components/MatchRoute';
 export { passthru } from './components/RouteTree';
-export { useRoute, useRouteName, useActive } from './context';
+export { useRoute, useRouteName, useActive, isActive } from './context';
 
 export type { MatchRouteProps, ShowRouteProps } from './components/MatchRoute';
 export type { LinkProps, RouteNameOf } from './components/Link';
@@ -83,6 +83,12 @@ export default function createSolidRouter<Routes extends RoutesLike<Deps>, Deps 
         initialState.name.split('.'),
       );
 
+      const value = {
+        getRoute,
+        getRouteName: getSplitRouteName,
+        router: self as SharedRouterValue<unknown, unknown>,
+      };
+
       createEffect(() => {
         router5.subscribe((state) => {
           setRoute(state.route);
@@ -92,14 +98,10 @@ export default function createSolidRouter<Routes extends RoutesLike<Deps>, Deps 
         if (typeof onStart === 'function') onStart(router5);
       });
 
-      return Context.Provider({
-        value: {
-          getRoute,
-          getRouteName: getSplitRouteName,
-          router: self as SharedRouterValue<unknown, unknown>
-        },
-        children: () => props.children,
-      });
+      return (
+        <Context.Provider value={value}>
+          {props.children}
+        </Context.Provider>);
     },
     router: self,
     hints: {} as any,
