@@ -25,7 +25,6 @@ export type LinkProps<Route> = {
     target: HTMLAnchorElement,
     currentTarget: HTMLAnchorElement,
   }) => void,
-  children?: JSX.Element,
 } & ({
   type: LinkNav.Back | LinkNav.Forward
 } | {
@@ -33,7 +32,7 @@ export type LinkProps<Route> = {
   to: Route,
   params?: Record<string, any>,
 }) &
-  Omit<JSX.IntrinsicElements['a' | 'button'], 'onClick' | 'href' | 'children' | 'type'>
+  Omit<JSX.IntrinsicElements['a' | 'button'], 'onClick' | 'href' | 'type'>
   ;
 
 export interface LinkConfig {
@@ -74,17 +73,25 @@ export default function createLink<Deps, Routes extends RoutesLike<Deps>, RouteN
       return classList;
     });
 
+    const getInnerProps = () => {
+      const {classList: _cl, onClick: _oc, ...innerProps} = props;
+      return innerProps;
+    };
+
     return () => props.disabled ?
       <button
-        {...props as JSX.IntrinsicElements['button']}
+        {...getInnerProps() as JSX.IntrinsicElements['button']}
         disabled
         classList={getClassList()}
-      >
-        {props.children}
-      </button> :
+      /> :
       <a
+        {...getInnerProps() as JSX.IntrinsicElements['a']}
         classList={getClassList()}
+        href={props.type === undefined ?
+          router5.buildPath(renderRouteLike(props.to), props.params) :
+          undefined}
         onClick={(ev) => {
+          console.log('hello?');
           ev.preventDefault();
           switch (props.type) {
             case undefined:
@@ -100,9 +107,7 @@ export default function createLink<Deps, Routes extends RoutesLike<Deps>, RouteN
           }
           ev.target.blur();
         }}
-      >
-        {props.children}
-      </a>;
+      />;
   };
 }
 
