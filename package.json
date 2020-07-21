@@ -1,5 +1,5 @@
 {
-  "name": "solid-ts-router5",
+  "name": "solid-typefu-router5",
   "version": "0.0.1",
   "description": "Router5 based routing library for solid-js with TypeScript",
   "main": "dist/index.js",
