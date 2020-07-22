@@ -1,6 +1,4 @@
-import { State as RouteState, Router as Router5, ActivationFnFactory } from 'router5';
-import { DefaultDependencies, Route } from 'router5/dist/types/router';
-import { Params } from 'router5/dist/types/base';
+import { State as RouteState, Router as Router5, Route } from 'router5';
 import { DeepReadonly } from 'ts-essentials';
 
 export interface SharedRouterValue<Deps = unknown, Routes = unknown> {

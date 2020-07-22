@@ -1,5 +1,4 @@
-import { State as RouteState, Router as Router5 } from 'router5';
-import { Route } from 'router5/dist/types/router';
+import { State as RouteState, Router as Router5, Route } from 'router5';
 import { DeepReadonly } from 'ts-essentials';
 export interface SharedRouterValue<Deps = unknown, Routes = unknown> {
     router5: Router5<Deps>;

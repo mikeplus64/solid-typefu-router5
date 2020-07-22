@@ -1,8 +1,9 @@
 {
   "name": "solid-typefu-router5",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Router5 based routing library for solid-js with TypeScript",
   "repository": "https://github.com/mikeplus64/solid-ts-router5",
+  "website": "https://mikeplus64.github.io/solid-typefu-router5/",
   "author": "Mike Ledger <mike@quasimal.com>",
   "license": "MIT",
   "private": false,
@@ -40,12 +41,13 @@
     "@rollup/plugin-babel": "^5.1.0",
     "@types/node": "^14.0.23",
     "babel-preset-solid": "^0.18.14",
+    "lodash": "*",
     "rollup": "^2.22.1",
     "rollup-plugin-typescript2": "^0.27.1",
     "router5": "^8.0.1",
     "solid-js": "^0.18.14",
-    "typescript": "^4.0.0-beta",
-    "lodash": "*"
+    "typedoc": "^0.17.8",
+    "typescript": "^4.0.0-beta"
   },
   "dependencies": {
     "ts-essentials": "^7.0.0",
@@ -57,6 +59,7 @@
   },
   "scripts": {
     "prepare": "rollup -c",
+    "docs": "typedoc --out docs --excludeNotExported --includeVersion",
     "bump": "./bump.sh"
   }
 }
