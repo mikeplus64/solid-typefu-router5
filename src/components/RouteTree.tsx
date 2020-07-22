@@ -1,6 +1,6 @@
 import { UnionToIntersection } from 'ts-essentials';
 import { Switch, createState, createEffect, createMemo } from 'solid-js';
-import { useRoute } from '../context';
+import { useRoute, useRouteName } from '../context';
 import { MatchRoute } from './MatchRoute';
 
 /** A tree of route path segments */
@@ -75,7 +75,7 @@ export function passthru<T>(props: { children: T }): T {
 }
 
 export default function RouteStateMachine<R extends RenderTreeLike>(tree: R): JSX.Element {
-  const route = useRoute();
+  const getRouteName = useRouteName();
 
   function traverseHydrate<Props>(
     path0: string[],
@@ -85,14 +85,18 @@ export default function RouteStateMachine<R extends RenderTreeLike>(tree: R): JS
   ): JSX.Element {
     const [state, setState] = createState(defaultProps);
 
+    const getPathSuffix = createMemo<[string, string[]]>(() => {
+      const p = getRouteName();
+      p.splice(0, path0.length);
+      return [name, p];
+    }, undefined, (a, b) => a && a[0] === b[0]);
+
     function populate(
       path: string[],
       node: GetPropsLike<Props>,
       next: Partial<Props>,
       count: number,
     ): number {
-      console.log('populate visit', path, node, next);
-
       for (const key in node) {
         const gp = (node as GetProps<Props>)[key as keyof Props];
         if (typeof gp === 'function') {
@@ -109,13 +113,6 @@ export default function RouteStateMachine<R extends RenderTreeLike>(tree: R): JS
       }
       return count;
     }
-
-    const getPathSuffix = createMemo<[string, string[]]>(() => {
-      const name = route().name;
-      const p = name.split('.');
-      p.splice(0, path0.length);
-      return [name, p];
-    }, undefined, (a, b) => a && a[0] === b[0]);
 
     createEffect(() => {
       const next: Partial<Props> = {};
@@ -144,12 +141,11 @@ export default function RouteStateMachine<R extends RenderTreeLike>(tree: R): JS
     if (typeof Render !== 'function') { return undefined; }
     for (const key in routes) {
       const next = [...path, key];
-      const child = (routes as any)[key];
-      console.log('visit', path, key, next, child);
-      children.push(MatchRoute({
-        prefix: key,
-        children: () => traverse(next, child),
-      }));
+      const child = routes[key];
+      children.push(
+        <MatchRoute path={key}>
+          {traverse(next, child)}
+        </MatchRoute>);
     }
 
     return Render({
@@ -159,8 +155,6 @@ export default function RouteStateMachine<R extends RenderTreeLike>(tree: R): JS
       }),
     });
   }
-
-  console.log(tree);
 
   return traverse([], tree);
 }
