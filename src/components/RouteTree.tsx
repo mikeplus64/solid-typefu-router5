@@ -91,6 +91,8 @@ export default function RouteStateMachine<R extends RenderTreeLike>(tree: R): JS
       next: Partial<Props>,
       count: number,
     ): number {
+      console.log('populate visit', path, node, next);
+
       for (const key in node) {
         const gp = (node as GetProps<Props>)[key as keyof Props];
         if (typeof gp === 'function') {
@@ -135,6 +137,7 @@ export default function RouteStateMachine<R extends RenderTreeLike>(tree: R): JS
         return traverseHydrate(path, props, render, defaultProps);
       });
     }
+
     const children: JSX.Element = [];
     let { render: Render, fallback, ...routes } = node;
     if (Render === undefined) { Render = passthru; }
@@ -142,11 +145,13 @@ export default function RouteStateMachine<R extends RenderTreeLike>(tree: R): JS
     for (const key in routes) {
       const next = [...path, key];
       const child = (routes as any)[key];
+      console.log('visit', path, key, next, child);
       children.push(MatchRoute({
         prefix: key,
         children: () => traverse(next, child),
       }));
     }
+
     return Render({
       children: Switch({
         fallback: typeof fallback === 'function' ? fallback({ children }) : undefined,
