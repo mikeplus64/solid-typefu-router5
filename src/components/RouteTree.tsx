@@ -148,6 +148,7 @@ export default function RouteStateMachine<R extends RenderTreeLike>(tree: R): JS
       const child = routes[key];
       children.push(
         <MatchRoute prefix={key}>
+          HELLO
           {traverse(next, child)}
         </MatchRoute>);
     }
