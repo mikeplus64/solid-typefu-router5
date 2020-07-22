@@ -35,10 +35,12 @@ export function MatchRoute(props: MatchRouteProps): JSX.Element {
   const exact = props.path !== undefined;
   const to = ctx !== '' ? `${ctx}.${path}` : path;
   return () => Match({
-    when: exact ? route().name === to : route().name.startsWith(to),
-    children: MatchContext.Provider({
+    when:
+      exact ? route().name === to : route().name.startsWith(to),
+
+    children: () => MatchContext.Provider({
       value: to,
-      children: () => props.children,
+      children: props.children,
     }),
   });
 }

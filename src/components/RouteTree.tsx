@@ -153,7 +153,7 @@ export default function RouteStateMachine<R extends RenderTreeLike>(tree: R): JS
     }
 
     return RenderHere({
-      children: Switch({
+      children: () => Switch({
         fallback: Fallback === undefined ? undefined : (() => Fallback({ children })),
         children,
       }),
