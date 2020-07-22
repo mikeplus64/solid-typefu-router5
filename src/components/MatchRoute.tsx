@@ -53,7 +53,7 @@ export function MatchRoute(props: MatchRouteProps): JSX.Element {
         value: target,
         children: () => {
           console.log('run matching for ', target);
-          return props.children,
+          return props.children;
         },
       }),
     });
