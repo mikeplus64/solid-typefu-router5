@@ -169,6 +169,10 @@ function MatchRoute(props) {
   }, undefined, (a, b) => a && a[1] === b[1]);
   return () => {
     const [target, when] = getMatch();
+    console.log({
+      target,
+      when
+    });
     return Match({
       when,
       children: () => MatchContext.Provider({
