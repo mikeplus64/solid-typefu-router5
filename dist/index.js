@@ -157,16 +157,22 @@ const MatchContext = solidJs.createContext('');
 function MatchRoute(props) {
   const route = useRoute();
   const ctx = solidJs.useContext(MatchContext);
-  const path = props.path !== undefined ? props.path : props.prefix;
-  const exact = props.path !== undefined;
-  const to = ctx !== '' ? `${ctx}.${path}` : path;
-  return () => solidJs.Match({
-    when: exact ? route().name === to : route().name.startsWith(to),
-    children: () => MatchContext.Provider({
-      value: to,
-      children: props.children
-    })
-  });
+  const getMatch = solidJs.createMemo(() => {
+    const suffix = props.path !== undefined ? props.path : props.prefix;
+    const exact = props.path !== undefined;
+    const target = ctx !== '' ? `${ctx}.${suffix}` : suffix;
+    return [target, exact ? route().name === target : route().name.startsWith(target)];
+  }, undefined, (a, b) => a && a[1] === b[1]);
+  return () => {
+    const [target, when] = getMatch();
+    return solidJs.Match({
+      when,
+      children: () => MatchContext.Provider({
+        value: target,
+        children: props.children
+      })
+    });
+  };
 }
 function ShowRoute(props) {
   const route = useRoute();
@@ -177,9 +183,9 @@ function ShowRoute(props) {
   return () => solidJs.Show({
     when: exact ? route().name === to : route().name.startsWith(to),
     fallback: () => props.fallback,
-    children: MatchContext.Provider({
+    children: () => MatchContext.Provider({
       value: to,
-      children: () => props.children
+      children: props.children
     })
   });
 }

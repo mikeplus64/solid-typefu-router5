@@ -154,16 +154,22 @@ const MatchContext = createContext('');
 function MatchRoute(props) {
   const route = useRoute();
   const ctx = useContext(MatchContext);
-  const path = props.path !== undefined ? props.path : props.prefix;
-  const exact = props.path !== undefined;
-  const to = ctx !== '' ? `${ctx}.${path}` : path;
-  return () => Match({
-    when: exact ? route().name === to : route().name.startsWith(to),
-    children: () => MatchContext.Provider({
-      value: to,
-      children: props.children
-    })
-  });
+  const getMatch = createMemo(() => {
+    const suffix = props.path !== undefined ? props.path : props.prefix;
+    const exact = props.path !== undefined;
+    const target = ctx !== '' ? `${ctx}.${suffix}` : suffix;
+    return [target, exact ? route().name === target : route().name.startsWith(target)];
+  }, undefined, (a, b) => a && a[1] === b[1]);
+  return () => {
+    const [target, when] = getMatch();
+    return Match({
+      when,
+      children: () => MatchContext.Provider({
+        value: target,
+        children: props.children
+      })
+    });
+  };
 }
 function ShowRoute(props) {
   const route = useRoute();
@@ -174,9 +180,9 @@ function ShowRoute(props) {
   return () => Show({
     when: exact ? route().name === to : route().name.startsWith(to),
     fallback: () => props.fallback,
-    children: MatchContext.Provider({
+    children: () => MatchContext.Provider({
       value: to,
-      children: () => props.children
+      children: props.children
     })
   });
 }
