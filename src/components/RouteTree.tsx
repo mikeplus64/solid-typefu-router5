@@ -1,6 +1,6 @@
 import { UnionToIntersection } from 'ts-essentials';
 import { Switch, createState, createEffect, createMemo } from 'solid-js';
-import { useRoute, useRouteName } from '../context';
+import { useRouteName } from '../context';
 import { MatchRoute } from './MatchRoute';
 
 /** A tree of route path segments */
