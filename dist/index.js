@@ -161,7 +161,14 @@ function MatchRoute(props) {
     const suffix = props.path !== undefined ? props.path : props.prefix;
     const exact = props.path !== undefined;
     const target = ctx !== '' ? `${ctx}.${suffix}` : suffix;
-    return [target, exact ? route().name === target : route().name.startsWith(target)];
+    const here = route().name;
+    console.log({
+      suffix,
+      exact,
+      target,
+      here
+    });
+    return [target, exact ? here === target : here.startsWith(target)];
   }, undefined, (a, b) => a && a[1] === b[1]);
   return () => {
     const [target, when] = getMatch();
