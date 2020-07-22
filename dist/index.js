@@ -180,7 +180,10 @@ function MatchRoute(props) {
       when,
       children: () => MatchContext.Provider({
         value: target,
-        children: props.children
+        children: () => {
+          console.log('run matching for ', target);
+          return props.children;
+        }
       })
     });
   };
