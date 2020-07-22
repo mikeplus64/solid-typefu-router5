@@ -46,6 +46,7 @@ export function MatchRoute(props: MatchRouteProps): JSX.Element {
 
   return () => {
     const [target, when] = getMatch();
+    console.log({ target, when });
     return Match({
       when,
       children: () => MatchContext.Provider({
