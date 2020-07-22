@@ -20,7 +20,7 @@ export type RenderTreeOf<Tree> =
 
 export interface RenderNode {
   render?(props: { children: JSX.Element }): JSX.Element,
-  fallback?(props: { children: JSX.Element }): JSX.Element,
+  fallback?(): JSX.Element,
 };
 
 export type OwnedBy<Tree, Props> =
@@ -139,7 +139,7 @@ export default function RouteStateMachine<R extends RenderTreeLike>(tree: R): JS
 
     const {
       render: RenderHere = passthru,
-      fallback: Fallback,
+      fallback: Fallback = () => undefined,
       ...routes
     } = node;
 
@@ -148,16 +148,16 @@ export default function RouteStateMachine<R extends RenderTreeLike>(tree: R): JS
       const child = routes[key];
       children.push(
         <MatchRoute prefix={key}>
-          {() => traverse(next, child)}
+          {traverse(next, child)}
         </MatchRoute>);
     }
 
-    return RenderHere({
-      children: () => Switch({
-        fallback: Fallback === undefined ? undefined : (() => Fallback({ children })),
-        children: () => children,
-      }),
-    });
+    return (
+      <RenderHere>
+        <Switch fallback={<Fallback />}>
+          {children}
+        </Switch>
+      </RenderHere>);
   }
 
   return traverse([], tree);

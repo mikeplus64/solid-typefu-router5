@@ -31,11 +31,12 @@ function createGetMatch(props: PathProps): () => [string, boolean] {
     const exact = props.path !== undefined;
     const target = ctx !== '' ? `${ctx}.${suffix}` : suffix;
     const here = route().name;
-    console.log({ suffix, exact, target, here });
-    return [
+    const r = [
       target,
       exact ? here === target : here.startsWith(target),
     ];
+    console.log({ suffix, exact, target, here, when: r[1] });
+    return r;
   }, undefined, (a, b) => a && a[1] === b[1]);
   return getMatch;
 }
