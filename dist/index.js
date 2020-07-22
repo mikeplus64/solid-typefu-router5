@@ -247,19 +247,11 @@ function RouteStateMachine(tree) {
     }
 
     const children = [];
-    let {
-      render: Render,
-      fallback,
+    const {
+      render: RenderHere = passthru,
+      fallback: Fallback,
       ...routes
     } = node;
-
-    if (Render === undefined) {
-      Render = passthru;
-    }
-
-    if (typeof Render !== 'function') {
-      return undefined;
-    }
 
     for (const key in routes) {
       const next = [...path, key];
@@ -270,11 +262,11 @@ function RouteStateMachine(tree) {
       }));
     }
 
-    return Render({
+    return RenderHere({
       children: solidJs.Switch({
-        fallback: typeof fallback === 'function' ? fallback({
+        fallback: Fallback === undefined ? undefined : () => Fallback({
           children
-        }) : undefined,
+        }),
         children
       })
     });
