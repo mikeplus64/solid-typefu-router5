@@ -160,15 +160,7 @@ function createGetMatch(props) {
     const exact = props.path !== undefined;
     const target = ctx !== '' ? `${ctx}.${suffix}` : suffix;
     const here = route().name;
-    const r = [target, exact ? here === target : here.startsWith(target)];
-    console.log({
-      suffix,
-      exact,
-      target,
-      here,
-      when: r[1]
-    });
-    return r;
+    return [target, exact ? here === target : here.startsWith(target)];
   }, undefined, (a, b) => a && a[1] === b[1]);
   return getMatch;
 }
@@ -218,7 +210,7 @@ function passthru(props) {
 function RouteStateMachine(tree) {
   const getRouteName = useRouteName();
 
-  function traverseHydrate(path0, node0, render, defaultProps) {
+  function traverseHydrate(path0, node0, Render, defaultProps) {
     const [state, setState] = solidJs.createState(defaultProps);
     const getPathSuffix = solidJs.createMemo(() => {
       const p = getRouteName();
@@ -254,7 +246,7 @@ function RouteStateMachine(tree) {
         setState(next);
       }
     });
-    return render(state);
+    return dom.createComponent(Render, Object.assign(Object.keys(state).reduce((m$, k$) => (m$[k$] = () => state[k$], m$), {}), {}), Object.keys(state));
   }
 
   function traverse(path, node) {
@@ -281,7 +273,7 @@ function RouteStateMachine(tree) {
       const child = routes[key];
       children.push(dom.createComponent(MatchRoute, {
         prefix: key,
-        children: () => ["HELLO", dom.memo(() => traverse(next, child))]
+        children: () => traverse(next, child)
       }, _ck$$1));
     }
 
