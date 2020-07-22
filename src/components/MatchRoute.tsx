@@ -12,26 +12,20 @@ const MatchContext = createContext<string>('');
  * start with `context.path + prefix`.
  */
 export type MatchRouteProps =
-  ({
+  PathProps & { children: JSX.Element };
+
+export type PathProps =
+  {
     prefix: string,
     path?: undefined,
   } | {
     prefix?: undefined,
     path: string,
-  }) & {
-  children: JSX.Element,
-};
+  };
 
-/**
- * Match against a given route.
- *
- * @remarks
- * Not reactive with regards to the route being matched.
- */
-export function MatchRoute(props: MatchRouteProps): JSX.Element {
+function createGetMatch(props: PathProps): () => [string, boolean] {
   const route = useRoute();
   const ctx = useContext(MatchContext);
-
   const getMatch = createMemo<[string, boolean]>(() => {
     const suffix = props.path !== undefined ? props.path : props.prefix;
     const exact = props.path !== undefined;
@@ -43,20 +37,25 @@ export function MatchRoute(props: MatchRouteProps): JSX.Element {
       exact ? here === target : here.startsWith(target),
     ];
   }, undefined, (a, b) => a && a[1] === b[1]);
+  return getMatch;
+}
 
+/**
+ * Match against a given route.
+ *
+ * @remarks
+ * Not reactive with regards to the route being matched.
+ */
+export function MatchRoute(props: MatchRouteProps): JSX.Element {
+  const getMatch = createGetMatch(props);
   return () => {
     const [target, when] = getMatch();
-    console.log({ target, when });
-    return Match({
-      when,
-      children: () => MatchContext.Provider({
-        value: target,
-        children: () => {
-          console.log('run matching for ', target);
-          return props.children;
-        },
-      }),
-    });
+    return (
+      <Match when={when}>
+        <MatchContext.Provider value={target}>
+          {props.children}
+        </MatchContext.Provider>
+      </Match>);
   };
 }
 
@@ -64,17 +63,14 @@ export type ShowRouteProps =
   MatchRouteProps & { fallback?: JSX.Element };
 
 export function ShowRoute(props: ShowRouteProps): JSX.Element {
-  const route = useRoute();
-  const ctx = useContext(MatchContext);
-  const path = props.path !== undefined ? props.path : props.prefix;
-  const exact = props.path !== undefined;
-  const to = ctx !== '' ? `${ctx}.${path}` : path;
-  return () => Show({
-    when: exact ? route().name === to : route().name.startsWith(to),
-    fallback: () => props.fallback,
-    children: () => MatchContext.Provider({
-      value: to,
-      children: props.children,
-    }),
-  });
+  const getMatch = createGetMatch(props);
+  return () => {
+    const [target, when] = getMatch();
+    return (
+      <Show when={when} fallback={props.fallback}>
+        <MatchContext.Provider value={target}>
+          {props.children}
+        </MatchContext.Provider>
+      </Show>);
+  };
 }
