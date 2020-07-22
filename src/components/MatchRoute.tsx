@@ -31,7 +31,7 @@ function createGetMatch(props: PathProps): () => [string, boolean] {
     const exact = props.path !== undefined;
     const target = ctx !== '' ? `${ctx}.${suffix}` : suffix;
     const here = route().name;
-    const r = [
+    const r: [string, boolean] = [
       target,
       exact ? here === target : here.startsWith(target),
     ];
