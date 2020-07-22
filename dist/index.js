@@ -287,7 +287,7 @@ function RouteStateMachine(tree) {
         fallback: Fallback === undefined ? undefined : () => Fallback({
           children
         }),
-        children
+        children: () => children
       })
     });
   }
