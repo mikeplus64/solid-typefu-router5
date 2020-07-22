@@ -270,7 +270,7 @@ function RouteStateMachine(tree) {
       const next = [...path, key];
       const child = routes[key];
       children.push(dom.createComponent(MatchRoute, {
-        path: key,
+        prefix: key,
         children: () => traverse(next, child)
       }));
     }
