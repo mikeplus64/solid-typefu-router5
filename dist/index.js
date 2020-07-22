@@ -146,15 +146,11 @@ function createLink(self, config = defaultLinkConfig) {
 
 dom.delegateEvents(["click"]);
 
+const _ck$ = ["children"],
+      _ck$2 = ["children", "fallback"];
 const MatchContext = solidJs.createContext('');
-/**
- * Match against a given route.
- *
- * @remarks
- * Not reactive with regards to the route being matched.
- */
 
-function MatchRoute(props) {
+function createGetMatch(props) {
   const route = useRoute();
   const ctx = solidJs.useContext(MatchContext);
   const getMatch = solidJs.createMemo(() => {
@@ -170,38 +166,42 @@ function MatchRoute(props) {
     });
     return [target, exact ? here === target : here.startsWith(target)];
   }, undefined, (a, b) => a && a[1] === b[1]);
+  return getMatch;
+}
+/**
+ * Match against a given route.
+ *
+ * @remarks
+ * Not reactive with regards to the route being matched.
+ */
+
+
+function MatchRoute(props) {
+  const getMatch = createGetMatch(props);
   return () => {
     const [target, when] = getMatch();
-    console.log({
-      target,
-      when
-    });
-    return solidJs.Match({
-      when,
-      children: () => MatchContext.Provider({
+    return dom.createComponent(dom.Match, {
+      when: when,
+      children: () => dom.createComponent(MatchContext.Provider, {
         value: target,
-        children: () => {
-          console.log('run matching for ', target);
-          return props.children;
-        }
-      })
-    });
+        children: () => props.children
+      }, _ck$)
+    }, _ck$);
   };
 }
 function ShowRoute(props) {
-  const route = useRoute();
-  const ctx = solidJs.useContext(MatchContext);
-  const path = props.path !== undefined ? props.path : props.prefix;
-  const exact = props.path !== undefined;
-  const to = ctx !== '' ? `${ctx}.${path}` : path;
-  return () => solidJs.Show({
-    when: exact ? route().name === to : route().name.startsWith(to),
-    fallback: () => props.fallback,
-    children: () => MatchContext.Provider({
-      value: to,
-      children: props.children
-    })
-  });
+  const getMatch = createGetMatch(props);
+  return () => {
+    const [target, when] = getMatch();
+    return dom.createComponent(dom.Show, {
+      when: when,
+      fallback: () => props.fallback,
+      children: () => dom.createComponent(MatchContext.Provider, {
+        value: target,
+        children: () => props.children
+      }, _ck$)
+    }, _ck$2);
+  };
 }
 
 /**
@@ -295,7 +295,7 @@ function RouteStateMachine(tree) {
   return traverse([], tree);
 }
 
-const _ck$ = ["children"];
+const _ck$$1 = ["children"];
 /**
  * Create a router for use in solid-js.
  *
@@ -365,7 +365,7 @@ function createSolidRouter(routes, createRouter5, onStart) {
       return dom.createComponent(Context.Provider, {
         value: value,
         children: () => props.children
-      }, _ck$);
+      }, _ck$$1);
     },
 
     router: self,
