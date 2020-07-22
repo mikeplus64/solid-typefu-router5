@@ -181,7 +181,6 @@ function ShowRoute(props) {
   });
 }
 
-const _ck$ = ["children"];
 /**
  * Helper function. Use this as a `render` function to just render the children
  * only.
@@ -265,7 +264,7 @@ function RouteStateMachine(tree) {
       children.push(createComponent(MatchRoute, {
         path: key,
         children: () => traverse(next, child)
-      }, _ck$));
+      }));
     }
 
     return Render({
@@ -281,7 +280,7 @@ function RouteStateMachine(tree) {
   return traverse([], tree);
 }
 
-const _ck$$1 = ["children"];
+const _ck$ = ["children"];
 /**
  * Create a router for use in solid-js.
  *
@@ -351,7 +350,7 @@ function createSolidRouter(routes, createRouter5, onStart) {
       return createComponent(Context.Provider, {
         value: value,
         children: () => props.children
-      }, _ck$$1);
+      }, _ck$);
     },
 
     router: self,
