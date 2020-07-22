@@ -1,4 +1,4 @@
-import { spread, effect, classList, setAttribute, template, delegateEvents, createComponent, Match, Show, Switch } from 'solid-js/dom';
+import { spread, effect, classList, setAttribute, template, delegateEvents, createComponent, Match, Show, memo, Switch } from 'solid-js/dom';
 import { useContext, createContext, createMemo, createState, createEffect, createSignal } from 'solid-js';
 
 const Context = createContext();
@@ -143,8 +143,10 @@ function createLink(self, config = defaultLinkConfig) {
 
 delegateEvents(["click"]);
 
-const _ck$ = ["children"],
-      _ck$2 = ["children", "fallback"];
+const _ck$ = ["children", "value"],
+      _ck$2 = ["children", "when"],
+      _ck$3 = ["children"],
+      _ck$4 = ["children", "fallback"];
 const MatchContext = createContext('');
 
 function createGetMatch(props) {
@@ -177,16 +179,13 @@ function createGetMatch(props) {
 
 function MatchRoute(props) {
   const getMatch = createGetMatch(props);
-  return () => {
-    const [target, when] = getMatch();
-    return createComponent(Match, {
-      when: when,
-      children: () => createComponent(MatchContext.Provider, {
-        value: target,
-        children: () => props.children
-      }, _ck$)
-    }, _ck$);
-  };
+  return createComponent(Match, {
+    when: () => getMatch()[1],
+    children: () => createComponent(MatchContext.Provider, {
+      value: () => getMatch()[0],
+      children: () => props.children
+    }, _ck$)
+  }, _ck$2);
 }
 function ShowRoute(props) {
   const getMatch = createGetMatch(props);
@@ -198,8 +197,8 @@ function ShowRoute(props) {
       children: () => createComponent(MatchContext.Provider, {
         value: target,
         children: () => props.children
-      }, _ck$)
-    }, _ck$2);
+      }, _ck$3)
+    }, _ck$4);
   };
 }
 
@@ -279,7 +278,7 @@ function RouteStateMachine(tree) {
       const child = routes[key];
       children.push(createComponent(MatchRoute, {
         prefix: key,
-        children: () => traverse(next, child)
+        children: () => ["HELLO", memo(() => traverse(next, child))]
       }, _ck$$1));
     }
 
