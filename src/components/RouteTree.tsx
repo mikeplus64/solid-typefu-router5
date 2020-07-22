@@ -1,6 +1,6 @@
 import { UnionToIntersection } from 'ts-essentials';
 import { Switch, createState, createEffect, createMemo } from 'solid-js';
-import { useRoute } from '../context';
+import { useRouteName } from '../context';
 import { MatchRoute } from './MatchRoute';
 
 /** A tree of route path segments */
@@ -20,7 +20,7 @@ export type RenderTreeOf<Tree> =
 
 export interface RenderNode {
   render?(props: { children: JSX.Element }): JSX.Element,
-  fallback?(props: { children: JSX.Element }): JSX.Element,
+  fallback?(): JSX.Element,
 };
 
 export type OwnedBy<Tree, Props> =
@@ -75,15 +75,21 @@ export function passthru<T>(props: { children: T }): T {
 }
 
 export default function RouteStateMachine<R extends RenderTreeLike>(tree: R): JSX.Element {
-  const route = useRoute();
+  const getRouteName = useRouteName();
 
   function traverseHydrate<Props>(
     path0: string[],
     node0: GetPropsLike<Props>,
-    render: (props: Props) => JSX.Element,
+    Render: (props: Props) => JSX.Element,
     defaultProps: Props,
   ): JSX.Element {
     const [state, setState] = createState(defaultProps);
+
+    const getPathSuffix = createMemo<[string, string[]]>(() => {
+      const p = getRouteName();
+      p.splice(0, path0.length);
+      return [name, p];
+    }, undefined, (a, b) => a && a[0] === b[0]);
 
     function populate(
       path: string[],
@@ -108,13 +114,6 @@ export default function RouteStateMachine<R extends RenderTreeLike>(tree: R): JS
       return count;
     }
 
-    const getPathSuffix = createMemo<[string, string[]]>(() => {
-      const name = route().name;
-      const p = name.split('.');
-      p.splice(0, path0.length);
-      return [name, p];
-    }, undefined, (a, b) => a && a[0] === b[0]);
-
     createEffect(() => {
       const next: Partial<Props> = {};
       if (populate(getPathSuffix()[1], node0, next, 0) > 0) {
@@ -122,7 +121,7 @@ export default function RouteStateMachine<R extends RenderTreeLike>(tree: R): JS
       }
     });
 
-    return render(state as Props);
+    return <Render {...state as Props} />;
   }
 
   function traverse(
@@ -135,27 +134,31 @@ export default function RouteStateMachine<R extends RenderTreeLike>(tree: R): JS
         return traverseHydrate(path, props, render, defaultProps);
       });
     }
+
     const children: JSX.Element = [];
-    let { render: Render, fallback, ...routes } = node;
-    if (Render === undefined) { Render = passthru; }
-    if (typeof Render !== 'function') { return undefined; }
+
+    const {
+      render: RenderHere = passthru,
+      fallback: Fallback = () => undefined,
+      ...routes
+    } = node;
+
     for (const key in routes) {
       const next = [...path, key];
-      const child = (routes as any)[key];
-      children.push(MatchRoute({
-        prefix: key,
-        children: () => traverse(next, child),
-      }));
+      const child = routes[key];
+      children.push(
+        <MatchRoute prefix={key}>
+          {traverse(next, child)}
+        </MatchRoute>);
     }
-    return Render({
-      children: Switch({
-        fallback: typeof fallback === 'function' ? fallback({ children }) : undefined,
-        children,
-      }),
-    });
-  }
 
-  console.log(tree);
+    return (
+      <RenderHere>
+        <Switch fallback={<Fallback />}>
+          {children}
+        </Switch>
+      </RenderHere>);
+  }
 
   return traverse([], tree);
 }

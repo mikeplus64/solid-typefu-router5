@@ -6,14 +6,15 @@
  * If `prefix` is given, then the match only requires that the current route
  * start with `context.path + prefix`.
  */
-export declare type MatchRouteProps = ({
+export declare type MatchRouteProps = PathProps & {
+    children: JSX.Element;
+};
+export declare type PathProps = {
     prefix: string;
     path?: undefined;
 } | {
     prefix?: undefined;
     path: string;
-}) & {
-    children: JSX.Element;
 };
 /**
  * Match against a given route.
