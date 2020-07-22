@@ -12,9 +12,7 @@ export interface RenderNode {
     render?(props: {
         children: JSX.Element;
     }): JSX.Element;
-    fallback?(props: {
-        children: JSX.Element;
-    }): JSX.Element;
+    fallback?(): JSX.Element;
 }
 export declare type OwnedBy<Tree, Props> = UnionToIntersection<Tree extends readonly (infer Node)[] ? Node extends {
     name: infer Name;

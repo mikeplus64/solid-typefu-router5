@@ -1,5 +1,5 @@
-import { spread, effect, classList, setAttribute, template, delegateEvents, createComponent, Match, Show } from 'solid-js/dom';
-import { useContext, createContext, createMemo, Switch, createState, createEffect, createSignal } from 'solid-js';
+import { spread, effect, classList, setAttribute, template, delegateEvents, createComponent, Match, Show, Switch } from 'solid-js/dom';
+import { useContext, createContext, createMemo, createState, createEffect, createSignal } from 'solid-js';
 
 const Context = createContext();
 function useRoute() {
@@ -155,13 +155,15 @@ function createGetMatch(props) {
     const exact = props.path !== undefined;
     const target = ctx !== '' ? `${ctx}.${suffix}` : suffix;
     const here = route().name;
+    const r = [target, exact ? here === target : here.startsWith(target)];
     console.log({
       suffix,
       exact,
       target,
-      here
+      here,
+      when: r[1]
     });
-    return [target, exact ? here === target : here.startsWith(target)];
+    return r;
   }, undefined, (a, b) => a && a[1] === b[1]);
   return getMatch;
 }
@@ -201,6 +203,8 @@ function ShowRoute(props) {
   };
 }
 
+const _ck$$1 = ["children"],
+      _ck$2$1 = ["fallback"];
 /**
  * Helper function. Use this as a `render` function to just render the children
  * only.
@@ -266,7 +270,7 @@ function RouteStateMachine(tree) {
     const children = [];
     const {
       render: RenderHere = passthru,
-      fallback: Fallback,
+      fallback: Fallback = () => undefined,
       ...routes
     } = node;
 
@@ -276,23 +280,21 @@ function RouteStateMachine(tree) {
       children.push(createComponent(MatchRoute, {
         prefix: key,
         children: () => traverse(next, child)
-      }));
+      }, _ck$$1));
     }
 
-    return RenderHere({
-      children: () => Switch({
-        fallback: Fallback === undefined ? undefined : () => Fallback({
-          children
-        }),
-        children: () => children
-      })
-    });
+    return createComponent(RenderHere, {
+      children: () => createComponent(Switch, {
+        fallback: () => createComponent(Fallback, {}),
+        children: children
+      }, _ck$2$1)
+    }, _ck$$1);
   }
 
   return traverse([], tree);
 }
 
-const _ck$$1 = ["children"];
+const _ck$$2 = ["children"];
 /**
  * Create a router for use in solid-js.
  *
@@ -362,7 +364,7 @@ function createSolidRouter(routes, createRouter5, onStart) {
       return createComponent(Context.Provider, {
         value: value,
         children: () => props.children
-      }, _ck$$1);
+      }, _ck$$2);
     },
 
     router: self,
