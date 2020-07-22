@@ -136,9 +136,13 @@ export default function RouteStateMachine<R extends RenderTreeLike>(tree: R): JS
     }
 
     const children: JSX.Element = [];
-    let { render: Render, fallback, ...routes } = node;
-    if (Render === undefined) { Render = passthru; }
-    if (typeof Render !== 'function') { return undefined; }
+
+    const {
+      render: RenderHere = passthru,
+      fallback: Fallback,
+      ...routes
+    } = node;
+
     for (const key in routes) {
       const next = [...path, key];
       const child = routes[key];
@@ -148,9 +152,9 @@ export default function RouteStateMachine<R extends RenderTreeLike>(tree: R): JS
         </MatchRoute>);
     }
 
-    return Render({
+    return RenderHere({
       children: Switch({
-        fallback: typeof fallback === 'function' ? fallback({ children }) : undefined,
+        fallback: Fallback === undefined ? undefined : (() => Fallback({ children })),
         children,
       }),
     });
