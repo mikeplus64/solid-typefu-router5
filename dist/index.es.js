@@ -159,9 +159,9 @@ function MatchRoute(props) {
   const to = ctx !== '' ? `${ctx}.${path}` : path;
   return () => Match({
     when: exact ? route().name === to : route().name.startsWith(to),
-    children: MatchContext.Provider({
+    children: () => MatchContext.Provider({
       value: to,
-      children: () => props.children
+      children: props.children
     })
   });
 }
@@ -260,7 +260,7 @@ function RouteStateMachine(tree) {
     }
 
     return RenderHere({
-      children: Switch({
+      children: () => Switch({
         fallback: Fallback === undefined ? undefined : () => Fallback({
           children
         }),

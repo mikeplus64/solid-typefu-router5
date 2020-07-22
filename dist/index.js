@@ -162,9 +162,9 @@ function MatchRoute(props) {
   const to = ctx !== '' ? `${ctx}.${path}` : path;
   return () => solidJs.Match({
     when: exact ? route().name === to : route().name.startsWith(to),
-    children: MatchContext.Provider({
+    children: () => MatchContext.Provider({
       value: to,
-      children: () => props.children
+      children: props.children
     })
   });
 }
@@ -263,7 +263,7 @@ function RouteStateMachine(tree) {
     }
 
     return RenderHere({
-      children: solidJs.Switch({
+      children: () => solidJs.Switch({
         fallback: Fallback === undefined ? undefined : () => Fallback({
           children
         }),
