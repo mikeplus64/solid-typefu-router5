@@ -80,7 +80,7 @@ export default function RouteStateMachine<R extends RenderTreeLike>(tree: R): JS
   function traverseHydrate<Props>(
     path0: string[],
     node0: GetPropsLike<Props>,
-    render: (props: Props) => JSX.Element,
+    Render: (props: Props) => JSX.Element,
     defaultProps: Props,
   ): JSX.Element {
     const [state, setState] = createState(defaultProps);
@@ -121,7 +121,7 @@ export default function RouteStateMachine<R extends RenderTreeLike>(tree: R): JS
       }
     });
 
-    return render(state as Props);
+    return <Render {...state as Props} />;
   }
 
   function traverse(
@@ -148,7 +148,6 @@ export default function RouteStateMachine<R extends RenderTreeLike>(tree: R): JS
       const child = routes[key];
       children.push(
         <MatchRoute prefix={key}>
-          HELLO
           {traverse(next, child)}
         </MatchRoute>);
     }
