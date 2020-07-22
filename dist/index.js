@@ -184,6 +184,7 @@ function ShowRoute(props) {
   });
 }
 
+const _ck$ = ["children"];
 /**
  * Helper function. Use this as a `render` function to just render the children
  * only.
@@ -193,14 +194,17 @@ function passthru(props) {
   return props.children;
 }
 function RouteStateMachine(tree) {
-  const route = useRoute();
+  const getRouteName = useRouteName();
 
   function traverseHydrate(path0, node0, render, defaultProps) {
     const [state, setState] = solidJs.createState(defaultProps);
+    const getPathSuffix = solidJs.createMemo(() => {
+      const p = getRouteName();
+      p.splice(0, path0.length);
+      return [name, p];
+    }, undefined, (a, b) => a && a[0] === b[0]);
 
     function populate(path, node, next, count) {
-      console.log('populate visit', path, node, next);
-
       for (const key in node) {
         const gp = node[key];
 
@@ -221,12 +225,6 @@ function RouteStateMachine(tree) {
       return count;
     }
 
-    const getPathSuffix = solidJs.createMemo(() => {
-      const name = route().name;
-      const p = name.split('.');
-      p.splice(0, path0.length);
-      return [name, p];
-    }, undefined, (a, b) => a && a[0] === b[0]);
     solidJs.createEffect(() => {
       const next = {};
 
@@ -267,11 +265,10 @@ function RouteStateMachine(tree) {
     for (const key in routes) {
       const next = [...path, key];
       const child = routes[key];
-      console.log('visit', path, key, next, child);
-      children.push(MatchRoute({
-        prefix: key,
+      children.push(dom.createComponent(MatchRoute, {
+        path: key,
         children: () => traverse(next, child)
-      }));
+      }, _ck$));
     }
 
     return Render({
@@ -284,11 +281,10 @@ function RouteStateMachine(tree) {
     });
   }
 
-  console.log(tree);
   return traverse([], tree);
 }
 
-const _ck$ = ["children"];
+const _ck$$1 = ["children"];
 /**
  * Create a router for use in solid-js.
  *
@@ -358,7 +354,7 @@ function createSolidRouter(routes, createRouter5, onStart) {
       return dom.createComponent(Context.Provider, {
         value: value,
         children: () => props.children
-      }, _ck$);
+      }, _ck$$1);
     },
 
     router: self,
