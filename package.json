@@ -1,9 +1,9 @@
 {
   "name": "solid-typefu-router5",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Router5 based routing library for solid-js with TypeScript",
   "repository": "https://github.com/mikeplus64/solid-typefu-router5",
-  "website": "https://mikeplus64.github.io/solid-typefu-router5/",
+  "homepage": "https://mikeplus64.github.io/solid-typefu-router5/",
   "author": "Mike Ledger <mike@quasimal.com>",
   "license": "MIT",
   "private": false,
