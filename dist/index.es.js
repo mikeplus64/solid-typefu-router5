@@ -196,6 +196,8 @@ function RouteStateMachine(tree) {
     const [state, setState] = createState(defaultProps);
 
     function populate(path, node, next, count) {
+      console.log('populate visit', path, node, next);
+
       for (const key in node) {
         const gp = node[key];
 
@@ -262,6 +264,7 @@ function RouteStateMachine(tree) {
     for (const key in routes) {
       const next = [...path, key];
       const child = routes[key];
+      console.log('visit', path, key, next, child);
       children.push(MatchRoute({
         prefix: key,
         children: () => traverse(next, child)
