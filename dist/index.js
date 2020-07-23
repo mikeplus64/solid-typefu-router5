@@ -183,12 +183,9 @@ function MatchRoute(props) {
   const getMatch = createGetMatch(props);
   return () => {
     const [value, when] = getMatch();
-    return dom.createComponent(dom.Match, {
-      when: when,
-      children: () => dom.createComponent(MatchContext.Provider, {
-        value: value,
-        children: () => props.children
-      }, _ck$)
+    return !when ? undefined : dom.createComponent(MatchContext.Provider, {
+      value: value,
+      children: () => props.children
     }, _ck$);
   };
 }

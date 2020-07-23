@@ -1,4 +1,4 @@
-import { spread, effect, classList, setAttribute, template, delegateEvents, createComponent, Match, Show, Switch } from 'solid-js/dom';
+import { spread, effect, classList, setAttribute, template, delegateEvents, createComponent, Show, Switch } from 'solid-js/dom';
 import { useContext, createContext, createMemo, createState, createEffect, createSignal } from 'solid-js';
 
 const Context = createContext();
@@ -180,12 +180,9 @@ function MatchRoute(props) {
   const getMatch = createGetMatch(props);
   return () => {
     const [value, when] = getMatch();
-    return createComponent(Match, {
-      when: when,
-      children: () => createComponent(MatchContext.Provider, {
-        value: value,
-        children: () => props.children
-      }, _ck$)
+    return !when ? undefined : createComponent(MatchContext.Provider, {
+      value: value,
+      children: () => props.children
     }, _ck$);
   };
 }

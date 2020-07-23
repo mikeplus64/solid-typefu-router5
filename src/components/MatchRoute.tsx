@@ -1,4 +1,4 @@
-import { createContext, useContext, Match, Show, createMemo } from "solid-js";
+import { createContext, useContext, Show, createMemo } from "solid-js";
 import { useRouteNameRaw } from '../context';
 
 const MatchContext = createContext<string>('');
@@ -49,12 +49,10 @@ export function MatchRoute(props: MatchRouteProps): JSX.Element {
   const getMatch = createGetMatch(props);
   return () => {
     const [value, when] = getMatch();
-    return (
-      <Match when={when}>
-        <MatchContext.Provider value={value}>
-          {props.children}
-        </MatchContext.Provider>
-      </Match>);
+    return !when ? undefined :
+      <MatchContext.Provider value={value}>
+        {props.children}
+      </MatchContext.Provider>;
   };
 }
 
