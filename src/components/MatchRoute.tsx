@@ -47,12 +47,15 @@ function createGetMatch(props: PathProps): () => [string, boolean] {
  */
 export function MatchRoute(props: MatchRouteProps): JSX.Element {
   const getMatch = createGetMatch(props);
-  return (
-    <Match when={getMatch()[1]}>
-      <MatchContext.Provider value={getMatch()[0]}>
-        {() => props.children}
-      </MatchContext.Provider>
-    </Match>);
+  return () => {
+    const [value, when] = getMatch();
+    return (
+      <Match when={when}>
+        <MatchContext.Provider value={value}>
+          {props.children}
+        </MatchContext.Provider>
+      </Match>);
+  };
 }
 
 export type ShowRouteProps =
