@@ -50,7 +50,7 @@ export function MatchRoute(props: MatchRouteProps): JSX.Element {
   return (
     <Match when={getMatch()[1]}>
       <MatchContext.Provider value={getMatch()[0]}>
-        {props.children}
+        {() => props.children}
       </MatchContext.Provider>
     </Match>);
 }

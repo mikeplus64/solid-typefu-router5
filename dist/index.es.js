@@ -153,7 +153,7 @@ function createLink(self, config = defaultLinkConfig) {
 
 delegateEvents(["click"]);
 
-const _ck$ = ["children", "value"],
+const _ck$ = ["value"],
       _ck$2 = ["children", "when"],
       _ck$3 = ["children"],
       _ck$4 = ["children", "fallback"];
