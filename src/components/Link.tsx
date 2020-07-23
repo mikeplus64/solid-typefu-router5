@@ -78,6 +78,18 @@ export default function createLink<Deps, Routes extends RoutesLike<Deps>, RouteN
       return innerProps;
     };
 
+    const getHref: () => string | undefined = createMemo(() => {
+      if (props.type === undefined) {
+        try {
+          return router5.buildPath(renderRouteLike(props.to), props.params);
+        } catch (err) {
+          console.error(err);
+          return '/error';
+        }
+      }
+      return undefined;
+    });
+
     return () => props.disabled ?
       <button
         {...getInnerProps() as JSX.IntrinsicElements['button']}
@@ -87,9 +99,7 @@ export default function createLink<Deps, Routes extends RoutesLike<Deps>, RouteN
       <a
         {...getInnerProps() as JSX.IntrinsicElements['a']}
         classList={getClassList()}
-        href={props.type === undefined ?
-          router5.buildPath(renderRouteLike(props.to), props.params) :
-          undefined}
+        href={getHref()}
         onClick={(ev) => {
           ev.preventDefault();
           switch (props.type) {

@@ -94,6 +94,7 @@ function createLink(self, config = defaultLinkConfig) {
         try {
           return router5.buildPath(renderRouteLike(props.to), props.params);
         } catch (err) {
+          console.error(err);
           return '/error';
         }
       }
