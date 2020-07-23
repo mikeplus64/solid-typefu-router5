@@ -86,6 +86,17 @@ function createLink(self, config = defaultLinkConfig) {
       return innerProps;
     };
 
+    const getHref = createMemo(() => {
+      if (props.type === undefined) {
+        try {
+          return router5.buildPath(renderRouteLike(props.to), props.params);
+        } catch (err) {
+          return '/error';
+        }
+      }
+
+      return undefined;
+    });
     return () => props.disabled ? (() => {
       const _el$ = _tmpl$.cloneNode(true);
 
@@ -124,7 +135,7 @@ function createLink(self, config = defaultLinkConfig) {
 
       effect(_p$ => {
         const _v$ = getClassList(),
-              _v$2 = props.type === undefined ? router5.buildPath(renderRouteLike(props.to), props.params) : undefined;
+              _v$2 = getHref();
 
         _p$._v$ = classList(_el$2, _v$, _p$._v$);
         _v$2 !== _p$._v$2 && setAttribute(_el$2, "href", _p$._v$2 = _v$2);
