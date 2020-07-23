@@ -1,4 +1,4 @@
-import { spread, effect, classList, setAttribute, template, delegateEvents, createComponent, Match, Show, Switch } from 'solid-js/dom';
+import { spread, effect, classList, setAttribute, template, delegateEvents, createComponent, Match, Show } from 'solid-js/dom';
 import { useContext, createContext, createMemo, createState, createEffect, createSignal } from 'solid-js';
 
 const Context = createContext();
@@ -9,12 +9,11 @@ function useRouteName() {
   return useContext(Context).getRouteName;
 }
 function useRouteNameRaw() {
-  const route = useRoute();
-  return createMemo(() => route().name);
+  return useContext(Context).getRouteNameRaw;
 }
 function useActive(link) {
   const getRouteName = useRouteName();
-  return () => isActive(getRouteName(), link);
+  return createMemo(() => isActive(getRouteName(), link));
 }
 /**
  * Find whether 'link' is an ancestor of, or equal to, 'here'
@@ -86,6 +85,18 @@ function createLink(self, config = defaultLinkConfig) {
       return innerProps;
     };
 
+    const getHref = createMemo(() => {
+      if (props.type === undefined) {
+        try {
+          return router5.buildPath(renderRouteLike(props.to), props.params);
+        } catch (err) {
+          console.error(err);
+          return '/error';
+        }
+      }
+
+      return undefined;
+    });
     return () => props.disabled ? (() => {
       const _el$ = _tmpl$.cloneNode(true);
 
@@ -124,7 +135,7 @@ function createLink(self, config = defaultLinkConfig) {
 
       effect(_p$ => {
         const _v$ = getClassList(),
-              _v$2 = props.type === undefined ? router5.buildPath(renderRouteLike(props.to), props.params) : undefined;
+              _v$2 = getHref();
 
         _p$._v$ = classList(_el$2, _v$, _p$._v$);
         _v$2 !== _p$._v$2 && setAttribute(_el$2, "href", _p$._v$2 = _v$2);
@@ -141,23 +152,21 @@ function createLink(self, config = defaultLinkConfig) {
 
 delegateEvents(["click"]);
 
-const _ck$ = ["children", "value"],
-      _ck$2 = ["children", "when"],
-      _ck$3 = ["children"],
-      _ck$4 = ["children", "fallback"];
+const _ck$ = ["children"],
+      _ck$2 = ["children", "fallback"];
 const MatchContext = createContext('');
+
+function doesMatch(ctx, here, props) {
+  const suffix = props.path !== undefined ? props.path : props.prefix;
+  const exact = props.path !== undefined;
+  const target = ctx !== '' ? `${ctx}.${suffix}` : suffix;
+  return [target, exact ? here === target : here.startsWith(target)];
+}
 
 function createGetMatch(props) {
   const route = useRouteNameRaw();
   const ctx = useContext(MatchContext);
-  const getMatch = createMemo(() => {
-    const suffix = props.path !== undefined ? props.path : props.prefix;
-    const exact = props.path !== undefined;
-    const target = ctx !== '' ? `${ctx}.${suffix}` : suffix;
-    const here = route();
-    return [target, exact ? here === target : here.startsWith(target)];
-  }, undefined, (a, b) => a && a[1] === b[1]);
-  return getMatch;
+  return createMemo(() => doesMatch(ctx, route(), props), undefined, (a, b) => a && a[1] === b[1]);
 }
 /**
  * Match against a given route.
@@ -169,13 +178,48 @@ function createGetMatch(props) {
 
 function MatchRoute(props) {
   const getMatch = createGetMatch(props);
-  return createComponent(Match, {
-    when: () => getMatch()[1],
-    children: () => createComponent(MatchContext.Provider, {
-      value: () => getMatch()[0],
-      children: () => props.children
-    }, _ck$)
-  }, _ck$2);
+  return () => {
+    const [value, when] = getMatch();
+    return createComponent(Match, {
+      when: when,
+      children: () => createComponent(MatchContext.Provider, {
+        value: value,
+        children: () => props.children
+      }, _ck$)
+    }, _ck$);
+  };
+}
+/**
+ * Not reactive on the routes being used
+ */
+
+function SwitchRoutes(props) {
+  const ctx = useContext(MatchContext);
+  const route = useRouteNameRaw();
+  const getIndex = createMemo(() => {
+    const here = route();
+    const children = props.children;
+
+    for (let i = 0; i < children.length; i++) {
+      const [target, when] = doesMatch(ctx, here, children[i]);
+      if (when) return [i, target];
+    }
+
+    return undefined;
+  }, undefined, (a, b) => a === b || a !== undefined && b !== undefined && a[0] === b[0]);
+  return () => {
+    const ix = getIndex();
+
+    if (ix !== undefined) {
+      const [i, target] = ix;
+      return createComponent(MatchContext.Provider, {
+        value: target,
+        children: () => props.children[i].children
+      }, _ck$);
+    }
+
+    return props.fallback;
+  };
 }
 function ShowRoute(props) {
   const getMatch = createGetMatch(props);
@@ -187,13 +231,13 @@ function ShowRoute(props) {
       children: () => createComponent(MatchContext.Provider, {
         value: target,
         children: () => props.children
-      }, _ck$3)
-    }, _ck$4);
+      }, _ck$)
+    }, _ck$2);
   };
 }
 
-const _ck$$1 = ["children"],
-      _ck$2$1 = ["fallback"];
+const _ck$$1 = ["fallback"],
+      _ck$2$1 = ["children"];
 /**
  * Helper function. Use this as a `render` function to just render the children
  * only.
@@ -266,18 +310,18 @@ function RouteStateMachine(tree) {
     for (const key in routes) {
       const next = [...path, key];
       const child = routes[key];
-      children.push(createComponent(MatchRoute, {
+      children.push({
         prefix: key,
         children: () => traverse(next, child)
-      }, _ck$$1));
+      });
     }
 
     return createComponent(RenderHere, {
-      children: () => createComponent(Switch, {
+      children: () => createComponent(SwitchRoutes, {
         fallback: () => createComponent(Fallback, {}),
         children: children
-      }, _ck$2$1)
-    }, _ck$$1);
+      }, _ck$$1)
+    }, _ck$2$1);
   }
 
   return traverse([], tree);
@@ -332,21 +376,17 @@ function createSolidRouter(routes, createRouter5, onStart) {
       const initialState = (_router5$getState = router5.getState()) !== null && _router5$getState !== void 0 ? _router5$getState : {
         name: ''
       };
-      const [getRoute, setRoute] = createSignal(initialState); // create a signal for just the name as a `string` since strings are very
-      // easy to compare by `===`
-
-      const [getRouteName, setRouteName] = createSignal(initialState.name, (a, b) => a === b);
+      const [getRoute, setRoute] = createSignal(initialState);
+      const getRouteName = createMemo(() => getRoute().name, initialState.name, (a, b) => a === b);
       const getSplitRouteName = createMemo(() => getRouteName().split('.'), initialState.name.split('.'));
       const value = {
         getRoute,
         getRouteName: getSplitRouteName,
+        getRouteNameRaw: getRouteName,
         router: self
       };
       createEffect(() => {
-        router5.subscribe(state => {
-          setRoute(state.route);
-          setRouteName(state.route.name);
-        });
+        router5.subscribe(state => setRoute(state.route));
         router5.start();
         if (typeof onStart === 'function') onStart(router5);
       });

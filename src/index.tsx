@@ -75,25 +75,18 @@ export default function createSolidRouter<Routes extends RoutesLike<Deps>, Deps 
       const initialState = router5.getState() ?? { name: '' };
       const [getRoute, setRoute] = createSignal<RouteState>(initialState);
 
-      // create a signal for just the name as a `string` since strings are very
-      // easy to compare by `===`
-      const [getRouteName, setRouteName] = createSignal<string>(initialState.name, (a, b) => a === b);
-      const getSplitRouteName = createMemo<string[]>(
-        () => getRouteName().split('.'),
-        initialState.name.split('.'),
-      );
+      const getRouteName = createMemo(() => getRoute().name, initialState.name, (a, b) => a === b);
+      const getSplitRouteName = createMemo(() => getRouteName().split('.'), initialState.name.split('.'));
 
       const value = {
         getRoute,
         getRouteName: getSplitRouteName,
+        getRouteNameRaw: getRouteName,
         router: self as SharedRouterValue<unknown, unknown>,
       };
 
       createEffect(() => {
-        router5.subscribe((state) => {
-          setRoute(state.route);
-          setRouteName(state.route.name);
-        });
+        router5.subscribe((state) => setRoute(state.route));
         router5.start();
         if (typeof onStart === 'function') onStart(router5);
       });

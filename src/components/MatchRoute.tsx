@@ -23,20 +23,24 @@ export type PathProps =
     path: string,
   };
 
+function doesMatch(ctx: string, here: string, props: PathProps): [string, boolean] {
+  const suffix = props.path !== undefined ? props.path : props.prefix;
+  const exact = props.path !== undefined;
+  const target = ctx !== '' ? `${ctx}.${suffix}` : suffix;
+  return [
+    target,
+    exact ? here === target : here.startsWith(target),
+  ];
+}
+
 function createGetMatch(props: PathProps): () => [string, boolean] {
   const route = useRouteNameRaw();
   const ctx = useContext(MatchContext);
-  const getMatch = createMemo<[string, boolean]>(() => {
-    const suffix = props.path !== undefined ? props.path : props.prefix;
-    const exact = props.path !== undefined;
-    const target = ctx !== '' ? `${ctx}.${suffix}` : suffix;
-    const here = route();
-    return [
-      target,
-      exact ? here === target : here.startsWith(target),
-    ];
-  }, undefined, (a, b) => a && a[1] === b[1]);
-  return getMatch;
+  return createMemo<[string, boolean]>(
+    () => doesMatch(ctx, route(), props),
+    undefined,
+    (a, b) => a && a[1] === b[1],
+  );
 }
 
 /**
@@ -47,12 +51,46 @@ function createGetMatch(props: PathProps): () => [string, boolean] {
  */
 export function MatchRoute(props: MatchRouteProps): JSX.Element {
   const getMatch = createGetMatch(props);
-  return (
-    <Match when={getMatch()[1]}>
-      <MatchContext.Provider value={getMatch()[0]}>
-        {props.children}
-      </MatchContext.Provider>
-    </Match>);
+  return () => {
+    const [value, when] = getMatch();
+    return (
+      <Match when={when}>
+        <MatchContext.Provider value={value}>
+          {props.children}
+        </MatchContext.Provider>
+      </Match>);
+  };
+}
+
+/**
+ * Not reactive on the routes being used
+ */
+export function SwitchRoutes(props: {
+  children: MatchRouteProps[]
+  fallback?: JSX.Element,
+}): JSX.Element {
+  const ctx = useContext(MatchContext);
+  const route = useRouteNameRaw();
+  const getIndex = createMemo<undefined | [number, string]>(() => {
+    const here = route();
+    const children = props.children;
+    for (let i = 0; i < children.length; i ++) {
+      const [target, when] = doesMatch(ctx, here, children[i]);
+      if (when) return [i, target];
+    }
+    return undefined;
+  }, undefined, (a, b) => a === b || a !== undefined && b !== undefined && a[0] === b[0]);
+  return () => {
+    const ix = getIndex();
+    if (ix !== undefined) {
+      const [i, target] = ix;
+      return (
+        <MatchContext.Provider value={target}>
+          {props.children[i].children}
+        </MatchContext.Provider>);
+    }
+    return props.fallback;
+  };
 }
 
 export type ShowRouteProps =

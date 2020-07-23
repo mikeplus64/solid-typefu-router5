@@ -16,13 +16,12 @@ export function useRouteName(): () => string[] {
 }
 
 export function useRouteNameRaw(): () => string {
-  const route = useRoute();
-  return createMemo(() => route().name);
+  return useContext(Context).getRouteNameRaw;
 }
 
 export function useActive<Link extends RouteLike>(link: Link): () => boolean {
   const getRouteName = useRouteName();
-  return () => isActive(getRouteName(), link);
+  return createMemo(() => isActive(getRouteName(), link));
 }
 
 /**

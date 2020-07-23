@@ -13,12 +13,11 @@ function useRouteName() {
   return solidJs.useContext(Context).getRouteName;
 }
 function useRouteNameRaw() {
-  const route = useRoute();
-  return solidJs.createMemo(() => route().name);
+  return solidJs.useContext(Context).getRouteNameRaw;
 }
 function useActive(link) {
   const getRouteName = useRouteName();
-  return () => isActive(getRouteName(), link);
+  return solidJs.createMemo(() => isActive(getRouteName(), link));
 }
 /**
  * Find whether 'link' is an ancestor of, or equal to, 'here'
@@ -89,6 +88,18 @@ function createLink(self, config = defaultLinkConfig) {
       return innerProps;
     };
 
+    const getHref = solidJs.createMemo(() => {
+      if (props.type === undefined) {
+        try {
+          return router5.buildPath(renderRouteLike(props.to), props.params);
+        } catch (err) {
+          console.error(err);
+          return '/error';
+        }
+      }
+
+      return undefined;
+    });
     return () => props.disabled ? (() => {
       const _el$ = _tmpl$.cloneNode(true);
 
@@ -127,7 +138,7 @@ function createLink(self, config = defaultLinkConfig) {
 
       dom.effect(_p$ => {
         const _v$ = getClassList(),
-              _v$2 = props.type === undefined ? router5.buildPath(renderRouteLike(props.to), props.params) : undefined;
+              _v$2 = getHref();
 
         _p$._v$ = dom.classList(_el$2, _v$, _p$._v$);
         _v$2 !== _p$._v$2 && dom.setAttribute(_el$2, "href", _p$._v$2 = _v$2);
@@ -144,23 +155,21 @@ function createLink(self, config = defaultLinkConfig) {
 
 dom.delegateEvents(["click"]);
 
-const _ck$ = ["children", "value"],
-      _ck$2 = ["children", "when"],
-      _ck$3 = ["children"],
-      _ck$4 = ["children", "fallback"];
+const _ck$ = ["children"],
+      _ck$2 = ["children", "fallback"];
 const MatchContext = solidJs.createContext('');
+
+function doesMatch(ctx, here, props) {
+  const suffix = props.path !== undefined ? props.path : props.prefix;
+  const exact = props.path !== undefined;
+  const target = ctx !== '' ? `${ctx}.${suffix}` : suffix;
+  return [target, exact ? here === target : here.startsWith(target)];
+}
 
 function createGetMatch(props) {
   const route = useRouteNameRaw();
   const ctx = solidJs.useContext(MatchContext);
-  const getMatch = solidJs.createMemo(() => {
-    const suffix = props.path !== undefined ? props.path : props.prefix;
-    const exact = props.path !== undefined;
-    const target = ctx !== '' ? `${ctx}.${suffix}` : suffix;
-    const here = route();
-    return [target, exact ? here === target : here.startsWith(target)];
-  }, undefined, (a, b) => a && a[1] === b[1]);
-  return getMatch;
+  return solidJs.createMemo(() => doesMatch(ctx, route(), props), undefined, (a, b) => a && a[1] === b[1]);
 }
 /**
  * Match against a given route.
@@ -172,13 +181,48 @@ function createGetMatch(props) {
 
 function MatchRoute(props) {
   const getMatch = createGetMatch(props);
-  return dom.createComponent(dom.Match, {
-    when: () => getMatch()[1],
-    children: () => dom.createComponent(MatchContext.Provider, {
-      value: () => getMatch()[0],
-      children: () => props.children
-    }, _ck$)
-  }, _ck$2);
+  return () => {
+    const [value, when] = getMatch();
+    return dom.createComponent(dom.Match, {
+      when: when,
+      children: () => dom.createComponent(MatchContext.Provider, {
+        value: value,
+        children: () => props.children
+      }, _ck$)
+    }, _ck$);
+  };
+}
+/**
+ * Not reactive on the routes being used
+ */
+
+function SwitchRoutes(props) {
+  const ctx = solidJs.useContext(MatchContext);
+  const route = useRouteNameRaw();
+  const getIndex = solidJs.createMemo(() => {
+    const here = route();
+    const children = props.children;
+
+    for (let i = 0; i < children.length; i++) {
+      const [target, when] = doesMatch(ctx, here, children[i]);
+      if (when) return [i, target];
+    }
+
+    return undefined;
+  }, undefined, (a, b) => a === b || a !== undefined && b !== undefined && a[0] === b[0]);
+  return () => {
+    const ix = getIndex();
+
+    if (ix !== undefined) {
+      const [i, target] = ix;
+      return dom.createComponent(MatchContext.Provider, {
+        value: target,
+        children: () => props.children[i].children
+      }, _ck$);
+    }
+
+    return props.fallback;
+  };
 }
 function ShowRoute(props) {
   const getMatch = createGetMatch(props);
@@ -190,13 +234,13 @@ function ShowRoute(props) {
       children: () => dom.createComponent(MatchContext.Provider, {
         value: target,
         children: () => props.children
-      }, _ck$3)
-    }, _ck$4);
+      }, _ck$)
+    }, _ck$2);
   };
 }
 
-const _ck$$1 = ["children"],
-      _ck$2$1 = ["fallback"];
+const _ck$$1 = ["fallback"],
+      _ck$2$1 = ["children"];
 /**
  * Helper function. Use this as a `render` function to just render the children
  * only.
@@ -269,18 +313,18 @@ function RouteStateMachine(tree) {
     for (const key in routes) {
       const next = [...path, key];
       const child = routes[key];
-      children.push(dom.createComponent(MatchRoute, {
+      children.push({
         prefix: key,
         children: () => traverse(next, child)
-      }, _ck$$1));
+      });
     }
 
     return dom.createComponent(RenderHere, {
-      children: () => dom.createComponent(dom.Switch, {
+      children: () => dom.createComponent(SwitchRoutes, {
         fallback: () => dom.createComponent(Fallback, {}),
         children: children
-      }, _ck$2$1)
-    }, _ck$$1);
+      }, _ck$$1)
+    }, _ck$2$1);
   }
 
   return traverse([], tree);
@@ -335,21 +379,17 @@ function createSolidRouter(routes, createRouter5, onStart) {
       const initialState = (_router5$getState = router5.getState()) !== null && _router5$getState !== void 0 ? _router5$getState : {
         name: ''
       };
-      const [getRoute, setRoute] = solidJs.createSignal(initialState); // create a signal for just the name as a `string` since strings are very
-      // easy to compare by `===`
-
-      const [getRouteName, setRouteName] = solidJs.createSignal(initialState.name, (a, b) => a === b);
+      const [getRoute, setRoute] = solidJs.createSignal(initialState);
+      const getRouteName = solidJs.createMemo(() => getRoute().name, initialState.name, (a, b) => a === b);
       const getSplitRouteName = solidJs.createMemo(() => getRouteName().split('.'), initialState.name.split('.'));
       const value = {
         getRoute,
         getRouteName: getSplitRouteName,
+        getRouteNameRaw: getRouteName,
         router: self
       };
       solidJs.createEffect(() => {
-        router5.subscribe(state => {
-          setRoute(state.route);
-          setRouteName(state.route.name);
-        });
+        router5.subscribe(state => setRoute(state.route));
         router5.start();
         if (typeof onStart === 'function') onStart(router5);
       });
