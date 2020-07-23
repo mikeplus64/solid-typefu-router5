@@ -111,8 +111,7 @@ export default function createLink<Deps, Routes extends RoutesLike<Deps>, RouteN
 }
 
 // Beware, here be dragons
-
-export type RouteNameOf<A> = UnOne<Exp<TreeOf<A>>>;
+export type RouteNameOf<A> = UnOne<Flatten<TreeOf<A>, []>>;
 
 type TreeOf<A> =
   A extends readonly (infer U)[]
@@ -128,30 +127,13 @@ type TreeOf<A> =
 type UnOne<A> = A extends [infer U] ? U : A;
 
 // This is what requires typescript 4.0+
-type Exp<Arg> = Arg extends [infer X]
-  ? [X] : Arg extends [infer X, infer XS]
-  ? [X, ...Exp1<XS>] : never;
+type Flatten<Arg, Acc extends any[]> =
+  Arg extends [infer X]
+  ? [...Acc, X]
+  : Arg extends [infer X, infer XS]
+    ? Defer<Flatten<XS, [...Acc, X]>>
+    : never;
 
-type Exp1<Arg> = Arg extends [infer X]
-  ? [X] : Arg extends [infer X, infer XS]
-  ? [X, ...Exp2<XS>] : never;
-
-type Exp2<Arg> = Arg extends [infer X]
-  ? [X] : Arg extends [infer X, infer XS]
-  ? [X, ...Exp3<XS>] : never;
-
-type Exp3<Arg> = Arg extends [infer X]
-  ? [X] : Arg extends [infer X, infer XS]
-  ? [X, ...Exp4<XS>] : never;
-
-type Exp4<Arg> = Arg extends [infer X]
-  ? [X] : Arg extends [infer X, infer XS]
-  ? [X, ...Exp5<XS>] : never;
-
-type Exp5<Arg> = Arg extends [infer X]
-  ? [X] : Arg extends [infer X, infer XS]
-  ? [X, ...Exp6<XS>] : never;
-
-type Exp6<Arg> = Arg extends [infer X]
-  ? [X] : Arg extends [infer X, any]
-  ? [X, ...never] : never;
+// Same trick as in https://github.com/microsoft/TypeScript/pull/21613
+interface Defer<X> { self: Undefer<X> }
+type Undefer<X> = X extends { self: infer U } ? U : X;
