@@ -62,6 +62,7 @@ export default function createLink<Deps, Routes extends RoutesLike<Deps>, RouteN
   } = config;
 
   return (props: LinkProps<RouteName>): JSX.Element => {
+
     const getRouteName = useRouteName();
 
     const getClassList = createMemo(() => {
@@ -73,18 +74,17 @@ export default function createLink<Deps, Routes extends RoutesLike<Deps>, RouteN
       return classList;
     });
 
-    const getInnerProps = () => {
+    const getInnerProps = createMemo(() => {
       const {classList: _cl, onClick: _oc, ...innerProps} = props;
       return innerProps;
-    };
+    });
 
     const getHref: () => string | undefined = createMemo(() => {
       if (props.type === undefined) {
         try {
           return router5.buildPath(renderRouteLike(props.to), props.params);
         } catch (err) {
-          console.error(err);
-          return '/error';
+          console.warn('<Link> buildPath failed:', err);
         }
       }
       return undefined;
