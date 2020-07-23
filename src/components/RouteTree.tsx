@@ -24,6 +24,7 @@ export interface RenderNode {
 };
 
 export type OwnedBy<Tree, Props> =
+  GetProps<Props> &
   UnionToIntersection<
     Tree extends readonly (infer Node)[]
     ? Node extends { name: infer Name, children?: infer Children }
