@@ -180,6 +180,10 @@ function MatchRoute(props) {
   const getMatch = createGetMatch(props);
   return () => {
     const [value, when] = getMatch();
+    console.log({
+      value,
+      when
+    });
     return !when ? undefined : createComponent(MatchContext.Provider, {
       value: value,
       children: () => props.children
