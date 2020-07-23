@@ -38,7 +38,7 @@ export declare type RouteLike = string | string[];
 export declare function renderRouteLike(route: RouteLike): string;
 export declare const defaultLinkConfig: LinkConfig;
 export default function createLink<Deps, Routes extends RoutesLike<Deps>, RouteName extends RouteNameOf<Routes> & RouteLike>(self: SharedRouterValue<Deps, Routes>, config?: Partial<LinkConfig>): (props: LinkProps<RouteName>) => JSX.Element;
-export declare type RouteNameOf<A> = UnOne<Exp<TreeOf<A>>>;
+export declare type RouteNameOf<A> = UnOne<Undefer<Flatten<TreeOf<A>, []>>>;
 declare type TreeOf<A> = A extends readonly (infer U)[] ? U extends {
     name: infer Name;
     children: infer Children;
@@ -46,12 +46,12 @@ declare type TreeOf<A> = A extends readonly (infer U)[] ? U extends {
     name: infer Name;
 } ? [Name] : never : never;
 declare type UnOne<A> = A extends [infer U] ? U : A;
-declare type Exp<Arg> = Arg extends [infer X] ? [X] : Arg extends [infer X, infer XS] ? [X, ...Exp1<XS>] : never;
-declare type Exp1<Arg> = Arg extends [infer X] ? [X] : Arg extends [infer X, infer XS] ? [X, ...Exp2<XS>] : never;
-declare type Exp2<Arg> = Arg extends [infer X] ? [X] : Arg extends [infer X, infer XS] ? [X, ...Exp3<XS>] : never;
-declare type Exp3<Arg> = Arg extends [infer X] ? [X] : Arg extends [infer X, infer XS] ? [X, ...Exp4<XS>] : never;
-declare type Exp4<Arg> = Arg extends [infer X] ? [X] : Arg extends [infer X, infer XS] ? [X, ...Exp5<XS>] : never;
-declare type Exp5<Arg> = Arg extends [infer X] ? [X] : Arg extends [infer X, infer XS] ? [X, ...Exp6<XS>] : never;
-declare type Exp6<Arg> = Arg extends [infer X] ? [X] : Arg extends [infer X, any] ? [X, ...never] : never;
+declare type Flatten<Arg, Acc extends any[]> = Arg extends [infer X] ? [...Acc, X] : Arg extends [infer X, infer XS] ? Defer<Flatten<XS, [...Acc, X]>> : never;
+interface Defer<X> {
+    self: Undefer<X>;
+}
+declare type Undefer<X> = X extends {
+    self: infer U;
+} ? U : X;
 export {};
 //# sourceMappingURL=Link.d.ts.map

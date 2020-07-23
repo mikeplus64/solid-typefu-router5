@@ -111,7 +111,7 @@ export default function createLink<Deps, Routes extends RoutesLike<Deps>, RouteN
 }
 
 // Beware, here be dragons
-export type RouteNameOf<A> = UnOne<Flatten<TreeOf<A>, []>>;
+export type RouteNameOf<A> = UnOne<Undefer<Flatten<TreeOf<A>, []>>>;
 
 type TreeOf<A> =
   A extends readonly (infer U)[]
