@@ -35,7 +35,7 @@ function createGetMatch(props: PathProps): () => [string, boolean] {
       target,
       exact ? here === target : here.startsWith(target),
     ];
-  }, undefined, (a, b) => a && a[1] === b[1]);
+  }, undefined, (a, b) => a && a[0] === b[0] && a[1] === b[1]);
   return getMatch;
 }
 

@@ -165,7 +165,7 @@ function createGetMatch(props) {
     const target = ctx !== '' ? `${ctx}.${suffix}` : suffix;
     const here = route();
     return [target, exact ? here === target : here.startsWith(target)];
-  }, undefined, (a, b) => a && a[1] === b[1]);
+  }, undefined, (a, b) => a && a[0] === b[0] && a[1] === b[1]);
   return getMatch;
 }
 /**
