@@ -1,7 +1,7 @@
 import { UnionToIntersection } from 'ts-essentials';
 import { createState, createEffect, createMemo } from 'solid-js';
 import { useRouteName } from '../context';
-import { SwitchRoutes, MatchRouteProps } from './MatchRoute';
+import { MatchRouteProps, SwitchRoutes } from './MatchRoute';
 
 /** A tree of route path segments */
 export type RenderTreeOf<Tree> =
@@ -155,9 +155,7 @@ export default function RouteStateMachine<R extends RenderTreeLike>(tree: R): JS
 
     return (
       <RenderHere>
-        <SwitchRoutes fallback={<Fallback />}>
-          {children}
-        </SwitchRoutes>
+        <SwitchRoutes fallback={Fallback} children={children} />
       </RenderHere>);
   }
 
