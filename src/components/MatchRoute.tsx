@@ -51,15 +51,12 @@ function createGetMatch(props: PathProps): () => [string, boolean] {
  */
 export function MatchRoute(props: MatchRouteProps): JSX.Element {
   const getMatch = createGetMatch(props);
-  return () => {
-    const [value, when] = getMatch();
-    return (
-      <Match when={when}>
-        <MatchContext.Provider value={value}>
-          {props.children}
-        </MatchContext.Provider>
-      </Match>);
-  };
+  return (
+    <Match when={getMatch()[1]}>
+      <MatchContext.Provider value={getMatch()[0]}>
+        {props.children}
+      </MatchContext.Provider>
+    </Match>);
 }
 
 /**
@@ -80,6 +77,7 @@ export function SwitchRoutes(props: {
     }
     return undefined;
   }, undefined, (a, b) => a === b || a !== undefined && b !== undefined && a[0] === b[0]);
+
   return () => {
     const ix = getIndex();
     if (ix !== undefined) {
