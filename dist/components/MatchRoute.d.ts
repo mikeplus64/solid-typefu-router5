@@ -23,6 +23,13 @@ export declare type PathProps = {
  * Not reactive with regards to the route being matched.
  */
 export declare function MatchRoute(props: MatchRouteProps): JSX.Element;
+/**
+ * Not reactive on the routes being used
+ */
+export declare function SwitchRoutes(props: {
+    children: MatchRouteProps[];
+    fallback?: JSX.Element;
+}): JSX.Element;
 export declare type ShowRouteProps = MatchRouteProps & {
     fallback?: JSX.Element;
 };

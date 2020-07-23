@@ -159,17 +159,17 @@ const _ck$ = ["children"],
       _ck$2 = ["children", "fallback"];
 const MatchContext = solidJs.createContext('');
 
+function doesMatch(ctx, here, props) {
+  const suffix = props.path !== undefined ? props.path : props.prefix;
+  const exact = props.path !== undefined;
+  const target = ctx !== '' ? `${ctx}.${suffix}` : suffix;
+  return [target, exact ? here === target : here.startsWith(target)];
+}
+
 function createGetMatch(props) {
   const route = useRouteNameRaw();
   const ctx = solidJs.useContext(MatchContext);
-  const getMatch = solidJs.createMemo(() => {
-    const suffix = props.path !== undefined ? props.path : props.prefix;
-    const exact = props.path !== undefined;
-    const target = ctx !== '' ? `${ctx}.${suffix}` : suffix;
-    const here = route();
-    return [target, exact ? here === target : here.startsWith(target)];
-  }, undefined, (a, b) => a && a[0] === b[0] && a[1] === b[1]);
-  return getMatch;
+  return solidJs.createMemo(() => doesMatch(ctx, route(), props), undefined, (a, b) => a && a[1] === b[1]);
 }
 /**
  * Match against a given route.
@@ -183,14 +183,45 @@ function MatchRoute(props) {
   const getMatch = createGetMatch(props);
   return () => {
     const [value, when] = getMatch();
-    console.log({
-      value,
-      when
-    });
-    return !when ? undefined : dom.createComponent(MatchContext.Provider, {
-      value: value,
-      children: () => props.children
+    return dom.createComponent(dom.Match, {
+      when: when,
+      children: () => dom.createComponent(MatchContext.Provider, {
+        value: value,
+        children: () => props.children
+      }, _ck$)
     }, _ck$);
+  };
+}
+/**
+ * Not reactive on the routes being used
+ */
+
+function SwitchRoutes(props) {
+  const ctx = solidJs.useContext(MatchContext);
+  const route = useRouteNameRaw();
+  const getIndex = solidJs.createMemo(() => {
+    const here = route();
+    const children = props.children;
+
+    for (let i = 0; i < children.length; i++) {
+      const [target, when] = doesMatch(ctx, here, children[i]);
+      if (when) return [i, target];
+    }
+
+    return undefined;
+  }, undefined, (a, b) => a === b || a !== undefined && b !== undefined && a[0] === b[0]);
+  return () => {
+    const ix = getIndex();
+
+    if (ix !== undefined) {
+      const [i, target] = ix;
+      return dom.createComponent(MatchContext.Provider, {
+        value: target,
+        children: () => props.children[i].children
+      }, _ck$);
+    }
+
+    return props.fallback;
   };
 }
 function ShowRoute(props) {
@@ -208,8 +239,8 @@ function ShowRoute(props) {
   };
 }
 
-const _ck$$1 = ["children"],
-      _ck$2$1 = ["fallback"];
+const _ck$$1 = ["fallback"],
+      _ck$2$1 = ["children"];
 /**
  * Helper function. Use this as a `render` function to just render the children
  * only.
@@ -282,18 +313,18 @@ function RouteStateMachine(tree) {
     for (const key in routes) {
       const next = [...path, key];
       const child = routes[key];
-      children.push(dom.createComponent(MatchRoute, {
+      children.push({
         prefix: key,
         children: () => traverse(next, child)
-      }, _ck$$1));
+      });
     }
 
     return dom.createComponent(RenderHere, {
-      children: () => dom.createComponent(dom.Switch, {
+      children: () => dom.createComponent(SwitchRoutes, {
         fallback: () => dom.createComponent(Fallback, {}),
         children: children
-      }, _ck$2$1)
-    }, _ck$$1);
+      }, _ck$$1)
+    }, _ck$2$1);
   }
 
   return traverse([], tree);
