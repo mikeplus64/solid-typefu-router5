@@ -13,8 +13,7 @@ function useRouteName() {
   return solidJs.useContext(Context).getRouteName;
 }
 function useRouteNameRaw() {
-  const route = useRoute();
-  return solidJs.createMemo(() => route().name);
+  return solidJs.useContext(Context).getRouteNameRaw;
 }
 function useActive(link) {
   const getRouteName = useRouteName();
@@ -347,21 +346,17 @@ function createSolidRouter(routes, createRouter5, onStart) {
       const initialState = (_router5$getState = router5.getState()) !== null && _router5$getState !== void 0 ? _router5$getState : {
         name: ''
       };
-      const [getRoute, setRoute] = solidJs.createSignal(initialState); // create a signal for just the name as a `string` since strings are very
-      // easy to compare by `===`
-
-      const [getRouteName, setRouteName] = solidJs.createSignal(initialState.name, (a, b) => a === b);
+      const [getRoute, setRoute] = solidJs.createSignal(initialState);
+      const getRouteName = solidJs.createMemo(() => getRoute().name, initialState.name, (a, b) => a === b);
       const getSplitRouteName = solidJs.createMemo(() => getRouteName().split('.'), initialState.name.split('.'));
       const value = {
         getRoute,
         getRouteName: getSplitRouteName,
+        getRouteNameRaw: getRouteName,
         router: self
       };
       solidJs.createEffect(() => {
-        router5.subscribe(state => {
-          setRoute(state.route);
-          setRouteName(state.route.name);
-        });
+        router5.subscribe(state => setRoute(state.route));
         router5.start();
         if (typeof onStart === 'function') onStart(router5);
       });

@@ -14,6 +14,7 @@ export interface RouterContextValue {
    * entire route. Also splits the route into its components for you.
    */
   getRouteName(): string[],
+  getRouteNameRaw(): string,
 
   /**
    * Use this to make your own custom 'Link', buttons, navigation, etc.
