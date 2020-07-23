@@ -17,7 +17,7 @@ function useRouteNameRaw() {
 }
 function useActive(link) {
   const getRouteName = useRouteName();
-  return () => isActive(getRouteName(), link);
+  return solidJs.createMemo(() => isActive(getRouteName(), link));
 }
 /**
  * Find whether 'link' is an ancestor of, or equal to, 'here'

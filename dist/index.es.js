@@ -13,7 +13,7 @@ function useRouteNameRaw() {
 }
 function useActive(link) {
   const getRouteName = useRouteName();
-  return () => isActive(getRouteName(), link);
+  return createMemo(() => isActive(getRouteName(), link));
 }
 /**
  * Find whether 'link' is an ancestor of, or equal to, 'here'
