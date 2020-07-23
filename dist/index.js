@@ -78,23 +78,20 @@ function createLink(self, config = defaultLinkConfig) {
 
       return classList;
     });
-
-    const getInnerProps = () => {
+    const getInnerProps = solidJs.createMemo(() => {
       const {
         classList: _cl,
         onClick: _oc,
         ...innerProps
       } = props;
       return innerProps;
-    };
-
+    });
     const getHref = solidJs.createMemo(() => {
       if (props.type === undefined) {
         try {
           return router5.buildPath(renderRouteLike(props.to), props.params);
         } catch (err) {
-          console.error(err);
-          return '/error';
+          console.warn('<Link> buildPath failed:', err);
         }
       }
 
@@ -155,8 +152,10 @@ function createLink(self, config = defaultLinkConfig) {
 
 dom.delegateEvents(["click"]);
 
-const _ck$ = ["children"],
-      _ck$2 = ["children", "fallback"];
+const _ck$ = ["children", "value"],
+      _ck$2 = ["children", "when"],
+      _ck$3 = ["children"],
+      _ck$4 = ["children", "fallback"];
 const MatchContext = solidJs.createContext('');
 
 function doesMatch(ctx, here, props) {
@@ -181,16 +180,13 @@ function createGetMatch(props) {
 
 function MatchRoute(props) {
   const getMatch = createGetMatch(props);
-  return () => {
-    const [value, when] = getMatch();
-    return dom.createComponent(dom.Match, {
-      when: when,
-      children: () => dom.createComponent(MatchContext.Provider, {
-        value: value,
-        children: () => props.children
-      }, _ck$)
-    }, _ck$);
-  };
+  return dom.createComponent(dom.Match, {
+    when: () => getMatch()[1],
+    children: () => dom.createComponent(MatchContext.Provider, {
+      value: () => getMatch()[0],
+      children: () => props.children
+    }, _ck$)
+  }, _ck$2);
 }
 /**
  * Not reactive on the routes being used
@@ -218,7 +214,7 @@ function SwitchRoutes(props) {
       return dom.createComponent(MatchContext.Provider, {
         value: target,
         children: () => props.children[i].children
-      }, _ck$);
+      }, _ck$3);
     }
 
     return props.fallback;
@@ -234,13 +230,12 @@ function ShowRoute(props) {
       children: () => dom.createComponent(MatchContext.Provider, {
         value: target,
         children: () => props.children
-      }, _ck$)
-    }, _ck$2);
+      }, _ck$3)
+    }, _ck$4);
   };
 }
 
-const _ck$$1 = ["fallback"],
-      _ck$2$1 = ["children"];
+const _ck$$1 = ["children"];
 /**
  * Helper function. Use this as a `render` function to just render the children
  * only.
@@ -321,10 +316,10 @@ function RouteStateMachine(tree) {
 
     return dom.createComponent(RenderHere, {
       children: () => dom.createComponent(SwitchRoutes, {
-        fallback: () => dom.createComponent(Fallback, {}),
+        fallback: Fallback,
         children: children
-      }, _ck$$1)
-    }, _ck$2$1);
+      })
+    }, _ck$$1);
   }
 
   return traverse([], tree);
