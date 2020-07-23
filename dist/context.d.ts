@@ -5,6 +5,7 @@ declare const Context: import("solid-js/types/reactive/signal").Context<RouterCo
 export default Context;
 export declare function useRoute(): () => RouteState;
 export declare function useRouteName(): () => string[];
+export declare function useRouteNameRaw(): () => string;
 export declare function useActive<Link extends RouteLike>(link: Link): () => boolean;
 /**
  * Find whether 'link' is an ancestor of, or equal to, 'here'

@@ -1,5 +1,5 @@
 import { createContext, useContext, Match, Show, createMemo } from "solid-js";
-import { useRoute } from '../context';
+import { useRouteNameRaw } from '../context';
 
 const MatchContext = createContext<string>('');
 
@@ -24,13 +24,13 @@ export type PathProps =
   };
 
 function createGetMatch(props: PathProps): () => [string, boolean] {
-  const route = useRoute();
+  const route = useRouteNameRaw();
   const ctx = useContext(MatchContext);
   const getMatch = createMemo<[string, boolean]>(() => {
     const suffix = props.path !== undefined ? props.path : props.prefix;
     const exact = props.path !== undefined;
     const target = ctx !== '' ? `${ctx}.${suffix}` : suffix;
-    const here = route().name;
+    const here = route();
     return [
       target,
       exact ? here === target : here.startsWith(target),

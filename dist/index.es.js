@@ -8,6 +8,10 @@ function useRoute() {
 function useRouteName() {
   return useContext(Context).getRouteName;
 }
+function useRouteNameRaw() {
+  const route = useRoute();
+  return createMemo(() => route().name);
+}
 function useActive(link) {
   const getRouteName = useRouteName();
   return () => isActive(getRouteName(), link);
@@ -22,7 +26,7 @@ function isActive(here, link) {
   }
 
   if (typeof link === 'string') {
-    return here.length > 0 && here[0] === link;
+    return here[0] === link;
   } // if link has more segments than here then it definitely cannot be an
   // ancestor of here
 
@@ -144,13 +148,13 @@ const _ck$ = ["children", "value"],
 const MatchContext = createContext('');
 
 function createGetMatch(props) {
-  const route = useRoute();
+  const route = useRouteNameRaw();
   const ctx = useContext(MatchContext);
   const getMatch = createMemo(() => {
     const suffix = props.path !== undefined ? props.path : props.prefix;
     const exact = props.path !== undefined;
     const target = ctx !== '' ? `${ctx}.${suffix}` : suffix;
-    const here = route().name;
+    const here = route();
     return [target, exact ? here === target : here.startsWith(target)];
   }, undefined, (a, b) => a && a[1] === b[1]);
   return getMatch;

@@ -1,4 +1,4 @@
-import { createContext, useContext } from 'solid-js';
+import { createContext, useContext, createMemo } from 'solid-js';
 import { RouterContextValue } from './types';
 import { State as RouteState } from 'router5';
 import { RouteLike } from 'components/Link';
@@ -13,6 +13,11 @@ export function useRoute(): () => RouteState {
 
 export function useRouteName(): () => string[] {
   return useContext(Context).getRouteName;
+}
+
+export function useRouteNameRaw(): () => string {
+  const route = useRoute();
+  return createMemo(() => route().name);
 }
 
 export function useActive<Link extends RouteLike>(link: Link): () => boolean {
