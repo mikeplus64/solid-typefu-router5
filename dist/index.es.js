@@ -17,18 +17,12 @@ function useActive(link) {
  */
 
 function isActive(here, link) {
-  // just use join/startsWith? never!! =)
+  if (here.length === 0) {
+    return false;
+  }
+
   if (typeof link === 'string') {
-    let l = link;
-    let i = 0;
-
-    for (; i < here.length; i++) {
-      const seg = here[i];
-      if (seg !== l.slice(0, seg.length) || l[seg.length] !== '.') return false;
-      l = l.slice(0, seg.length + 1);
-    }
-
-    return link.length <= i;
+    return here.length > 0 && here[0] === link;
   } // if link has more segments than here then it definitely cannot be an
   // ancestor of here
 

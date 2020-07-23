@@ -24,17 +24,8 @@ export function useActive<Link extends RouteLike>(link: Link): () => boolean {
  * Find whether 'link' is an ancestor of, or equal to, 'here'
  */
 export function isActive<Route extends RouteLike>(here: string[], link: Route) {
-  // just use join/startsWith? never!! =)
-  if (typeof link === 'string') {
-    let l: string = link;
-    let i: number = 0;
-    for (; i < here.length; i ++) {
-      const seg = here[i];
-      if (seg !== l.slice(0, seg.length) || l[seg.length] !== '.') return false;
-      l = l.slice(0, seg.length + 1);
-    }
-    return link.length <= i;
-  }
+  if (here.length === 0) { return false; }
+  if (typeof link === 'string') { return here[0] === link; }
   // if link has more segments than here then it definitely cannot be an
   // ancestor of here
   if (link.length > here.length) return false;
