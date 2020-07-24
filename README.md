@@ -82,8 +82,10 @@ export default () =>
           users: owned => owned({
             render: User,
             defaultProps: { id: undefined, self: false },
-            profile: { id: () => getRoute().params.id },
-            self: { self: () => true }
+            props: {
+              profile: { id: () => getRoute().params.id },
+              self: { self: () => true }
+            },
           }),
         }}
       </Router>
