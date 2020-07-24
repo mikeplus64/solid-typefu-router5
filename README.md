@@ -11,6 +11,8 @@ In order to generate the types for type-safe links and routing, you must take
 care to give TypeScript the narrowest possible type for your routes. The easiest
 way to do this is simply adding `as const` to your routes definition.
 
+A full example is available at https://codesandbox.io/s/solid-typefu-router5-example-i29gi
+
 ### Example router definition file `mycoolproject/src/router.ts`
 
 ```typescript
