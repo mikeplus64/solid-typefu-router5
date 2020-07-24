@@ -27,6 +27,8 @@ export type LinkProps<Route> = {
   }) => void,
 } & ({
   type: LinkNav.Back | LinkNav.Forward
+  to?: undefined,
+  params?: undefined,
 } | {
   type?: undefined,
   to: Route,
