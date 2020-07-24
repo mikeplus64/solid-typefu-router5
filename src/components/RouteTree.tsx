@@ -24,11 +24,11 @@ export default function RouteStateMachine<T extends RenderTreeLike>(tree: T): JS
 
     const numDefaultGetProps = Object.keys(defaultProps??{}).length;
 
-    const getPathSuffix = createMemo<[string, string[]]>(() => {
-      const p = getRouteName();
-      p.splice(0, path0.length);
-      return [name, p];
-    }, undefined, (a, b) => a && a[0] === b[0]);
+    const getPathSuffix = createMemo<[string, string[]]>(() =>
+      [name, getRouteName().slice(0, path0.length)],
+      undefined,
+      (a, b) => a && a[0] === b[0],
+    );
 
     function populate(
       path: string[],

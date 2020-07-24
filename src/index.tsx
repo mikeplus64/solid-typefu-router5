@@ -97,8 +97,11 @@ export default function createSolidRouter<Routes extends RoutesLike<Deps>, Deps 
       const initialState = router5.getState() ?? { name: '' };
       const [getRoute, setRoute] = createSignal<RouteState>(initialState);
 
-      const getRouteName = createMemo(() => getRoute().name, initialState.name, (a, b) => a === b);
-      const getSplitRouteName = createMemo(() => getRouteName().split('.'), initialState.name.split('.'));
+      const getRouteName = createMemo(() =>
+        getRoute().name, initialState.name, (a, b) => a === b);
+
+      const getSplitRouteName = createMemo(() =>
+        Object.freeze(getRouteName().split('.')), initialState.name.split('.'));
 
       const value = {
         getRoute,
@@ -108,7 +111,7 @@ export default function createSolidRouter<Routes extends RoutesLike<Deps>, Deps 
       };
 
       createEffect(() => {
-        router5.subscribe((state) => setRoute(state.route));
+        router5.subscribe(state => setRoute(Object.freeze(state.route)));
         router5.start();
         if (typeof onStart === 'function') onStart(router5);
       });

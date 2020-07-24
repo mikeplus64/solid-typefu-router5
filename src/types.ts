@@ -13,7 +13,7 @@ export interface RouterContextValue {
    * Often you only need to listen to changes in the route name, instead of the
    * entire route. Also splits the route into its components for you.
    */
-  getRouteName(): string[],
+  getRouteName(): readonly string[],
   getRouteNameRaw(): string,
 
   /**

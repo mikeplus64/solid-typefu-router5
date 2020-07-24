@@ -11,7 +11,7 @@ export function useRoute(): () => RouteState {
   return useContext(Context).getRoute;
 }
 
-export function useRouteName(): () => string[] {
+export function useRouteName(): () => readonly string[] {
   return useContext(Context).getRouteName;
 }
 
@@ -29,7 +29,7 @@ export function useIsActive<Link extends RouteLike>(link: Link): () => boolean {
  *
  * Maybe useful for creating your own `Link` component.
  */
-export function isActive<Route extends RouteLike>(here: string[], link: Route) {
+export function isActive<Link extends RouteLike>(here: readonly string[], link: Link) {
   if (here.length === 0) { return false; }
   if (typeof link === 'string') { return here[0] === link; }
   // if link has more segments than here then it definitely cannot be an
