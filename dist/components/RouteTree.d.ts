@@ -87,9 +87,9 @@ export declare type GetPropsWith<Props, Tree> = {
     [K in keyof Props & keyof Tree]: Tree[K] | Props[K];
 } & Omit<{
     [K in keyof Props]: Props[K];
-}, keyof Props> & Omit<{
+}, keyof Tree> & Omit<{
     [K in keyof Tree]: Tree[K];
-}, keyof Tree>;
+}, keyof Props>;
 export declare type GetPropsLike<Props> = {
     [k: string]: GetPropsLike<Props>;
 } & GetProps<Props>;

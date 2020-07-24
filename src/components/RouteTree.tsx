@@ -213,8 +213,8 @@ export type OwnedBy<Tree, Props> =
  */
 export type GetPropsWith<Props, Tree>
   = { [K in keyof Props & keyof Tree]: Tree[K] | Props[K] }
-  & Omit<{ [K in keyof Props]: Props[K] }, keyof Props>
-  & Omit<{ [K in keyof Tree]: Tree[K] }, keyof Tree>;
+  & Omit<{ [K in keyof Props]: Props[K] }, keyof Tree>
+  & Omit<{ [K in keyof Tree]: Tree[K] }, keyof Props>;
 
 // monomorphic (in tree spine) helper types
 
