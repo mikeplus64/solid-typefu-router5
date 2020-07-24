@@ -15,7 +15,7 @@ function useRouteName() {
 function useRouteNameRaw() {
   return solidJs.useContext(Context).getRouteNameRaw;
 }
-function useActive(link) {
+function useIsActive(link) {
   const getRouteName = useRouteName();
   return solidJs.createMemo(() => isActive(getRouteName(), link));
 }
@@ -67,14 +67,14 @@ function createLink(self, config = defaultLinkConfig) {
     navActiveClassName = defaultLinkConfig.navActiveClassName
   } = config;
   return props => {
-    const getRouteName = useRouteName();
+    const isActive = props.to !== undefined ? useIsActive(props.to) : () => false;
     const getClassList = solidJs.createMemo(() => {
       var _props$classList;
 
       const classList = (_props$classList = props.classList) !== null && _props$classList !== void 0 ? _props$classList : {};
 
       if (props.type === undefined && props.nav) {
-        classList[navActiveClassName] = isActive(getRouteName(), props.to);
+        classList[navActiveClassName] = isActive();
         return classList;
       }
 
@@ -255,11 +255,7 @@ function RouteStateMachine(tree) {
   function traverseHydrate(path0, node0, Render, defaultGetProps, defaultProps) {
     const [state, setState] = solidJs.createState(defaultProps !== null && defaultProps !== void 0 ? defaultProps : {});
     const numDefaultGetProps = Object.keys(defaultProps !== null && defaultProps !== void 0 ? defaultProps : {}).length;
-    const getPathSuffix = solidJs.createMemo(() => {
-      const p = getRouteName();
-      p.splice(0, path0.length);
-      return [name, p];
-    }, undefined, (a, b) => a && a[0] === b[0]);
+    const getPathSuffix = solidJs.createMemo(() => [name, getRouteName().slice(0, path0.length)], undefined, (a, b) => a && a[0] === b[0]);
 
     function populate(path, node, next, count) {
       for (const key in node) {
@@ -386,17 +382,24 @@ const _ck$$2 = ["children"];
  * // note the "as const" is very important! this causes TypeScript to infer
  * // `routes` as the narrowest possible type.
  *
- * function performInitialRedirect(router: Router5) {
+ * function createRouter5(routes: Route<Deps>[]): Router5 {
+ *   return createRouter(...)
+ * }
+ *
+ * function onStart(router: Router5): void {
+ *   // initial redirect here
  *   ...
  * }
  *
- * export const { Provider, Link, Router } = createSolidRouter(routes, routes => {
- *   return createRouter(routes, {...router5OptionsHere});
- * }, performInitialRedirect);
+ * export const { Provider, Link, Router } = createSolidRouter(routes, { createRouter5, onStart });
  * ```
  */
 
-function createSolidRouter(routes, createRouter5, onStart, linkConfig) {
+function createSolidRouter(routes, {
+  createRouter5,
+  onStart,
+  link: linkConfig
+}) {
   const router5 = createRouter5(routes); // yolo, hopefully router5 doesn't actually mutate routes =)
 
   const self = {
@@ -419,7 +422,7 @@ function createSolidRouter(routes, createRouter5, onStart, linkConfig) {
       };
       const [getRoute, setRoute] = solidJs.createSignal(initialState);
       const getRouteName = solidJs.createMemo(() => getRoute().name, initialState.name, (a, b) => a === b);
-      const getSplitRouteName = solidJs.createMemo(() => getRouteName().split('.'), initialState.name.split('.'));
+      const getSplitRouteName = solidJs.createMemo(() => Object.freeze(getRouteName().split('.')), initialState.name.split('.'));
       const value = {
         getRoute,
         getRouteName: getSplitRouteName,
@@ -427,7 +430,7 @@ function createSolidRouter(routes, createRouter5, onStart, linkConfig) {
         router: self
       };
       solidJs.createEffect(() => {
-        router5.subscribe(state => setRoute(state.route));
+        router5.subscribe(state => setRoute(Object.freeze(state.route)));
         router5.start();
         if (typeof onStart === 'function') onStart(router5);
       });
@@ -448,7 +451,7 @@ exports.SwitchRoutes = SwitchRoutes;
 exports.default = createSolidRouter;
 exports.isActive = isActive;
 exports.passthru = passthru;
-exports.useActive = useActive;
+exports.useIsActive = useIsActive;
 exports.useRoute = useRoute;
 exports.useRouteName = useRouteName;
 //# sourceMappingURL=index.js.map

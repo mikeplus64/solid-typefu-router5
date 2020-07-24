@@ -6,11 +6,16 @@ import { DefaultDependencies } from 'router5/dist/types/router';
 export { LinkNav, LinkConfig } from './components/Link';
 export { MatchRoute, ShowRoute, SwitchRoutes } from './components/MatchRoute';
 export { passthru } from './components/RouteTree';
-export { useRoute, useRouteName, useActive, isActive } from './context';
+export { useRoute, useRouteName, useIsActive, isActive } from './context';
 export type { MatchRouteProps, ShowRouteProps } from './components/MatchRoute';
 export type { LinkProps, RouteNameOf } from './components/Link';
 export type { RenderTreeOf } from './components/RouteTree';
 export type { RoutesLike, SharedRouterValue, RouterContextValue } from './types';
+export interface Config<Deps> {
+    createRouter5: (routes: Route<Deps>[]) => Router5<Deps>;
+    onStart?: (router: Router5<Deps>) => void;
+    link?: LinkConfig;
+}
 /**
  * Create a router for use in solid-js.
  *
@@ -28,16 +33,19 @@ export type { RoutesLike, SharedRouterValue, RouterContextValue } from './types'
  * // note the "as const" is very important! this causes TypeScript to infer
  * // `routes` as the narrowest possible type.
  *
- * function performInitialRedirect(router: Router5) {
+ * function createRouter5(routes: Route<Deps>[]): Router5 {
+ *   return createRouter(...)
+ * }
+ *
+ * function onStart(router: Router5): void {
+ *   // initial redirect here
  *   ...
  * }
  *
- * export const { Provider, Link, Router } = createSolidRouter(routes, routes => {
- *   return createRouter(routes, {...router5OptionsHere});
- * }, performInitialRedirect);
+ * export const { Provider, Link, Router } = createSolidRouter(routes, { createRouter5, onStart });
  * ```
  */
-export default function createSolidRouter<Routes extends RoutesLike<Deps>, Deps = DefaultDependencies>(routes: Routes, createRouter5: (routes: Route<Deps>[]) => Router5<Deps>, onStart?: (router: Router5<Deps>) => void, linkConfig?: LinkConfig): {
+export default function createSolidRouter<Routes extends RoutesLike<Deps>, Deps = DefaultDependencies>(routes: Routes, { createRouter5, onStart, link: linkConfig, }: Config<Deps>): {
     Provider(props: {
         children: JSX.Element;
     }): JSX.Element;
