@@ -4,7 +4,7 @@ import { createMemo } from 'solid-js';
 
 export enum LinkNav { Back, Forward };
 
-/** Props for making a `Link`
+/** Props for making a `Link` component.
  *
  * @remarks
  *
@@ -78,6 +78,7 @@ export default function createLink<Deps, Routes extends RoutesLike<Deps>, RouteN
       const {classList: _cl, onClick: _oc, ...innerProps} = props;
       return innerProps;
     });
+
 
     const getHref: () => string | undefined = createMemo(() => {
       if (props.type === undefined) {

@@ -3,8 +3,8 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>RenderNode | solid-typefu-router5 - v0.6.3</title>
-	<meta name="description" content="Documentation for solid-typefu-router5 - v0.6.3">
+	<title>RenderNode | solid-typefu-router5 - v0.7.0</title>
+	<meta name="description" content="Documentation for solid-typefu-router5 - v0.7.0">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
 </head>
@@ -22,7 +22,7 @@
 						<li class="state loading">Preparing search index...</li>
 						<li class="state failure">The search index is not available</li>
 					</ul>
-					<a href="../index.html" class="title">solid-typefu-router5 - v0.6.3</a>
+					<a href="../index.html" class="title">solid-typefu-router5 - v0.7.0</a>
 				</div>
 				<div class="table-cell" id="tsd-widgets">
 					<div id="tsd-filter">
@@ -67,6 +67,14 @@
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>Tells <code>solid-typefu-router5</code> how to render a node if the path leading to
+						it matches the current route name.</p>
+					</div>
+				</div>
+			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
@@ -101,9 +109,14 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/9d053ef/src/components/RouteTree.tsx#L23">components/RouteTree.tsx:23</a></li>
+									<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/701af8d/src/components/RouteTree.tsx#L127">components/RouteTree.tsx:127</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Fallback children to use if none are available to give to <a href="_components_routetree_.rendernode.html#render">render</a>. Default: nothing</p>
+								</div>
+							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">JSX.Element</span></h4>
 						</li>
 					</ul>
@@ -118,9 +131,14 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/9d053ef/src/components/RouteTree.tsx#L22">components/RouteTree.tsx:22</a></li>
+									<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/701af8d/src/components/RouteTree.tsx#L125">components/RouteTree.tsx:125</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Default: <a href="../modules/_components_routetree_.html#passthru">passthru</a></p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
@@ -169,6 +187,9 @@
 					<li class=" tsd-kind-interface tsd-parent-kind-module tsd-has-type-parameter">
 						<a href="_components_routetree_.ownedops.html" class="tsd-kind-icon">Owned<wbr>Ops</a>
 					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-module tsd-has-type-parameter">
+						<a href="_components_routetree_.ownedopslike.html" class="tsd-kind-icon">Owned<wbr>Ops<wbr>Like</a>
+					</li>
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-interface tsd-parent-kind-module">
@@ -188,16 +209,31 @@
 						<a href="../modules/_components_routetree_.html#getprops" class="tsd-kind-icon">Get<wbr>Props</a>
 					</li>
 					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-has-type-parameter">
+						<a href="../modules/_components_routetree_.html#getpropslike" class="tsd-kind-icon">Get<wbr>Props<wbr>Like</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-has-type-parameter">
+						<a href="../modules/_components_routetree_.html#getpropswith" class="tsd-kind-icon">Get<wbr>Props<wbr>With</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-has-type-parameter">
 						<a href="../modules/_components_routetree_.html#owned" class="tsd-kind-icon">Owned</a>
 					</li>
 					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-has-type-parameter">
 						<a href="../modules/_components_routetree_.html#ownedby" class="tsd-kind-icon">Owned<wbr>By</a>
 					</li>
 					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="../modules/_components_routetree_.html#ownedlike" class="tsd-kind-icon">Owned<wbr>Like</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
 						<a href="../modules/_components_routetree_.html#rendertreelike" class="tsd-kind-icon">Render<wbr>Tree<wbr>Like</a>
 					</li>
 					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-has-type-parameter">
 						<a href="../modules/_components_routetree_.html#rendertreeof" class="tsd-kind-icon">Render<wbr>Tree<wbr>Of</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="../modules/_components_routetree_.html#routenodelike" class="tsd-kind-icon">Route<wbr>Node<wbr>Like</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="../modules/_components_routetree_.html#routetreelike" class="tsd-kind-icon">Route<wbr>Tree<wbr>Like</a>
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-module tsd-has-type-parameter">
 						<a href="../modules/_components_routetree_.html#routestatemachine" class="tsd-kind-icon">Route<wbr>State<wbr>Machine</a>

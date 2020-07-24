@@ -3,12 +3,12 @@ import { createSignal, createEffect, createMemo } from 'solid-js';
 
 import { SharedRouterValue, RoutesLike } from './types';
 import Context from './context';
-import createLink, { LinkProps, RouteNameOf } from './components/Link';
+import createLink, { LinkConfig, LinkProps, RouteNameOf } from './components/Link';
 import RouteStateMachine, { RenderTreeOf, RenderTreeLike } from './components/RouteTree';
 import { DefaultDependencies } from 'router5/dist/types/router';
 
-export { LinkNav } from './components/Link';
-export { MatchRoute, ShowRoute } from './components/MatchRoute';
+export { LinkNav, LinkConfig } from './components/Link';
+export { MatchRoute, ShowRoute, SwitchRoutes } from './components/MatchRoute';
 export { passthru } from './components/RouteTree';
 export { useRoute, useRouteName, useActive, isActive } from './context';
 
@@ -47,11 +47,27 @@ export default function createSolidRouter<Routes extends RoutesLike<Deps>, Deps 
   routes: Routes,
   createRouter5: (routes: Route<Deps>[]) => Router5<Deps>,
   onStart?: (router: Router5<Deps>) => void,
+  linkConfig?: LinkConfig,
 ): {
   Provider(props: { children: JSX.Element }): JSX.Element,
+
+  /** See [[createLink]] */
   Link(props: LinkProps<RouteNameOf<Routes>>): JSX.Element,
+
+  /** See [[RouteStateMachine]] */
   Router(props: { children: RenderTreeOf<Routes> }): JSX.Element,
+
+  /** Probably don't use this. */
   router: SharedRouterValue<Deps, Routes>,
+
+  /**
+   * Type hints you can use to give type names to aspects of your router like
+   *
+   * ```typescript
+   * type Hints = typeof hints;
+   * export type RouteName = Hints['name'];
+   * ```
+   */
   hints: Phantom<{
     routes: Routes,
     name: RouteNameOf<Routes>,
@@ -65,7 +81,7 @@ export default function createSolidRouter<Routes extends RoutesLike<Deps>, Deps 
   Object.freeze(self);
 
   return {
-    Link: createLink(self),
+    Link: createLink(self, linkConfig),
 
     Router(props: { children: RenderTreeOf<Routes> }): JSX.Element {
       return RouteStateMachine(props.children as RenderTreeLike);

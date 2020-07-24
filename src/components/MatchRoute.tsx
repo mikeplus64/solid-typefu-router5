@@ -3,25 +3,34 @@ import { useRouteNameRaw } from '../context';
 
 const MatchContext = createContext<string>('');
 
-/**
- * If `path` is given, then the match is exact, which means that the current
- * route name must be equal to `context.path + path` where `context.path` means
- * the current path created by other match components above this one.
- *
- * If `prefix` is given, then the match only requires that the current route
- * start with `context.path + prefix`.
- */
 export type MatchRouteProps =
   PathProps & { children: JSX.Element };
 
-export type PathProps =
-  {
-    prefix: string,
-    path?: undefined,
-  } | {
-    prefix?: undefined,
-    path: string,
-  };
+export interface ExactPathProps {
+  path: string,
+  prefix?: undefined,
+}
+
+export interface PrefixPathProps {
+  prefix: string,
+  path?: undefined,
+}
+
+/**
+ * ```ts
+ * type PathProps = { path: string } | { prefix: string };
+ * ```
+ *
+ * If [[ExactPathProps.path]] is given, then the match is exact, which means
+ * that the current route name must be equal to `context.path + path` where
+ * `context.path` means the current path created by other match components above
+ * this one.
+ *
+ * If [[PrefixPathProps.prefix]] is given, then the match only requires that the
+ * current route start with `context.path + prefix`.
+ *
+ */
+export type PathProps = ExactPathProps | PrefixPathProps;
 
 function doesMatch(ctx: string, here: string, props: PathProps): [string, boolean] {
   const suffix = props.path !== undefined ? props.path : props.prefix;
@@ -33,34 +42,10 @@ function doesMatch(ctx: string, here: string, props: PathProps): [string, boolea
   ];
 }
 
-function createGetMatch(props: PathProps): () => [string, boolean] {
-  const route = useRouteNameRaw();
-  const ctx = useContext(MatchContext);
-  return createMemo<[string, boolean]>(
-    () => doesMatch(ctx, route(), props),
-    undefined,
-    (a, b) => a && a[1] === b[1],
-  );
-}
-
-/**
- * Match against a given route.
- *
- * @remarks
- * Not reactive with regards to the route being matched.
- */
-export function MatchRoute(props: MatchRouteProps): JSX.Element {
-  const getMatch = createGetMatch(props);
-  return (
-    <Match when={getMatch()[1]}>
-      <MatchContext.Provider value={getMatch()[0]}>
-        {props.children}
-      </MatchContext.Provider>
-    </Match>);
-}
-
 /**
  * Not reactive on the routes being used
+ *
+ * Prefer this over [[Switch]] + [[MatchRoute]]
  */
 export function SwitchRoutes(props: {
   children: MatchRouteProps[]
@@ -94,6 +79,9 @@ export function SwitchRoutes(props: {
 export type ShowRouteProps =
   MatchRouteProps & { fallback?: JSX.Element };
 
+/**
+ * Create a [[Show]] node against a given route.
+ */
 export function ShowRoute(props: ShowRouteProps): JSX.Element {
   const getMatch = createGetMatch(props);
   return () => {
@@ -105,4 +93,27 @@ export function ShowRoute(props: ShowRouteProps): JSX.Element {
         </MatchContext.Provider>
       </Show>);
   };
+}
+
+/**
+ * Create a [[Match]] node against a given route.
+ */
+export function MatchRoute(props: MatchRouteProps): JSX.Element {
+  const getMatch = createGetMatch(props);
+  return (
+    <Match when={getMatch()[1]}>
+      <MatchContext.Provider value={getMatch()[0]}>
+        {props.children}
+      </MatchContext.Provider>
+    </Match>);
+}
+
+function createGetMatch(props: PathProps): () => [string, boolean] {
+  const route = useRouteNameRaw();
+  const ctx = useContext(MatchContext);
+  return createMemo<[string, boolean]>(
+    () => doesMatch(ctx, route(), props),
+    undefined,
+    (a, b) => a && a[1] === b[1],
+  );
 }

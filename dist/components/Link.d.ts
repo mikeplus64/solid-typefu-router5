@@ -3,7 +3,7 @@ export declare enum LinkNav {
     Back = 0,
     Forward = 1
 }
-/** Props for making a `Link`
+/** Props for making a `Link` component.
  *
  * @remarks
  *

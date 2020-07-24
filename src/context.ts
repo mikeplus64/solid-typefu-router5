@@ -26,6 +26,8 @@ export function useActive<Link extends RouteLike>(link: Link): () => boolean {
 
 /**
  * Find whether 'link' is an ancestor of, or equal to, 'here'
+ *
+ * Maybe useful for creating your own `Link` component.
  */
 export function isActive<Route extends RouteLike>(here: string[], link: Route) {
   if (here.length === 0) { return false; }

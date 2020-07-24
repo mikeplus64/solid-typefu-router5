@@ -3,8 +3,8 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>&quot;components/MatchRoute&quot; | solid-typefu-router5 - v0.6.3</title>
-	<meta name="description" content="Documentation for solid-typefu-router5 - v0.6.3">
+	<title>&quot;components/MatchRoute&quot; | solid-typefu-router5 - v0.7.0</title>
+	<meta name="description" content="Documentation for solid-typefu-router5 - v0.7.0">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
 </head>
@@ -22,7 +22,7 @@
 						<li class="state loading">Preparing search index...</li>
 						<li class="state failure">The search index is not available</li>
 					</ul>
-					<a href="../index.html" class="title">solid-typefu-router5 - v0.6.3</a>
+					<a href="../index.html" class="title">solid-typefu-router5 - v0.7.0</a>
 				</div>
 				<div class="table-cell" id="tsd-widgets">
 					<div id="tsd-filter">
@@ -69,6 +69,13 @@
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section ">
+							<h3>Interfaces</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/_components_matchroute_.exactpathprops.html" class="tsd-kind-icon">Exact<wbr>Path<wbr>Props</a></li>
+								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/_components_matchroute_.prefixpathprops.html" class="tsd-kind-icon">Prefix<wbr>Path<wbr>Props</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section ">
 							<h3>Type aliases</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-type-alias tsd-parent-kind-module"><a href="_components_matchroute_.html#matchrouteprops" class="tsd-kind-icon">Match<wbr>Route<wbr>Props</a></li>
@@ -95,28 +102,30 @@
 					<div class="tsd-signature tsd-kind-icon">Match<wbr>Route<wbr>Props<span class="tsd-signature-symbol">:</span> <a href="_components_matchroute_.html#pathprops" class="tsd-signature-type">PathProps</a><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-symbol">{ </span>children<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">JSX.Element</span><span class="tsd-signature-symbol"> }</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/9d053ef/src/components/MatchRoute.tsx#L14">components/MatchRoute.tsx:14</a></li>
+							<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/701af8d/src/components/MatchRoute.tsx#L6">components/MatchRoute.tsx:6</a></li>
 						</ul>
 					</aside>
-					<div class="tsd-comment tsd-typography">
-						<div class="lead">
-							<p>If <code>path</code> is given, then the match is exact, which means that the current
-								route name must be equal to <code>context.path + path</code> where <code>context.path</code> means
-							the current path created by other match components above this one.</p>
-						</div>
-						<p>If <code>prefix</code> is given, then the match only requires that the current route
-						start with <code>context.path + prefix</code>.</p>
-					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-parent-kind-module">
 					<a name="pathprops" class="tsd-anchor"></a>
 					<h3>Path<wbr>Props</h3>
-					<div class="tsd-signature tsd-kind-icon">Path<wbr>Props<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span>path<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">; </span>prefix<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">{ </span>path<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>prefix<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> }</span></div>
+					<div class="tsd-signature tsd-kind-icon">Path<wbr>Props<span class="tsd-signature-symbol">:</span> <a href="../interfaces/_components_matchroute_.exactpathprops.html" class="tsd-signature-type">ExactPathProps</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/_components_matchroute_.prefixpathprops.html" class="tsd-signature-type">PrefixPathProps</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/9d053ef/src/components/MatchRoute.tsx#L17">components/MatchRoute.tsx:17</a></li>
+							<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/701af8d/src/components/MatchRoute.tsx#L33">components/MatchRoute.tsx:33</a></li>
 						</ul>
 					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<pre><code class="language-ts"><span class="hljs-keyword">type</span> PathProps = { path: <span class="hljs-built_in">string</span> } | { prefix: <span class="hljs-built_in">string</span> };</code></pre>
+						</div>
+						<p>If <a href="../interfaces/_components_matchroute_.exactpathprops.html#path">ExactPathProps.path</a> is given, then the match is exact, which means
+							that the current route name must be equal to <code>context.path + path</code> where
+							<code>context.path</code> means the current path created by other match components above
+						this one.</p>
+						<p>If <a href="../interfaces/_components_matchroute_.prefixpathprops.html#prefix">PrefixPathProps.prefix</a> is given, then the match only requires that the
+						current route start with <code>context.path + prefix</code>.</p>
+					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-parent-kind-module">
 					<a name="showrouteprops" class="tsd-anchor"></a>
@@ -124,7 +133,7 @@
 					<div class="tsd-signature tsd-kind-icon">Show<wbr>Route<wbr>Props<span class="tsd-signature-symbol">:</span> <a href="_components_matchroute_.html#matchrouteprops" class="tsd-signature-type">MatchRouteProps</a><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-symbol">{ </span>fallback<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">JSX.Element</span><span class="tsd-signature-symbol"> }</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/9d053ef/src/components/MatchRoute.tsx#L94">components/MatchRoute.tsx:94</a></li>
+							<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/701af8d/src/components/MatchRoute.tsx#L79">components/MatchRoute.tsx:79</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -141,18 +150,13 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/9d053ef/src/components/MatchRoute.tsx#L52">components/MatchRoute.tsx:52</a></li>
+									<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/701af8d/src/components/MatchRoute.tsx#L101">components/MatchRoute.tsx:101</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Match against a given route.</p>
+									<p>Create a [[Match]] node against a given route.</p>
 								</div>
-								<dl class="tsd-comment-tags">
-									<dt>remarks</dt>
-									<dd><p>Not reactive with regards to the route being matched.</p>
-									</dd>
-								</dl>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
@@ -174,9 +178,14 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/9d053ef/src/components/MatchRoute.tsx#L97">components/MatchRoute.tsx:97</a></li>
+									<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/701af8d/src/components/MatchRoute.tsx#L85">components/MatchRoute.tsx:85</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Create a [[Show]] node against a given route.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
@@ -197,13 +206,14 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/9d053ef/src/components/MatchRoute.tsx#L65">components/MatchRoute.tsx:65</a></li>
+									<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/701af8d/src/components/MatchRoute.tsx#L50">components/MatchRoute.tsx:50</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
 									<p>Not reactive on the routes being used</p>
 								</div>
+								<p>Prefer this over [[Switch]] + <a href="_components_matchroute_.html#matchroute">MatchRoute</a></p>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
@@ -253,6 +263,12 @@
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
+						<a href="../interfaces/_components_matchroute_.exactpathprops.html" class="tsd-kind-icon">Exact<wbr>Path<wbr>Props</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
+						<a href="../interfaces/_components_matchroute_.prefixpathprops.html" class="tsd-kind-icon">Prefix<wbr>Path<wbr>Props</a>
+					</li>
 					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
 						<a href="_components_matchroute_.html#matchrouteprops" class="tsd-kind-icon">Match<wbr>Route<wbr>Props</a>
 					</li>

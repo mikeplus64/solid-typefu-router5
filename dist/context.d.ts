@@ -9,6 +9,8 @@ export declare function useRouteNameRaw(): () => string;
 export declare function useActive<Link extends RouteLike>(link: Link): () => boolean;
 /**
  * Find whether 'link' is an ancestor of, or equal to, 'here'
+ *
+ * Maybe useful for creating your own `Link` component.
  */
 export declare function isActive<Route extends RouteLike>(here: string[], link: Route): boolean;
 //# sourceMappingURL=context.d.ts.map

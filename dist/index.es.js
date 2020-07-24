@@ -1,4 +1,4 @@
-import { spread, effect, classList, setAttribute, template, delegateEvents, createComponent, Match, Show } from 'solid-js/dom';
+import { spread, effect, classList, setAttribute, template, delegateEvents, createComponent, Show, Match } from 'solid-js/dom';
 import { useContext, createContext, createMemo, createState, createEffect, createSignal } from 'solid-js';
 
 const Context = createContext();
@@ -17,6 +17,8 @@ function useActive(link) {
 }
 /**
  * Find whether 'link' is an ancestor of, or equal to, 'here'
+ *
+ * Maybe useful for creating your own `Link` component.
  */
 
 function isActive(here, link) {
@@ -149,10 +151,10 @@ function createLink(self, config = defaultLinkConfig) {
 
 delegateEvents(["click"]);
 
-const _ck$ = ["children", "value"],
-      _ck$2 = ["children", "when"],
-      _ck$3 = ["children"],
-      _ck$4 = ["children", "fallback"];
+const _ck$ = ["children"],
+      _ck$2 = ["children", "fallback"],
+      _ck$3 = ["children", "value"],
+      _ck$4 = ["children", "when"];
 const MatchContext = createContext('');
 
 function doesMatch(ctx, here, props) {
@@ -161,33 +163,12 @@ function doesMatch(ctx, here, props) {
   const target = ctx !== '' ? `${ctx}.${suffix}` : suffix;
   return [target, exact ? here === target : here.startsWith(target)];
 }
-
-function createGetMatch(props) {
-  const route = useRouteNameRaw();
-  const ctx = useContext(MatchContext);
-  return createMemo(() => doesMatch(ctx, route(), props), undefined, (a, b) => a && a[1] === b[1]);
-}
-/**
- * Match against a given route.
- *
- * @remarks
- * Not reactive with regards to the route being matched.
- */
-
-
-function MatchRoute(props) {
-  const getMatch = createGetMatch(props);
-  return createComponent(Match, {
-    when: () => getMatch()[1],
-    children: () => createComponent(MatchContext.Provider, {
-      value: () => getMatch()[0],
-      children: () => props.children
-    }, _ck$)
-  }, _ck$2);
-}
 /**
  * Not reactive on the routes being used
+ *
+ * Prefer this over [[Switch]] + [[MatchRoute]]
  */
+
 
 function SwitchRoutes(props) {
   const ctx = useContext(MatchContext);
@@ -211,12 +192,16 @@ function SwitchRoutes(props) {
       return createComponent(MatchContext.Provider, {
         value: target,
         children: () => props.children[i].children
-      }, _ck$3);
+      }, _ck$);
     }
 
     return props.fallback;
   };
 }
+/**
+ * Create a [[Show]] node against a given route.
+ */
+
 function ShowRoute(props) {
   const getMatch = createGetMatch(props);
   return () => {
@@ -227,20 +212,40 @@ function ShowRoute(props) {
       children: () => createComponent(MatchContext.Provider, {
         value: target,
         children: () => props.children
-      }, _ck$3)
-    }, _ck$4);
+      }, _ck$)
+    }, _ck$2);
   };
+}
+/**
+ * Create a [[Match]] node against a given route.
+ */
+
+function MatchRoute(props) {
+  const getMatch = createGetMatch(props);
+  return createComponent(Match, {
+    when: () => getMatch()[1],
+    children: () => createComponent(MatchContext.Provider, {
+      value: () => getMatch()[0],
+      children: () => props.children
+    }, _ck$3)
+  }, _ck$4);
+}
+
+function createGetMatch(props) {
+  const route = useRouteNameRaw();
+  const ctx = useContext(MatchContext);
+  return createMemo(() => doesMatch(ctx, route(), props), undefined, (a, b) => a && a[1] === b[1]);
 }
 
 const _ck$$1 = ["children"];
 /**
- * Helper function. Use this as a `render` function to just render the children
- * only.
+ * Given a tree of routes and render instructions for each route, return an
+ * element that selects the correct renderer for the current route.
+ *
+ * Also supports using routes to choose how to provide props to a single
+ * renderer.
  */
 
-function passthru(props) {
-  return props.children;
-}
 function RouteStateMachine(tree) {
   const getRouteName = useRouteName();
 
@@ -351,6 +356,14 @@ function RouteStateMachine(tree) {
 
   return traverse([], tree);
 }
+/**
+ * Helper function. Use this as a [[render]] function to just render the
+ * children only.
+ */
+
+function passthru(props) {
+  return props.children;
+}
 
 const _ck$$2 = ["children"];
 /**
@@ -380,7 +393,7 @@ const _ck$$2 = ["children"];
  * ```
  */
 
-function createSolidRouter(routes, createRouter5, onStart) {
+function createSolidRouter(routes, createRouter5, onStart, linkConfig) {
   const router5 = createRouter5(routes); // yolo, hopefully router5 doesn't actually mutate routes =)
 
   const self = {
@@ -389,7 +402,7 @@ function createSolidRouter(routes, createRouter5, onStart) {
   };
   Object.freeze(self);
   return {
-    Link: createLink(self),
+    Link: createLink(self, linkConfig),
 
     Router(props) {
       return RouteStateMachine(props.children);
@@ -427,5 +440,5 @@ function createSolidRouter(routes, createRouter5, onStart) {
 }
 
 export default createSolidRouter;
-export { LinkNav, MatchRoute, ShowRoute, isActive, passthru, useActive, useRoute, useRouteName };
+export { LinkNav, MatchRoute, ShowRoute, SwitchRoutes, isActive, passthru, useActive, useRoute, useRouteName };
 //# sourceMappingURL=index.es.js.map
