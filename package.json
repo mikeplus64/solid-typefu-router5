@@ -59,7 +59,7 @@
   },
   "scripts": {
     "prepare": "rollup -c",
-    "docs": "typedoc --out docs --excludeNotExported --includeVersion",
+    "docs": "typedoc --out docs --excludeNotExported --includeVersion && touch docs/.nojekyll",
     "bump": "./bump.sh"
   }
 }
