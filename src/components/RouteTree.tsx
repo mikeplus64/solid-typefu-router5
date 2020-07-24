@@ -24,18 +24,28 @@ export interface RenderNode {
 };
 
 export type OwnedBy<Tree, Props> =
-  GetProps<Props> &
-  UnionToIntersection<
-    Tree extends readonly (infer Node)[]
-    ? Node extends { name: infer Name, children?: infer Children }
-      ? Name extends (string | number | symbol)
-        ? Children extends {}
-          ? { [K in Name]?: GetProps<Props> & OwnedBy<Children, Props> }
-          : { [K in Name]?: GetProps<Props> }
+  GetPropsWith<GetProps<Props>,
+    UnionToIntersection<
+      Tree extends readonly (infer Node)[]
+      ? Node extends { name: infer Name, children?: infer Children }
+        ? Name extends (string | number | symbol)
+          ? Children extends {}
+            ? { [K in Name]?: GetPropsWith<GetProps<Props>, OwnedBy<Children, Props>> }
+            : { [K in Name]?: GetProps<Props> }
+          : never
         : never
       : never
-    : never
+    >
   >;
+
+/**
+ * Allows for conflicts between prop names and route names. At runtime what is a
+ * prop or not is simply determined by whether it's a function or not.
+ */
+type GetPropsWith<Props, Tree>
+  = { [K in keyof Props & keyof Tree]: Tree[K] | Props[K] }
+  & Omit<{ [K in keyof Props]: Props[K] }, keyof Props>
+  & Omit<{ [K in keyof Tree]: Tree[K] }, keyof Tree>;
 
 export interface OwnedOps<Tree, Props> {
   render: (props: Props) => JSX.Element,
@@ -44,7 +54,13 @@ export interface OwnedOps<Tree, Props> {
    * Default prop values for when no matches are found. Props that are optional
    * should be typed as such within `Props` itself.
    */
-  defaultProps: Props,
+  defaultProps?: Props,
+
+  /**
+   * Default prop values for when no matches are found. Props that are optional
+   * should be typed as such within `Props` itself.
+   */
+  defaultGetProps?: GetProps<Props>,
 
   /**
    * A tree of route paths and prop getters. A prop getter is a function of type
@@ -82,9 +98,12 @@ export default function RouteStateMachine<R extends RenderTreeLike>(tree: R): JS
     path0: string[],
     node0: GetPropsLike<Props>,
     Render: (props: Props) => JSX.Element,
-    defaultProps: Props,
+    defaultGetProps: undefined | GetProps<Props>,
+    defaultProps: undefined | Props,
   ): JSX.Element {
-    const [state, setState] = createState(defaultProps);
+    const [state, setState] = createState(defaultProps ?? {});
+
+    const numDefaultGetProps = Object.keys(defaultProps??{}).length;
 
     const getPathSuffix = createMemo<[string, string[]]>(() => {
       const p = getRouteName();
@@ -115,11 +134,27 @@ export default function RouteStateMachine<R extends RenderTreeLike>(tree: R): JS
       return count;
     }
 
+    function populateFromDefaultGetProps(next: Partial<Props>): number {
+      if (defaultGetProps === undefined) { return 0; }
+      let count = 0;
+      for (const k_ in defaultGetProps) {
+        const k: keyof Props = k_;
+        if (next[k] === undefined) {
+          const fn = defaultGetProps[k];
+          if (typeof fn === 'function') {
+            next[k as keyof Props] = fn();
+            count ++;
+          }
+        }
+      }
+      return count;
+    }
+
     createEffect(() => {
       const next: Partial<Props> = {};
-      if (populate(getPathSuffix()[1], node0, next, 0) > 0) {
-        setState(next);
-      }
+      let got = populate(getPathSuffix()[1], node0, next, 0);
+      if (got < numDefaultGetProps) { got += populateFromDefaultGetProps(next); }
+      if (got > 0) { setState(next); }
     });
 
     return <Render {...state as Props} />;
@@ -131,8 +166,8 @@ export default function RouteStateMachine<R extends RenderTreeLike>(tree: R): JS
   ): JSX.Element {
     if (typeof node === 'function') {
       return node(function <Props>(owned: OwnedOpsLike<Props>) {
-        const { props, render, defaultProps } = owned;
-        return traverseHydrate(path, props, render, defaultProps);
+        const { props, render, defaultGetProps, defaultProps } = owned;
+        return traverseHydrate(path, props, render, defaultGetProps, defaultProps);
       });
     }
 
@@ -165,22 +200,23 @@ export default function RouteStateMachine<R extends RenderTreeLike>(tree: R): JS
 /**
  * Monomorphic-ish version of 'GetProps'
  */
-type GetPropsLike<Props> =
+export type GetPropsLike<Props> =
   { [k: string]: GetPropsLike<Props> } & GetProps<Props>;
 
 /**
  * Monomorphic-ish version of 'OwnedOps'
  */
-interface OwnedOpsLike<Props> {
+export interface OwnedOpsLike<Props> {
   render: (props: Props) => JSX.Element,
-  defaultProps: Props,
+  defaultProps?: Props,
+  defaultGetProps?: GetProps<Props>,
   props: GetPropsLike<Props>
 }
 
 /**
  * Monomorphic-ish version of 'Owned'
  */
-type OwnedLike =
+export type OwnedLike =
   (cont: <Props>(self: OwnedOpsLike<Props>) => any) => any;
 
 /**

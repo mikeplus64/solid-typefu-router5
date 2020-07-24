@@ -244,8 +244,9 @@ function passthru(props) {
 function RouteStateMachine(tree) {
   const getRouteName = useRouteName();
 
-  function traverseHydrate(path0, node0, Render, defaultProps) {
-    const [state, setState] = createState(defaultProps);
+  function traverseHydrate(path0, node0, Render, defaultGetProps, defaultProps) {
+    const [state, setState] = createState(defaultProps !== null && defaultProps !== void 0 ? defaultProps : {});
+    const numDefaultGetProps = Object.keys(defaultProps !== null && defaultProps !== void 0 ? defaultProps : {}).length;
     const getPathSuffix = createMemo(() => {
       const p = getRouteName();
       p.splice(0, path0.length);
@@ -273,10 +274,38 @@ function RouteStateMachine(tree) {
       return count;
     }
 
+    function populateFromDefaultGetProps(next) {
+      if (defaultGetProps === undefined) {
+        return 0;
+      }
+
+      let count = 0;
+
+      for (const k_ in defaultGetProps) {
+        const k = k_;
+
+        if (next[k] === undefined) {
+          const fn = defaultGetProps[k];
+
+          if (typeof fn === 'function') {
+            next[k] = fn();
+            count++;
+          }
+        }
+      }
+
+      return count;
+    }
+
     createEffect(() => {
       const next = {};
+      let got = populate(getPathSuffix()[1], node0, next, 0);
 
-      if (populate(getPathSuffix()[1], node0, next, 0) > 0) {
+      if (got < numDefaultGetProps) {
+        got += populateFromDefaultGetProps(next);
+      }
+
+      if (got > 0) {
         setState(next);
       }
     });
@@ -289,9 +318,10 @@ function RouteStateMachine(tree) {
         const {
           props,
           render,
+          defaultGetProps,
           defaultProps
         } = owned;
-        return traverseHydrate(path, props, render, defaultProps);
+        return traverseHydrate(path, props, render, defaultGetProps, defaultProps);
       });
     }
 

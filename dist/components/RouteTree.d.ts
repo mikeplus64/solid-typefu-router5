@@ -14,21 +14,37 @@ export interface RenderNode {
     }): JSX.Element;
     fallback?(): JSX.Element;
 }
-export declare type OwnedBy<Tree, Props> = GetProps<Props> & UnionToIntersection<Tree extends readonly (infer Node)[] ? Node extends {
+export declare type OwnedBy<Tree, Props> = GetPropsWith<GetProps<Props>, UnionToIntersection<Tree extends readonly (infer Node)[] ? Node extends {
     name: infer Name;
     children?: infer Children;
 } ? Name extends (string | number | symbol) ? Children extends {} ? {
-    [K in Name]?: GetProps<Props> & OwnedBy<Children, Props>;
+    [K in Name]?: GetPropsWith<GetProps<Props>, OwnedBy<Children, Props>>;
 } : {
     [K in Name]?: GetProps<Props>;
-} : never : never : never>;
+} : never : never : never>>;
+/**
+ * Allows for conflicts between prop names and route names. At runtime what is a
+ * prop or not is simply determined by whether it's a function or not.
+ */
+declare type GetPropsWith<Props, Tree> = {
+    [K in keyof Props & keyof Tree]: Tree[K] | Props[K];
+} & Omit<{
+    [K in keyof Props]: Props[K];
+}, keyof Props> & Omit<{
+    [K in keyof Tree]: Tree[K];
+}, keyof Tree>;
 export interface OwnedOps<Tree, Props> {
     render: (props: Props) => JSX.Element;
     /**
      * Default prop values for when no matches are found. Props that are optional
      * should be typed as such within `Props` itself.
      */
-    defaultProps: Props;
+    defaultProps?: Props;
+    /**
+     * Default prop values for when no matches are found. Props that are optional
+     * should be typed as such within `Props` itself.
+     */
+    defaultGetProps?: GetProps<Props>;
     /**
      * A tree of route paths and prop getters. A prop getter is a function of type
      * `() => PropValue`. The key of the getter determines what prop it gets, and
@@ -58,21 +74,22 @@ export default function RouteStateMachine<R extends RenderTreeLike>(tree: R): JS
 /**
  * Monomorphic-ish version of 'GetProps'
  */
-declare type GetPropsLike<Props> = {
+export declare type GetPropsLike<Props> = {
     [k: string]: GetPropsLike<Props>;
 } & GetProps<Props>;
 /**
  * Monomorphic-ish version of 'OwnedOps'
  */
-interface OwnedOpsLike<Props> {
+export interface OwnedOpsLike<Props> {
     render: (props: Props) => JSX.Element;
-    defaultProps: Props;
+    defaultProps?: Props;
+    defaultGetProps?: GetProps<Props>;
     props: GetPropsLike<Props>;
 }
 /**
  * Monomorphic-ish version of 'Owned'
  */
-declare type OwnedLike = (cont: <Props>(self: OwnedOpsLike<Props>) => any) => any;
+export declare type OwnedLike = (cont: <Props>(self: OwnedOpsLike<Props>) => any) => any;
 /**
  * Monomorphic-ish version of 'RenderTreeOf'
  */
