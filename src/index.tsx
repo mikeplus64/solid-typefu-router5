@@ -1,11 +1,11 @@
 import { State as RouteState, Router as Router5, Route } from 'router5';
-import { createSignal, createEffect, createMemo } from 'solid-js';
-
+import { DefaultDependencies } from 'router5/dist/types/router';
+import { Unsubscribe } from 'router5/dist/types/base';
+import { createSignal, createEffect, createMemo, onCleanup } from 'solid-js';
 import { SharedRouterValue, RoutesLike } from './types';
 import Context from './context';
 import createLink, { LinkConfig, LinkProps, RouteNameOf } from './components/Link';
 import RouteStateMachine, { RenderTreeOf, RenderTreeLike } from './components/RouteTree';
-import { DefaultDependencies } from 'router5/dist/types/router';
 
 export { LinkNav, LinkConfig } from './components/Link';
 export { MatchRoute, ShowRoute, SwitchRoutes } from './components/MatchRoute';
@@ -18,7 +18,7 @@ export type { RenderTreeOf } from './components/RouteTree';
 export type { RoutesLike, SharedRouterValue, RouterContextValue } from './types';
 
 export interface Config<Deps> {
-  createRouter5: (routes: Route<Deps>[]) => Router5<Deps>,
+  createRouter5: (routes: Route<Deps>[]) => Router5<Deps> | [Router5<Deps>, ...Unsubscribe[]],
   onStart?: (router: Router5<Deps>) => void,
   link?: LinkConfig,
 }
@@ -85,9 +85,21 @@ export default function createSolidRouter<Routes extends RoutesLike<Deps>, Deps 
     tree: RenderTreeOf<Routes>
   }>,
 } {
-  const router5: Router5<Deps> = createRouter5(routes as any as Route<Deps>[]);
-  // yolo, hopefully router5 doesn't actually mutate routes =)
 
+  const [router5, unsubs] = (() => {
+    let router5: Router5<Deps>;
+    let unsubs: Unsubscribe[];
+    const r = createRouter5(routes as any as Route<Deps>[]);
+    if (Array.isArray(r)) {
+      [router5, ...unsubs] = r;
+    } else {
+      router5 = r;
+      unsubs = [];
+    }
+    return [router5, unsubs] as const;
+  })();
+
+  // yolo, hopefully router5 doesn't actually mutate routes =)
   const self: SharedRouterValue<Deps, Routes> = { routes, router5 };
   Object.freeze(self);
 
@@ -122,6 +134,7 @@ export default function createSolidRouter<Routes extends RoutesLike<Deps>, Deps 
       });
 
       onCleanup(() => {
+        for (const unsub of unsubs) { unsub(); }
         router5.stop();
       });
 
