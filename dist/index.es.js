@@ -1,5 +1,5 @@
 import { spread, effect, classList, setAttribute, template, delegateEvents, createComponent, Show, Match } from 'solid-js/dom';
-import { createMemo, useContext, createContext, createState, createEffect, createSignal } from 'solid-js';
+import { createMemo, useContext, createContext, createState, createEffect, createSignal, onCleanup } from 'solid-js';
 
 const Context = createContext();
 function useRoute() {
@@ -397,7 +397,21 @@ function createSolidRouter(routes, {
   onStart,
   link: linkConfig
 }) {
-  const router5 = createRouter5(routes); // yolo, hopefully router5 doesn't actually mutate routes =)
+  const [router5, unsubs] = (() => {
+    let router5;
+    let unsubs;
+    const r = createRouter5(routes);
+
+    if (Array.isArray(r)) {
+      [router5, ...unsubs] = r;
+    } else {
+      router5 = r;
+      unsubs = [];
+    }
+
+    return [router5, unsubs];
+  })(); // yolo, hopefully router5 doesn't actually mutate routes =)
+
 
   const self = {
     routes,
@@ -430,6 +444,13 @@ function createSolidRouter(routes, {
         router5.subscribe(state => setRoute(Object.freeze(state.route)));
         router5.start();
         if (typeof onStart === 'function') onStart(router5);
+      });
+      onCleanup(() => {
+        for (const unsub of unsubs) {
+          unsub();
+        }
+
+        router5.stop();
       });
       return createComponent(Context.Provider, {
         value: value,

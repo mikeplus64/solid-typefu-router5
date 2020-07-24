@@ -1,8 +1,9 @@
 import { Router as Router5, Route } from 'router5';
+import { DefaultDependencies } from 'router5/dist/types/router';
+import { Unsubscribe } from 'router5/dist/types/base';
 import { SharedRouterValue, RoutesLike } from './types';
 import { LinkConfig, LinkProps, RouteNameOf } from './components/Link';
 import { RenderTreeOf } from './components/RouteTree';
-import { DefaultDependencies } from 'router5/dist/types/router';
 export { LinkNav, LinkConfig } from './components/Link';
 export { MatchRoute, ShowRoute, SwitchRoutes } from './components/MatchRoute';
 export { passthru } from './components/RouteTree';
@@ -12,7 +13,7 @@ export type { LinkProps, RouteNameOf } from './components/Link';
 export type { RenderTreeOf } from './components/RouteTree';
 export type { RoutesLike, SharedRouterValue, RouterContextValue } from './types';
 export interface Config<Deps> {
-    createRouter5: (routes: Route<Deps>[]) => Router5<Deps>;
+    createRouter5: (routes: Route<Deps>[]) => Router5<Deps> | [Router5<Deps>, ...Unsubscribe[]];
     onStart?: (router: Router5<Deps>) => void;
     link?: LinkConfig;
 }
