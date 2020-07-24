@@ -121,6 +121,10 @@ export default function createSolidRouter<Routes extends RoutesLike<Deps>, Deps 
         if (typeof onStart === 'function') onStart(router5);
       });
 
+      onCleanup(() => {
+        router5.stop();
+      });
+
       return (
         <Context.Provider value={value}>
           {props.children}
