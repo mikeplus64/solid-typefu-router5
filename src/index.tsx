@@ -40,20 +40,25 @@ export interface Config<Deps> {
  * // note the "as const" is very important! this causes TypeScript to infer
  * // `routes` as the narrowest possible type.
  *
- * function performInitialRedirect(router: Router5) {
+ * function createRouter5(routes: Route<Deps>[]): Router5 {
+ *   return createRouter(...)
+ * }
+ *
+ * function onStart(router: Router5): void {
+ *   // initial redirect here
  *   ...
  * }
  *
- * export const { Provider, Link, Router } = createSolidRouter(routes, routes => {
- *   return createRouter(routes, {...router5OptionsHere});
- * }, performInitialRedirect);
+ * export const { Provider, Link, Router } = createSolidRouter(routes, { createRouter5, onStart });
  * ```
  */
 export default function createSolidRouter<Routes extends RoutesLike<Deps>, Deps = DefaultDependencies>(
   routes: Routes,
-  createRouter5: (routes: Route<Deps>[]) => Router5<Deps>,
-  onStart?: (router: Router5<Deps>) => void,
-  linkConfig?: LinkConfig,
+  {
+    createRouter5,
+    onStart,
+    link: linkConfig,
+  }: Config<Deps>,
 ): {
   Provider(props: { children: JSX.Element }): JSX.Element,
 
