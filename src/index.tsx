@@ -10,12 +10,18 @@ import { DefaultDependencies } from 'router5/dist/types/router';
 export { LinkNav, LinkConfig } from './components/Link';
 export { MatchRoute, ShowRoute, SwitchRoutes } from './components/MatchRoute';
 export { passthru } from './components/RouteTree';
-export { useRoute, useRouteName, useActive, isActive } from './context';
+export { useRoute, useRouteName, useIsActive, isActive } from './context';
 
 export type { MatchRouteProps, ShowRouteProps } from './components/MatchRoute';
 export type { LinkProps, RouteNameOf } from './components/Link';
 export type { RenderTreeOf } from './components/RouteTree';
 export type { RoutesLike, SharedRouterValue, RouterContextValue } from './types';
+
+export interface Config<Deps> {
+  createRouter5: (routes: Route<Deps>[]) => Router5<Deps>,
+  onStart?: (router: Router5<Deps>) => void,
+  link?: LinkConfig,
+}
 
 /**
  * Create a router for use in solid-js.

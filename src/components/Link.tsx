@@ -1,5 +1,5 @@
 import { SharedRouterValue, RoutesLike } from '../types';
-import { isActive, useRouteName } from '../context';
+import { useIsActive } from '../context';
 import { createMemo } from 'solid-js';
 
 export enum LinkNav { Back, Forward };
@@ -65,12 +65,12 @@ export default function createLink<Deps, Routes extends RoutesLike<Deps>, RouteN
 
   return (props: LinkProps<RouteName>): JSX.Element => {
 
-    const getRouteName = useRouteName();
+    const isActive = props.to !== undefined ? useIsActive(props.to) : () => false;
 
     const getClassList = createMemo(() => {
       const classList = props.classList ?? {};
       if (props.type === undefined && props.nav) {
-        classList[navActiveClassName] = isActive(getRouteName(), props.to as RouteLike);
+        classList[navActiveClassName] = isActive();
         return classList;
       }
       return classList;

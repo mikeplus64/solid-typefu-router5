@@ -19,7 +19,7 @@ export function useRouteNameRaw(): () => string {
   return useContext(Context).getRouteNameRaw;
 }
 
-export function useActive<Link extends RouteLike>(link: Link): () => boolean {
+export function useIsActive<Link extends RouteLike>(link: Link): () => boolean {
   const getRouteName = useRouteName();
   return createMemo(() => isActive(getRouteName(), link));
 }
