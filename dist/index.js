@@ -466,6 +466,7 @@ function createSolidRouter(routes, {
   };
 }
 
+exports.Context = Context;
 exports.MatchRoute = MatchRoute;
 exports.ShowRoute = ShowRoute;
 exports.SwitchRoutes = SwitchRoutes;

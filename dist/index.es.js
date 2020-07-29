@@ -464,5 +464,5 @@ function createSolidRouter(routes, {
 }
 
 export default createSolidRouter;
-export { LinkNav, MatchRoute, ShowRoute, SwitchRoutes, isActive, passthru, useIsActive, useRoute, useRouteName };
+export { Context, LinkNav, MatchRoute, ShowRoute, SwitchRoutes, isActive, passthru, useIsActive, useRoute, useRouteName };
 //# sourceMappingURL=index.es.js.map
