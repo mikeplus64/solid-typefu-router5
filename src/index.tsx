@@ -10,7 +10,7 @@ import RouteStateMachine, { RenderTreeOf, RenderTreeLike } from './components/Ro
 export { LinkNav, LinkConfig } from './components/Link';
 export { MatchRoute, ShowRoute, SwitchRoutes } from './components/MatchRoute';
 export { passthru } from './components/RouteTree';
-export { useRoute, useRouteName, useIsActive, isActive } from './context';
+export { default as Context, useRoute, useRouteName, useIsActive, isActive } from './context';
 
 export type { MatchRouteProps, ShowRouteProps } from './components/MatchRoute';
 export type { LinkProps, RouteNameOf } from './components/Link';
