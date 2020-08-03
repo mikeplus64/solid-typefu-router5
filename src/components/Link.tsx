@@ -64,9 +64,7 @@ export default function createLink<Deps, Routes extends RoutesLike<Deps>, RouteN
   } = config;
 
   return (props: LinkProps<RouteName>): JSX.Element => {
-
-    const isActive = props.to !== undefined ? useIsActive(props.to) : () => false;
-
+    const isActive = props.to !== undefined ? useIsActive(props.to, props.params) : alwaysInactive;
     const getClassList = createMemo(() => {
       const classList = props.classList ?? {};
       if (props.type === undefined && props.nav) {
@@ -122,6 +120,8 @@ export default function createLink<Deps, Routes extends RoutesLike<Deps>, RouteN
       />;
   };
 }
+
+const alwaysInactive = () => false;
 
 // Beware, here be dragons
 export type RouteNameOf<A> = UnOne<Undefer<Flatten<TreeOf<A>, []>>>;

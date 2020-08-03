@@ -19,9 +19,29 @@ export function useRouteNameRaw(): () => string {
   return useContext(Context).getRouteNameRaw;
 }
 
-export function useIsActive<Link extends RouteLike>(link: Link): () => boolean {
+function shallowEq<A extends Record<string, any>, B extends Record<string, any>>(a: A, b: B): boolean {
+  if (a === b) return true;
+  const keys = Object.keys(a);
+  for (const key of keys) if (!(key in b)) return false;
+  for (const key in keys) if (a[key] !== b[key]) return false;
+  if (keys.length !== Object.keys(b).length) return false;
+  return true;
+}
+
+export function useIsActive<Link extends RouteLike>(
+  link: Link,
+  params?: Record<string, any>,
+  isEqual: <A extends Record<string, any>, B extends Record<string, any>>(a: A, b: B) => boolean = shallowEq,
+): () => boolean {
   const getRouteName = useRouteName();
-  return createMemo(() => isActive(getRouteName(), link));
+  const getIsActiveByName = createMemo(() => isActive(getRouteName(), link));
+  if (params === undefined) return getIsActiveByName;
+  const getRoute = useRoute();
+  const getRouteParams = createMemo(() => getRoute().params);
+  return createMemo(() => {
+    const routeParams = getRouteParams();
+    return getIsActiveByName() && isEqual(routeParams, params);
+  });
 }
 
 /**
