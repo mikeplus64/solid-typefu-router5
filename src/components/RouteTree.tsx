@@ -94,7 +94,7 @@ export default function RouteStateMachine<T extends RenderTreeLike>(tree: T): JS
 
     const {
       render: RenderHere = passthru,
-      fallback: Fallback = () => undefined,
+      fallback,
       ...routes
     } = node;
 
@@ -109,7 +109,7 @@ export default function RouteStateMachine<T extends RenderTreeLike>(tree: T): JS
 
     return (
       <RenderHere>
-        <SwitchRoutes fallback={Fallback} children={children} />
+        <SwitchRoutes fallback={fallback} children={children} />
       </RenderHere>);
   }
 
@@ -122,9 +122,9 @@ export default function RouteStateMachine<T extends RenderTreeLike>(tree: T): JS
  */
 export interface RenderNode {
   /** Default: [[passthru]] */
-  render?(props: { children: JSX.Element }): JSX.Element,
+  render?: (props: { children?: JSX.Element }) => JSX.Element,
   /** Fallback children to use if none are available to give to [[render]]. Default: nothing */
-  fallback?(): JSX.Element,
+  fallback?: JSX.Element,
 };
 
 export interface OwnedOps<Tree, Props> {
