@@ -3,7 +3,7 @@ import { DefaultDependencies } from 'router5/dist/types/router';
 import { Unsubscribe } from 'router5/dist/types/base';
 import { SharedRouterValue, RoutesLike } from './types';
 import { LinkConfig, LinkProps, RouteNameOf } from './components/Link';
-import { RenderTreeOf } from './components/RouteTree';
+import { RenderTreeOf, Descend } from './components/RouteTree';
 export { LinkNav, LinkConfig } from './components/Link';
 export { MatchRoute, ShowRoute, SwitchRoutes } from './components/MatchRoute';
 export { passthru } from './components/RouteTree';
@@ -53,8 +53,9 @@ export default function createSolidRouter<Routes extends RoutesLike<Deps>, Deps 
     /** See [[createLink]] */
     Link(props: LinkProps<RouteNameOf<Routes>>): JSX.Element;
     /** See [[RouteStateMachine]] */
-    Router(props: {
-        children: RenderTreeOf<Routes>;
+    Router<AssumePath extends RouteNameOf<Routes> | [] = []>(props: {
+        children: AssumePath extends [] ? RenderTreeOf<Routes> : RenderTreeOf<Descend<AssumePath, Routes>>;
+        assume?: AssumePath;
     }): JSX.Element;
     /** Probably don't use this. */
     router: SharedRouterValue<Deps, Routes>;

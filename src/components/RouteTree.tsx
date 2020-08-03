@@ -2,6 +2,7 @@ import { UnionToIntersection } from 'ts-essentials';
 import { createState, createEffect, createMemo } from 'solid-js';
 import { useRouteName } from '../context';
 import { MatchRouteProps, SwitchRoutes } from './MatchRoute';
+import { RouteLike } from './Link';
 
 /**
  * Given a tree of routes and render instructions for each route, return an
@@ -10,7 +11,7 @@ import { MatchRouteProps, SwitchRoutes } from './MatchRoute';
  * Also supports using routes to choose how to provide props to a single
  * renderer.
  */
-export default function RouteStateMachine<T extends RenderTreeLike>(tree: T): JSX.Element {
+export default function RouteStateMachine<T extends RenderTreeLike, A extends RouteLike>(tree: T, assumed?: A): JSX.Element {
   const getRouteName = useRouteName();
 
   function traverseHydrate<Props>(
@@ -113,7 +114,20 @@ export default function RouteStateMachine<T extends RenderTreeLike>(tree: T): JS
       </RenderHere>);
   }
 
-  return traverse([], tree as RenderTreeOf<RouteTreeLike>);
+  if (assumed === undefined) {
+    return traverse([], tree as RenderTreeOf<RouteTreeLike>);
+  }
+
+  let rt = tree as RenderTreeOf<RouteTreeLike>;
+  if (typeof assumed === 'string') {
+    rt = { [assumed]: rt };
+  } else if (Array.isArray(assumed)) {
+    for (const seg of assumed) {
+      rt = { [seg]: rt };
+    }
+  }
+
+  return traverse([], rt);
 }
 
 /**
@@ -229,3 +243,19 @@ export interface OwnedOpsLike<Props> {
   defaultGetProps?: GetProps<Props>,
   props: GetPropsLike<Props>
 }
+
+export type DescendDef<Path, Tree> =
+  Path extends [infer P1, ...infer PS]
+  ? Tree extends readonly (infer Node)[]
+    ? Node extends { name: infer Name, children?: infer Children }
+      ? Name extends P1 ? Defer<DescendDef<PS, Children>> : never
+      : never
+    : never
+  : Tree;
+
+type One<T> = T extends any[] ? T : [T];
+export type Descend<P, T> = Undefer<DescendDef<One<P>, T>>;
+
+// Same trick as in https://github.com/microsoft/TypeScript/pull/21613
+interface Defer<X> { ____defer: Undefer<X> }
+type Undefer<X> = X extends { ____defer: infer U } ? U : X;

@@ -113,6 +113,12 @@ render(
         .is-active { border: 2px solid red; box-shadow: 0 0 30px blue }
       `}</style>
       <RouterProvider>
+        <Router assume={['foo','child1']}>
+          {{
+            render: p => <>child1 {p.children}</>,
+            child2: { render: () => 'child2' },
+          }}
+        </Router>
         <Router>
           {{
             render: App,

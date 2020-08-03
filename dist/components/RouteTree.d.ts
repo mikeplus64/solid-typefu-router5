@@ -1,4 +1,5 @@
 import { UnionToIntersection } from 'ts-essentials';
+import { RouteLike } from './Link';
 /**
  * Given a tree of routes and render instructions for each route, return an
  * element that selects the correct renderer for the current route.
@@ -6,7 +7,7 @@ import { UnionToIntersection } from 'ts-essentials';
  * Also supports using routes to choose how to provide props to a single
  * renderer.
  */
-export default function RouteStateMachine<T extends RenderTreeLike>(tree: T): JSX.Element;
+export default function RouteStateMachine<T extends RenderTreeLike, A extends RouteLike>(tree: T, assumed?: A): JSX.Element;
 /**
  * Tells `solid-typefu-router5` how to render a node if the path leading to
  * it matches the current route name.
@@ -108,4 +109,17 @@ export interface OwnedOpsLike<Props> {
     defaultGetProps?: GetProps<Props>;
     props: GetPropsLike<Props>;
 }
+export declare type DescendDef<Path, Tree> = Path extends [infer P1, ...infer PS] ? Tree extends readonly (infer Node)[] ? Node extends {
+    name: infer Name;
+    children?: infer Children;
+} ? Name extends P1 ? Defer<DescendDef<PS, Children>> : never : never : never : Tree;
+declare type One<T> = T extends any[] ? T : [T];
+export declare type Descend<P, T> = Undefer<DescendDef<One<P>, T>>;
+interface Defer<X> {
+    ____defer: Undefer<X>;
+}
+declare type Undefer<X> = X extends {
+    ____defer: infer U;
+} ? U : X;
+export {};
 //# sourceMappingURL=RouteTree.d.ts.map

@@ -270,7 +270,7 @@ const _ck$$1 = ["children"];
  * renderer.
  */
 
-function RouteStateMachine(tree) {
+function RouteStateMachine(tree, assumed) {
   const getRouteName = useRouteName();
 
   function traverseHydrate(path0, node0, Render, defaultGetProps, defaultProps) {
@@ -374,7 +374,25 @@ function RouteStateMachine(tree) {
     }, _ck$$1);
   }
 
-  return traverse([], tree);
+  if (assumed === undefined) {
+    return traverse([], tree);
+  }
+
+  let rt = tree;
+
+  if (typeof assumed === 'string') {
+    rt = {
+      [assumed]: rt
+    };
+  } else if (Array.isArray(assumed)) {
+    for (const seg of assumed) {
+      rt = {
+        [seg]: rt
+      };
+    }
+  }
+
+  return traverse([], rt);
 }
 /**
  * Helper function. Use this as a [[render]] function to just render the
@@ -446,7 +464,7 @@ function createSolidRouter(routes, {
     Link: createLink(self, linkConfig),
 
     Router(props) {
-      return RouteStateMachine(props.children);
+      return RouteStateMachine(props.children, props.assume);
     },
 
     Provider(props) {

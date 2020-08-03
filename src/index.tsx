@@ -4,8 +4,8 @@ import { Unsubscribe } from 'router5/dist/types/base';
 import { createSignal, createEffect, createMemo, onCleanup } from 'solid-js';
 import { SharedRouterValue, RoutesLike } from './types';
 import Context from './context';
-import createLink, { LinkConfig, LinkProps, RouteNameOf } from './components/Link';
-import RouteStateMachine, { RenderTreeOf, RenderTreeLike } from './components/RouteTree';
+import createLink, { LinkConfig, LinkProps, RouteLike, RouteNameOf } from './components/Link';
+import RouteStateMachine, { RenderTreeOf, RenderTreeLike, Descend } from './components/RouteTree';
 
 export { LinkNav, LinkConfig } from './components/Link';
 export { MatchRoute, ShowRoute, SwitchRoutes } from './components/MatchRoute';
@@ -66,7 +66,10 @@ export default function createSolidRouter<Routes extends RoutesLike<Deps>, Deps 
   Link(props: LinkProps<RouteNameOf<Routes>>): JSX.Element,
 
   /** See [[RouteStateMachine]] */
-  Router(props: { children: RenderTreeOf<Routes> }): JSX.Element,
+  Router<AssumePath extends RouteNameOf<Routes> | [] = []>(props: {
+    children: AssumePath extends [] ? RenderTreeOf<Routes> : RenderTreeOf<Descend<AssumePath, Routes>>,
+    assume?: AssumePath,
+  }): JSX.Element,
 
   /** Probably don't use this. */
   router: SharedRouterValue<Deps, Routes>,
@@ -106,8 +109,8 @@ export default function createSolidRouter<Routes extends RoutesLike<Deps>, Deps 
   return {
     Link: createLink(self, linkConfig),
 
-    Router(props: { children: RenderTreeOf<Routes> }): JSX.Element {
-      return RouteStateMachine(props.children as RenderTreeLike);
+    Router(props) {
+      return RouteStateMachine(props.children as RenderTreeLike, props.assume as RouteLike);
     },
 
     Provider(props: { children: JSX.Element }): JSX.Element {
@@ -149,3 +152,4 @@ export default function createSolidRouter<Routes extends RoutesLike<Deps>, Deps 
 }
 
 export type Phantom<T> = { __phantom__: never } & T;
+
