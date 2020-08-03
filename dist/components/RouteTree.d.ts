@@ -13,11 +13,11 @@ export default function RouteStateMachine<T extends RenderTreeLike>(tree: T): JS
  */
 export interface RenderNode {
     /** Default: [[passthru]] */
-    render?(props: {
-        children: JSX.Element;
-    }): JSX.Element;
+    render?: (props: {
+        children?: JSX.Element;
+    }) => JSX.Element;
     /** Fallback children to use if none are available to give to [[render]]. Default: nothing */
-    fallback?(): JSX.Element;
+    fallback?: JSX.Element;
 }
 export interface OwnedOps<Tree, Props> {
     /**

@@ -1,5 +1,5 @@
 import { spread, effect, classList, setAttribute, template, delegateEvents, createComponent, Show, Match } from 'solid-js/dom';
-import { createMemo, useContext, createContext, createState, createEffect, createSignal, onCleanup } from 'solid-js';
+import { useContext, createContext, createMemo, createState, createEffect, createSignal, onCleanup } from 'solid-js';
 
 const Context = createContext();
 function useRoute() {
@@ -11,9 +11,29 @@ function useRouteName() {
 function useRouteNameRaw() {
   return useContext(Context).getRouteNameRaw;
 }
-function useIsActive(link) {
+
+function shallowEq(a, b) {
+  if (a === b) return true;
+  const keys = Object.keys(a);
+
+  for (const key of keys) if (!(key in b)) return false;
+
+  for (const key in keys) if (a[key] !== b[key]) return false;
+
+  if (keys.length !== Object.keys(b).length) return false;
+  return true;
+}
+
+function useIsActive(link, params, isEqual = shallowEq) {
   const getRouteName = useRouteName();
-  return createMemo(() => isActive(getRouteName(), link));
+  const getIsActiveByName = createMemo(() => isActive(getRouteName(), link));
+  if (params === undefined) return getIsActiveByName;
+  const getRoute = useRoute();
+  const getRouteParams = createMemo(() => getRoute().params);
+  return createMemo(() => {
+    const routeParams = getRouteParams();
+    return getIsActiveByName() && isEqual(routeParams, params);
+  });
 }
 /**
  * Find whether 'link' is an ancestor of, or equal to, 'here'
@@ -64,7 +84,7 @@ function createLink(self, config = defaultLinkConfig) {
     navActiveClassName = defaultLinkConfig.navActiveClassName
   } = config;
   return props => {
-    const isActive = props.to !== undefined ? useIsActive(props.to) : () => false;
+    const isActive = props.to !== undefined ? useIsActive(props.to, props.params) : alwaysInactive;
     const getClassList = createMemo(() => {
       var _props$classList;
 
@@ -148,6 +168,8 @@ function createLink(self, config = defaultLinkConfig) {
     })();
   };
 }
+
+const alwaysInactive = () => false;
 
 delegateEvents(["click"]);
 
@@ -329,7 +351,7 @@ function RouteStateMachine(tree) {
     const children = [];
     const {
       render: RenderHere = passthru,
-      fallback: Fallback = () => undefined,
+      fallback,
       ...routes
     } = node;
 
@@ -344,7 +366,7 @@ function RouteStateMachine(tree) {
 
     return createComponent(RenderHere, {
       children: () => createComponent(SwitchRoutes, {
-        fallback: Fallback,
+        fallback: fallback,
         children: children
       })
     }, _ck$$1);

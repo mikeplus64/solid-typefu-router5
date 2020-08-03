@@ -6,7 +6,7 @@ export default Context;
 export declare function useRoute(): () => RouteState;
 export declare function useRouteName(): () => readonly string[];
 export declare function useRouteNameRaw(): () => string;
-export declare function useIsActive<Link extends RouteLike>(link: Link): () => boolean;
+export declare function useIsActive<Link extends RouteLike>(link: Link, params?: Record<string, any>, isEqual?: <A extends Record<string, any>, B extends Record<string, any>>(a: A, b: B) => boolean): () => boolean;
 /**
  * Find whether 'link' is an ancestor of, or equal to, 'here'
  *
