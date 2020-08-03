@@ -12,19 +12,18 @@ function useRouteNameRaw() {
   return useContext(Context).getRouteNameRaw;
 }
 
-function shallowEq(a, b) {
+function shallowStringyEq(a, b) {
   if (a === b) return true;
   const keys = Object.keys(a);
 
   for (const key of keys) if (!(key in b)) return false;
 
-  for (const key in keys) if (a[key] !== b[key]) return false;
+  for (const key of keys) if (String(a[key]) !== String(b[key])) return false;
 
-  if (keys.length !== Object.keys(b).length) return false;
-  return true;
+  return keys.length === Object.keys(b).length;
 }
 
-function useIsActive(link, params, isEqual = shallowEq) {
+function useIsActive(link, params, isEqual = shallowStringyEq) {
   const getRouteName = useRouteName();
   const getIsActiveByName = createMemo(() => isActive(getRouteName(), link));
   if (params === undefined) return getIsActiveByName;
