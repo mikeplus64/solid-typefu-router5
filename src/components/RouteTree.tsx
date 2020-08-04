@@ -1,8 +1,8 @@
 import { UnionToIntersection } from 'ts-essentials';
 import { createState, createEffect, createMemo } from 'solid-js';
 import { useRouteName } from '../context';
-import { MatchRouteProps, SwitchRoutes } from './MatchRoute';
-import { RouteLike } from './Link';
+import { MatchContext, MatchRouteProps, ShowRoute, SwitchRoutes } from './MatchRoute';
+import { renderRouteLike, RouteLike } from './Link';
 
 /**
  * Given a tree of routes and render instructions for each route, return an
@@ -118,16 +118,10 @@ export default function RouteStateMachine<T extends RenderTreeLike, A extends Ro
     return traverse([], tree as RenderTreeOf<RouteTreeLike>);
   }
 
-  let rt = tree as RenderTreeOf<RouteTreeLike>;
-  if (typeof assumed === 'string') {
-    rt = { [assumed]: rt };
-  } else if (Array.isArray(assumed)) {
-    for (const seg of assumed) {
-      rt = { [seg]: rt };
-    }
-  }
-
-  return traverse([], rt);
+  return (
+    <ShowRoute prefix={renderRouteLike(assumed)}>
+      {traverse([], tree as RenderTreeOf<RouteTreeLike>)}
+    </ShowRoute>);
 }
 
 /**

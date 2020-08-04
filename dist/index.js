@@ -261,7 +261,8 @@ function createGetMatch(props) {
   return solidJs.createMemo(() => doesMatch(ctx, route(), props), undefined, (a, b) => a && a[1] === b[1]);
 }
 
-const _ck$$1 = ["children"];
+const _ck$$1 = ["children"],
+      _ck$2$1 = ["children", "value"];
 /**
  * Given a tree of routes and render instructions for each route, return an
  * element that selects the correct renderer for the current route.
@@ -378,21 +379,10 @@ function RouteStateMachine(tree, assumed) {
     return traverse([], tree);
   }
 
-  let rt = tree;
-
-  if (typeof assumed === 'string') {
-    rt = {
-      [assumed]: rt
-    };
-  } else if (Array.isArray(assumed)) {
-    for (const seg of assumed) {
-      rt = {
-        [seg]: rt
-      };
-    }
-  }
-
-  return traverse([], rt);
+  return dom.createComponent(MatchContext.Provider, {
+    value: () => renderRouteLike(assumed),
+    children: () => traverse([], tree)
+  }, _ck$2$1);
 }
 /**
  * Helper function. Use this as a [[render]] function to just render the

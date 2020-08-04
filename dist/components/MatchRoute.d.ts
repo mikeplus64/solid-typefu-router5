@@ -1,3 +1,4 @@
+export declare const MatchContext: import("solid-js/types/reactive/signal").Context<string>;
 export declare type MatchRouteProps = PathProps & {
     children: JSX.Element;
 };
