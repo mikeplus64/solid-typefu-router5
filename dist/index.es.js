@@ -258,8 +258,7 @@ function createGetMatch(props) {
   return createMemo(() => doesMatch(ctx, route(), props), undefined, (a, b) => a && a[1] === b[1]);
 }
 
-const _ck$$1 = ["children"],
-      _ck$2$1 = ["children", "prefix"];
+const _ck$$1 = ["children"];
 /**
  * Given a tree of routes and render instructions for each route, return an
  * element that selects the correct renderer for the current route.
@@ -268,7 +267,7 @@ const _ck$$1 = ["children"],
  * renderer.
  */
 
-function RouteStateMachine(tree, assumed) {
+function RouteStateMachine(tree, _assumed) {
   const getRouteName = useRouteName();
 
   function traverseHydrate(path0, node0, Render, defaultGetProps, defaultProps) {
@@ -372,14 +371,7 @@ function RouteStateMachine(tree, assumed) {
     }, _ck$$1);
   }
 
-  if (assumed === undefined) {
-    return traverse([], tree);
-  }
-
-  return createComponent(ShowRoute, {
-    prefix: () => renderRouteLike(assumed),
-    children: () => traverse([], tree)
-  }, _ck$2$1);
+  return traverse([], tree);
 }
 /**
  * Helper function. Use this as a [[render]] function to just render the

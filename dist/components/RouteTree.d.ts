@@ -7,7 +7,7 @@ import { RouteLike } from './Link';
  * Also supports using routes to choose how to provide props to a single
  * renderer.
  */
-export default function RouteStateMachine<T extends RenderTreeLike, A extends RouteLike>(tree: T, assumed?: A): JSX.Element;
+export default function RouteStateMachine<T extends RenderTreeLike, A extends RouteLike>(tree: T, _assumed?: A): JSX.Element;
 /**
  * Tells `solid-typefu-router5` how to render a node if the path leading to
  * it matches the current route name.

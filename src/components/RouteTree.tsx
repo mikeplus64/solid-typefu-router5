@@ -1,8 +1,8 @@
 import { UnionToIntersection } from 'ts-essentials';
 import { createState, createEffect, createMemo } from 'solid-js';
 import { useRouteName } from '../context';
-import { MatchRouteProps, ShowRoute, SwitchRoutes } from './MatchRoute';
-import { renderRouteLike, RouteLike } from './Link';
+import { MatchRouteProps, SwitchRoutes } from './MatchRoute';
+import { RouteLike } from './Link';
 
 /**
  * Given a tree of routes and render instructions for each route, return an
@@ -11,7 +11,7 @@ import { renderRouteLike, RouteLike } from './Link';
  * Also supports using routes to choose how to provide props to a single
  * renderer.
  */
-export default function RouteStateMachine<T extends RenderTreeLike, A extends RouteLike>(tree: T, assumed?: A): JSX.Element {
+export default function RouteStateMachine<T extends RenderTreeLike, A extends RouteLike>(tree: T, _assumed?: A): JSX.Element {
   const getRouteName = useRouteName();
 
   function traverseHydrate<Props>(
@@ -114,14 +114,7 @@ export default function RouteStateMachine<T extends RenderTreeLike, A extends Ro
       </RenderHere>);
   }
 
-  if (assumed === undefined) {
-    return traverse([], tree as RenderTreeOf<RouteTreeLike>);
-  }
-
-  return (
-    <ShowRoute prefix={renderRouteLike(assumed)}>
-      {traverse([], tree as RenderTreeOf<RouteTreeLike>)}
-    </ShowRoute>);
+  return traverse([], tree as RenderTreeOf<RouteTreeLike>);
 }
 
 /**
