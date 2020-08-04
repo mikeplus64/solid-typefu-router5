@@ -259,7 +259,7 @@ function createGetMatch(props) {
 }
 
 const _ck$$1 = ["children"],
-      _ck$2$1 = ["children", "value"];
+      _ck$2$1 = ["children", "prefix"];
 /**
  * Given a tree of routes and render instructions for each route, return an
  * element that selects the correct renderer for the current route.
@@ -376,8 +376,8 @@ function RouteStateMachine(tree, assumed) {
     return traverse([], tree);
   }
 
-  return createComponent(MatchContext.Provider, {
-    value: () => renderRouteLike(assumed),
+  return createComponent(ShowRoute, {
+    prefix: () => renderRouteLike(assumed),
     children: () => traverse([], tree)
   }, _ck$2$1);
 }

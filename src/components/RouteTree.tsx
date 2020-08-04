@@ -1,7 +1,7 @@
 import { UnionToIntersection } from 'ts-essentials';
 import { createState, createEffect, createMemo } from 'solid-js';
 import { useRouteName } from '../context';
-import { MatchContext, MatchRouteProps, ShowRoute, SwitchRoutes } from './MatchRoute';
+import { MatchRouteProps, ShowRoute, SwitchRoutes } from './MatchRoute';
 import { renderRouteLike, RouteLike } from './Link';
 
 /**
