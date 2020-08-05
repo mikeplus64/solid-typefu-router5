@@ -273,7 +273,7 @@ function RouteStateMachine(tree, _assumed) {
   function traverseHydrate(path0, node0, Render, defaultGetProps, defaultProps) {
     const [state, setState] = createState(defaultProps !== null && defaultProps !== void 0 ? defaultProps : {});
     const numDefaultGetProps = Object.keys(defaultProps !== null && defaultProps !== void 0 ? defaultProps : {}).length;
-    const getPathSuffix = createMemo(() => [name, getRouteName().slice(0, path0.length)], undefined, (a, b) => a && a[0] === b[0]);
+    const getPathSuffix = createMemo(() => [name, getRouteName().slice(path0.length)], undefined, (a, b) => a && a[0] === b[0]);
 
     function populate(path, node, next, count) {
       for (const key in node) {

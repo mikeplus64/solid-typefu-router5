@@ -25,8 +25,8 @@ export default function RouteStateMachine<T extends RenderTreeLike, A extends Ro
 
     const numDefaultGetProps = Object.keys(defaultProps??{}).length;
 
-    const getPathSuffix = createMemo<[string, string[]]>(() =>
-      [name, getRouteName().slice(0, path0.length)],
+    const getPathSuffix = createMemo<[string, string[]]>(
+      () => [name, getRouteName().slice(path0.length)],
       undefined,
       (a, b) => a && a[0] === b[0],
     );
