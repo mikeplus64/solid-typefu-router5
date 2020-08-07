@@ -83,7 +83,7 @@ function createLink(self, config = defaultLinkConfig) {
     navActiveClassName = defaultLinkConfig.navActiveClassName
   } = config;
   return props => {
-    const isActive = props.to !== undefined ? useIsActive(props.to, props.params) : alwaysInactive;
+    const isActive = props.to !== undefined ? useIsActive(props.to, props.navIgnoreParams ? undefined : props.params) : alwaysInactive;
     const getClassList = createMemo(() => {
       var _props$classList;
 

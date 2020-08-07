@@ -20,6 +20,7 @@ export declare enum LinkNav {
 export declare type LinkProps<Route> = {
     disabled?: boolean;
     nav?: boolean;
+    navIgnoreParams?: boolean;
     onClick?: (ev: MouseEvent & {
         target: HTMLAnchorElement;
         currentTarget: HTMLAnchorElement;
