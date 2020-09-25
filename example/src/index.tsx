@@ -4,28 +4,37 @@ import { render } from "solid-js/dom";
 import createRouter from "router5";
 import { createMemo, For } from "solid-js";
 
-const routes = [{
-  name: "foo",
-  path: "/foo",
-  children: [{
-    name: "child1",
-    path: "/child1/:id1",
-    children: [{ name: "child2", path: "/child2/:id2" }],
-  }],
-}, {
-  name: "bar",
-  path: "/bar/:id"
-}] as const;
+const routes = [
+  {
+    name: "foo",
+    path: "/foo",
+    children: [
+      {
+        name: "child1",
+        path: "/child1/:id1",
+        children: [{ name: "child2", path: "/child2/:id2" }],
+      },
+    ],
+  },
+  {
+    name: "bar",
+    path: "/bar/:id",
+  },
+  {
+    name: "baz",
+    path: "/baz/:id",
+  },
+] as const;
 
 const { Link, Router, Provider: RouterProvider } = createSolidRouter(routes, {
   createRouter5: (routes) => {
     const router = createRouter(routes, { allowNotFound: true });
     router.usePlugin(browserPluginFactory({ useHash: false }));
     return router;
-  }
+  },
 });
 
-const App = (props: { children?: JSX.Element }) => (
+const Wrapper = (props: { children?: JSX.Element }) => (
   <>
     <div style={{ background: "lightgrey", padding: "0.5rem" }}>
       <h3>Navbar</h3>
@@ -43,6 +52,11 @@ const App = (props: { children?: JSX.Element }) => (
         <li>
           <Link nav to="bar" params={{ id: 2 }}>
             bar2
+          </Link>
+        </li>
+        <li>
+          <Link nav to="baz" params={{ id: "asdfasdf" }}>
+            baz asdfasdf
           </Link>
         </li>
       </ul>
@@ -63,7 +77,8 @@ const App = (props: { children?: JSX.Element }) => (
         </code>
       </div>
     </div>
-  </>);
+  </>
+);
 
 const Foo = (props: { children?: JSX.Element }) => (
   <div>
@@ -72,7 +87,8 @@ const Foo = (props: { children?: JSX.Element }) => (
       foo.child1
     </Link>
     {props.children}
-  </div>);
+  </div>
+);
 
 const Child2List = () => {
   const route = useRoute();
@@ -89,7 +105,7 @@ const Child2List = () => {
       <h3>List of foo.child1.child2 links</h3>
       <ul>
         <For each={availId2s()}>
-          {id2 => (
+          {(id2) => (
             <li>
               <Link
                 to={["foo", "child1", "child2"]}
@@ -105,41 +121,65 @@ const Child2List = () => {
   );
 };
 
-render(
-  () => (
+function Baz(props: { id: string }) {
+  return <code>id = {props.id}</code>;
+}
+
+const App = () => {
+  const route = useRoute();
+  return (
     <>
-      <style>{`
-        html, body { font-family: 'Sedgwick Ave' }
-        .is-active { border: 2px solid red; box-shadow: 0 0 30px blue }
-      `}</style>
-      <RouterProvider>
-        <Router assume={['foo','child1']}>
-          {{
-            render: p => <>child1 {p.children}</>,
-            child2: { render: () => 'child2' },
-          }}
-        </Router>
-        <Router>
-          {{
-            render: App,
-            bar: {
-              render: () => "bar goes here"
-            },
-            foo: {
-              render: Foo,
-              child1: {
-                render: p => <div>{p.children}</div>,
-                fallback: Child2List,
-                child2: {
-                  render: () => <>
+      <Router assume={["foo", "child1"]}>
+        {{
+          render: (p) => <>child1 {p.children}</>,
+          child2: { render: () => "child2" },
+        }}
+      </Router>
+      <Router>
+        {{
+          render: Wrapper,
+          bar: {
+            render: () => "bar goes here",
+          },
+          baz: (owned) =>
+            owned({
+              render: Baz,
+              props: {
+                id: () => route().params.id,
+              },
+            }),
+          foo: {
+            render: Foo,
+            child1: {
+              render: (p) => <div>{p.children}</div>,
+              fallback: Child2List,
+              child2: {
+                render: () => (
+                  <>
                     <h3>foo.child1.child2</h3>
                     hello world!
                   </>
-                }
-              }
-            }
-          }}
-        </Router>
+                ),
+              },
+            },
+          },
+        }}
+      </Router>
+    </>
+  );
+};
+
+render(
+  () => (
+    <>
+      <style>
+        {`
+        html, body { font-family: 'Sedgwick Ave' }
+        .is-active { border: 2px solid red; box-shadow: 0 0 30px blue }
+        `}
+      </style>
+      <RouterProvider>
+        <App />
       </RouterProvider>
     </>
   ),

@@ -1136,20 +1136,26 @@ babel-plugin-dynamic-import-node@^2.3.3:
   dependencies:
     object.assign "^4.1.0"
 
-babel-plugin-jsx-dom-expressions@~0.19.9:
-  version "0.19.10"
-  resolved "https://registry.yarnpkg.com/babel-plugin-jsx-dom-expressions/-/babel-plugin-jsx-dom-expressions-0.19.10.tgz#74dfdc096f1513f33db0e9c2a0112313db39fc1a"
-  integrity sha512-/gpqeOSCPEt+hOREHlZIXhn8UjfXg5MZM56dWpGzuGB3+XsiWZ07Geh2yPrho0uwksMJP/OOO5Ipk+Oei8eTSQ==
+babel-plugin-jsx-dom-expressions@~0.20.8:
+  version "0.20.8"
+  resolved "https://registry.yarnpkg.com/babel-plugin-jsx-dom-expressions/-/babel-plugin-jsx-dom-expressions-0.20.8.tgz#f86937f104ce8b76b06263c52fbf7262115c5d60"
+  integrity sha512-rh+n0WqdwW/bEiND+u4IhJAEifP/lLTF42/B8BYmUiE7dvf3ONTPHzgkgq2Gn3B3uZEv2pg2D4ebRaR5g27SHA==
   dependencies:
     "@babel/helper-module-imports" "^7.10.4"
     "@babel/plugin-syntax-jsx" "^7.10.4"
 
-babel-preset-solid@^0.18.14:
-  version "0.18.14"
-  resolved "https://registry.yarnpkg.com/babel-preset-solid/-/babel-preset-solid-0.18.14.tgz#056bec6b79574f8e07fba2d44bd17044cc664f41"
-  integrity sha512-plDadLGxyg0XiYNJO0bk2UuJP4u4hH6AWEGfELo7Ug3oQs2HvlTW12h77nDQaVr+45r3uhHuuJojZMDXxHaGPg==
+babel-plugin-transform-rename-import@^2.3.0:
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/babel-plugin-transform-rename-import/-/babel-plugin-transform-rename-import-2.3.0.tgz#5d9d645f937b0ca5c26a24b2510a06277b6ffd9b"
+  integrity sha512-dPgJoT57XC0PqSnLgl2FwNvxFrWlspatX2dkk7yjKQj5HHGw071vAcOf+hqW8ClqcBDMvEbm6mevn5yHAD8mlQ==
+
+babel-preset-solid@^0.20.0:
+  version "0.20.0"
+  resolved "https://registry.yarnpkg.com/babel-preset-solid/-/babel-preset-solid-0.20.0.tgz#8c170c92676b155d78977001390248c830cf9f3a"
+  integrity sha512-sSc9vVYq9gGsdm8ASYE+CyBSfotcPijrheiFKhGt+BE0wk/vGGK7lES6YqrH/EjXvAJXZWplS6A0s2w21aCFZA==
   dependencies:
-    babel-plugin-jsx-dom-expressions "~0.19.9"
+    babel-plugin-jsx-dom-expressions "~0.20.8"
+    babel-plugin-transform-rename-import "^2.3.0"
 
 babel-runtime@^6.11.6, babel-runtime@^6.26.0:
   version "6.26.0"
@@ -4564,15 +4570,15 @@ snapdragon@^0.8.1:
     source-map-resolve "^0.5.0"
     use "^3.1.0"
 
-solid-js@0.18.14:
-  version "0.18.14"
-  resolved "https://registry.yarnpkg.com/solid-js/-/solid-js-0.18.14.tgz#2d86c0581a425abac14da4d32e6710ebfa9d8c14"
-  integrity sha512-XAmsf4WP16aQ0RJMNk50Xi0OD0QQK/OAA0aFnT2/7OsLzdjJVohrTf58fE7B7Zhk0CiEdCtkktX7MaxOvfY3RQ==
+solid-js@^0.20.0:
+  version "0.20.0"
+  resolved "https://registry.yarnpkg.com/solid-js/-/solid-js-0.20.0.tgz#f19136187407e2f883f2fbb914caa372feafdc88"
+  integrity sha512-/N3AcyS3r5ead90WvEqx68g45JaxTyCsIM6Lglsrgl9psHEbvv9vuu2gobm0cjFltKTsnqNZPWappDDMiGobZw==
 
-solid-typefu-router5@0.9.4:
-  version "0.9.4"
-  resolved "https://registry.yarnpkg.com/solid-typefu-router5/-/solid-typefu-router5-0.9.4.tgz#c52287333717ff638aa7b5f224d35caec3ca03ab"
-  integrity sha512-KyQ5kMjD4pbsybBWP9Up1//UWH4UFe0GqvyT0J/5eRhNhzRZhx0dorrj7/5dxtuWoGitEUj/7jQDmU3vi+DK2A==
+solid-typefu-router5@^0.10.4:
+  version "0.10.4"
+  resolved "https://registry.yarnpkg.com/solid-typefu-router5/-/solid-typefu-router5-0.10.4.tgz#beff313077c939e20909fd97875bd4ede38dc036"
+  integrity sha512-I5bzN4cwMFmZXm6v7zXZpjDTAkBsIHB2H0P3UNfgEwDbM82PjZQ4+3Dfg7VGTKq73XACAFdnRirqlgyc5bQC4Q==
   dependencies:
     "@babel/runtime" "*"
     ts-essentials "^7.0.0"
@@ -4957,10 +4963,10 @@ typedarray@^0.0.6:
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
   integrity sha1-hnrHTjhkGHsdPUfZlqeOxciDB3c=
 
-typescript@4.0.0-beta:
-  version "4.0.0-beta"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.0.0-beta.tgz#a6a65e430562131de69496a3ef5484346bc0cdd2"
-  integrity sha512-d3s/CogGtB2uPZ2Z8ts6eoUxxyB9PH3R27/UrzvpthuOvpCg4FWWnBbBiqJ0K4eu6eTlgmLiqQkh2dquReJweA==
+typescript@^4.0.3:
+  version "4.0.3"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.0.3.tgz#153bbd468ef07725c1df9c77e8b453f8d36abba5"
+  integrity sha512-tEu6DGxGgRJPb/mVPIZ48e69xCn2yRmCgYmDugAVwmJ6o+0u1RI18eO7E7WBTLYLaEVVOhwQmcdhQHweux/WPg==
 
 uncss@^0.17.3:
   version "0.17.3"

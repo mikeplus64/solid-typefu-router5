@@ -1,19 +1,18 @@
 import { createContext, useContext, Match, Show, createMemo } from "solid-js";
-import { useRouteNameRaw } from '../context';
+import { useRouteNameRaw } from "../context";
 
-const MatchContext = createContext<string>('');
+const MatchContext = createContext<string>("");
 
-export type MatchRouteProps =
-  PathProps & { children: JSX.Element };
+export type MatchRouteProps = PathProps & { children: JSX.Element };
 
 export interface ExactPathProps {
-  path: string,
-  prefix?: undefined,
+  path: string;
+  prefix?: undefined;
 }
 
 export interface PrefixPathProps {
-  prefix: string,
-  path?: undefined,
+  prefix: string;
+  path?: undefined;
 }
 
 /**
@@ -32,14 +31,15 @@ export interface PrefixPathProps {
  */
 export type PathProps = ExactPathProps | PrefixPathProps;
 
-function doesMatch(ctx: string, here: string, props: PathProps): [string, boolean] {
+function doesMatch(
+  ctx: string,
+  here: string,
+  props: PathProps
+): [string, boolean] {
   const suffix = props.path !== undefined ? props.path : props.prefix;
   const exact = props.path !== undefined;
-  const target = ctx !== '' ? `${ctx}.${suffix}` : suffix;
-  return [
-    target,
-    exact ? here === target : here.startsWith(target),
-  ];
+  const target = ctx !== "" ? `${ctx}.${suffix}` : suffix;
+  return [target, exact ? here === target : here.startsWith(target)];
 }
 
 /**
@@ -48,36 +48,46 @@ function doesMatch(ctx: string, here: string, props: PathProps): [string, boolea
  * Prefer this over [[Switch]] + [[MatchRoute]]
  */
 export function SwitchRoutes(props: {
-  children: MatchRouteProps[]
-  fallback?: JSX.Element,
+  children: MatchRouteProps[];
+  fallback?: JSX.Element;
 }): JSX.Element {
   const ctx = useContext(MatchContext);
   const route = useRouteNameRaw();
-  const getIndex = createMemo<undefined | [number, string]>(() => {
-    const here = route();
-    const children = props.children;
-    for (let i = 0; i < children.length; i ++) {
-      const [target, when] = doesMatch(ctx, here, children[i]);
-      if (when) return [i, target];
+
+  const getIndex = createMemo<undefined | [number, string]>(
+    () => {
+      const here = route();
+      const children = props.children;
+      for (let i = 0; i < children.length; i++) {
+        const [target, when] = doesMatch(ctx, here, children[i]);
+        if (when) return [i, target];
+      }
+      return undefined;
+    },
+    undefined,
+    (a, b) => {
+      const same =
+        a === b || (a !== undefined && b !== undefined && a[0] === b[0]);
+      return same;
     }
-    return undefined;
-  }, undefined, (a, b) => a === b || a !== undefined && b !== undefined && a[0] === b[0]);
+  );
 
   return () => {
     const ix = getIndex();
     if (ix !== undefined) {
       const [i, target] = ix;
+      console.log({ i, target });
       return (
         <MatchContext.Provider value={target}>
           {props.children[i].children}
-        </MatchContext.Provider>);
+        </MatchContext.Provider>
+      );
     }
     return props.fallback;
   };
 }
 
-export type ShowRouteProps =
-  MatchRouteProps & { fallback?: JSX.Element };
+export type ShowRouteProps = MatchRouteProps & { fallback?: JSX.Element };
 
 /**
  * Create a [[Show]] node against a given route.
@@ -91,7 +101,8 @@ export function ShowRoute(props: ShowRouteProps): JSX.Element {
         <MatchContext.Provider value={target}>
           {props.children}
         </MatchContext.Provider>
-      </Show>);
+      </Show>
+    );
   };
 }
 
@@ -105,7 +116,8 @@ export function MatchRoute(props: MatchRouteProps): JSX.Element {
       <MatchContext.Provider value={getMatch()[0]}>
         {props.children}
       </MatchContext.Provider>
-    </Match>);
+    </Match>
+  );
 }
 
 function createGetMatch(props: PathProps): () => [string, boolean] {
@@ -114,6 +126,6 @@ function createGetMatch(props: PathProps): () => [string, boolean] {
   return createMemo<[string, boolean]>(
     () => doesMatch(ctx, route(), props),
     undefined,
-    (a, b) => a && a[1] === b[1],
+    (a, b) => a && a[1] === b[1]
   );
 }

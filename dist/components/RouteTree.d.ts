@@ -1,5 +1,5 @@
-import { UnionToIntersection } from 'ts-essentials';
-import { RouteLike } from './Link';
+import { UnionToIntersection } from "ts-essentials";
+import { RouteLike } from "./Link";
 /**
  * Given a tree of routes and render instructions for each route, return an
  * element that selects the correct renderer for the current route.
@@ -64,18 +64,18 @@ export declare function passthru<T>(props: {
 /** A tree of route path segments. Has the same structure as a
  * [[RenderTreeLike]], but the spine of the tree is fixed to use the given
  * [[Tree]] */
-export declare type RenderTreeOf<Tree> = Owned<Tree> | RenderNode & UnionToIntersection<Tree extends readonly (infer Node)[] ? Node extends {
+export declare type RenderTreeOf<Tree> = Owned<Tree> | (RenderNode & UnionToIntersection<Tree extends readonly (infer Node)[] ? Node extends {
     name: infer Name;
     children?: infer Children;
-} ? Name extends (string | number | symbol) ? Children extends {} ? {
+} ? Name extends string | number | symbol ? Children extends {} ? {
     [K in Name]?: RenderTreeOf<Children>;
 } : {
     [K in Name]?: Owned<Children> | RenderNode;
-} : never : never : never>;
+} : never : never : never>);
 export declare type OwnedBy<Tree, Props> = GetPropsWith<GetProps<Props>, UnionToIntersection<Tree extends readonly (infer Node)[] ? Node extends {
     name: infer Name;
     children?: infer Children;
-} ? Name extends (string | number | symbol) ? Children extends {} ? {
+} ? Name extends string | number | symbol ? Children extends {} ? {
     [K in Name]?: GetPropsWith<GetProps<Props>, OwnedBy<Children, Props>>;
 } : {
     [K in Name]?: GetProps<Props>;

@@ -175,16 +175,12 @@ const alwaysInactive = () => false;
 
 dom.delegateEvents(["click"]);
 
-const _ck$ = ["children"],
-      _ck$2 = ["children", "fallback"],
-      _ck$3 = ["children", "value"],
-      _ck$4 = ["children", "when"];
-const MatchContext = solidJs.createContext('');
+const MatchContext = solidJs.createContext("");
 
 function doesMatch(ctx, here, props) {
   const suffix = props.path !== undefined ? props.path : props.prefix;
   const exact = props.path !== undefined;
-  const target = ctx !== '' ? `${ctx}.${suffix}` : suffix;
+  const target = ctx !== "" ? `${ctx}.${suffix}` : suffix;
   return [target, exact ? here === target : here.startsWith(target)];
 }
 /**
@@ -207,16 +203,27 @@ function SwitchRoutes(props) {
     }
 
     return undefined;
-  }, undefined, (a, b) => a === b || a !== undefined && b !== undefined && a[0] === b[0]);
+  }, undefined, (a, b) => {
+    const same = a === b || a !== undefined && b !== undefined && a[0] === b[0];
+    return same;
+  });
   return () => {
     const ix = getIndex();
 
     if (ix !== undefined) {
       const [i, target] = ix;
+      console.log({
+        i,
+        target
+      });
       return dom.createComponent(MatchContext.Provider, {
         value: target,
-        children: () => props.children[i].children
-      }, _ck$);
+
+        get children() {
+          return props.children[i].children;
+        }
+
+      });
     }
 
     return props.fallback;
@@ -232,12 +239,23 @@ function ShowRoute(props) {
     const [target, when] = getMatch();
     return dom.createComponent(dom.Show, {
       when: when,
-      fallback: () => props.fallback,
-      children: () => dom.createComponent(MatchContext.Provider, {
-        value: target,
-        children: () => props.children
-      }, _ck$)
-    }, _ck$2);
+
+      get fallback() {
+        return props.fallback;
+      },
+
+      get children() {
+        return dom.createComponent(MatchContext.Provider, {
+          value: target,
+
+          get children() {
+            return props.children;
+          }
+
+        });
+      }
+
+    });
   };
 }
 /**
@@ -247,12 +265,24 @@ function ShowRoute(props) {
 function MatchRoute(props) {
   const getMatch = createGetMatch(props);
   return dom.createComponent(dom.Match, {
-    when: () => getMatch()[1],
-    children: () => dom.createComponent(MatchContext.Provider, {
-      value: () => getMatch()[0],
-      children: () => props.children
-    }, _ck$3)
-  }, _ck$4);
+    get when() {
+      return getMatch()[1];
+    },
+
+    get children() {
+      return dom.createComponent(MatchContext.Provider, {
+        get value() {
+          return getMatch()[0];
+        },
+
+        get children() {
+          return props.children;
+        }
+
+      });
+    }
+
+  });
 }
 
 function createGetMatch(props) {
@@ -261,7 +291,6 @@ function createGetMatch(props) {
   return solidJs.createMemo(() => doesMatch(ctx, route(), props), undefined, (a, b) => a && a[1] === b[1]);
 }
 
-const _ck$$1 = ["children"];
 /**
  * Given a tree of routes and render instructions for each route, return an
  * element that selects the correct renderer for the current route.
@@ -282,7 +311,7 @@ function RouteStateMachine(tree, _assumed) {
       for (const key in node) {
         const gp = node[key];
 
-        if (typeof gp === 'function') {
+        if (typeof gp === "function") {
           const value = gp();
           next[key] = value;
           count++;
@@ -312,7 +341,7 @@ function RouteStateMachine(tree, _assumed) {
         if (next[k] === undefined) {
           const fn = defaultGetProps[k];
 
-          if (typeof fn === 'function') {
+          if (typeof fn === "function") {
             next[k] = fn();
             count++;
           }
@@ -334,11 +363,11 @@ function RouteStateMachine(tree, _assumed) {
         setState(next);
       }
     });
-    return dom.createComponent(Render, Object.assign(Object.keys(state).reduce((m$, k$) => (m$[k$] = () => state[k$], m$), {}), {}), Object.keys(state));
+    return () => Render(state);
   }
 
   function traverse(path, node) {
-    if (typeof node === 'function') {
+    if (typeof node === "function") {
       return node(function (owned) {
         const {
           props,
@@ -367,11 +396,14 @@ function RouteStateMachine(tree, _assumed) {
     }
 
     return dom.createComponent(RenderHere, {
-      children: () => dom.createComponent(SwitchRoutes, {
-        fallback: fallback,
-        children: children
-      })
-    }, _ck$$1);
+      get children() {
+        return dom.createComponent(SwitchRoutes, {
+          fallback: fallback,
+          children: children
+        });
+      }
+
+    });
   }
 
   return traverse([], tree);
@@ -385,7 +417,6 @@ function passthru(props) {
   return props.children;
 }
 
-const _ck$$2 = ["children"];
 /**
  * Create a router for use in solid-js.
  *
@@ -478,8 +509,12 @@ function createSolidRouter(routes, {
       });
       return dom.createComponent(Context.Provider, {
         value: value,
-        children: () => props.children
-      }, _ck$$2);
+
+        get children() {
+          return props.children;
+        }
+
+      });
     },
 
     router: self,
