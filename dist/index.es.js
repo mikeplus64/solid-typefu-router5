@@ -1,5 +1,5 @@
-import { spread, effect, classList, setAttribute, template, delegateEvents, createComponent, Show, Match } from 'solid-js/dom';
-import { useContext, createContext, createMemo, createState, createEffect, createSignal, onCleanup } from 'solid-js';
+import { spread, effect, classList, setAttribute, template, delegateEvents, createComponent, Show, Match, assignProps, dynamicProperty } from 'solid-js/dom';
+import { useContext, createContext, createMemo, untrack, createState, createEffect, createSignal, onCleanup } from 'solid-js';
 
 const Context = createContext();
 function useRoute() {
@@ -204,15 +204,11 @@ function SwitchRoutes(props) {
     const same = a === b || a !== undefined && b !== undefined && a[0] === b[0];
     return same;
   });
-  return () => {
+  return createMemo(() => {
     const ix = getIndex();
 
     if (ix !== undefined) {
       const [i, target] = ix;
-      console.log({
-        i,
-        target
-      });
       return createComponent(MatchContext.Provider, {
         value: target,
 
@@ -224,7 +220,7 @@ function SwitchRoutes(props) {
     }
 
     return props.fallback;
-  };
+  });
 }
 /**
  * Create a [[Show]] node against a given route.
@@ -302,27 +298,37 @@ function RouteStateMachine(tree, _assumed) {
   function traverseHydrate(path0, node0, Render, defaultGetProps, defaultProps) {
     const [state, setState] = createState(defaultProps !== null && defaultProps !== void 0 ? defaultProps : {});
     const numDefaultGetProps = Object.keys(defaultProps !== null && defaultProps !== void 0 ? defaultProps : {}).length;
-    const getPathSuffix = createMemo(() => [name, getRouteName().slice(path0.length)], undefined, (a, b) => a && a[0] === b[0]);
+    const getPathSuffix = createMemo(() => getRouteName().slice(path0.length), [], (a, b) => {
+      if (a === b) return true;
+      if (a.length !== b.length) return false;
 
-    function populate(path, node, next, count) {
+      for (let i = 0; i < a.length; i++) {
+        const x = a[i];
+        const y = b[i];
+        if (x !== y) return false;
+      }
+
+      return true;
+    });
+
+    function populate(path, node, next, counter) {
       for (const key in node) {
         const gp = node[key];
 
         if (typeof gp === "function") {
           const value = gp();
+          if (value === state[key]) continue;
           next[key] = value;
-          count++;
+          counter.count++;
           continue;
         }
 
         if (gp !== undefined) {
           if (path[0] === key) {
-            return populate(path.slice(1), gp, next, count);
+            populate(path.slice(1), gp, next, counter);
           }
         }
       }
-
-      return count;
     }
 
     function populateFromDefaultGetProps(next) {
@@ -350,7 +356,11 @@ function RouteStateMachine(tree, _assumed) {
 
     createEffect(() => {
       const next = {};
-      let got = populate(getPathSuffix()[1], node0, next, 0);
+      const counter = {
+        count: 0
+      };
+      populate(getPathSuffix(), node0, next, counter);
+      let got = counter.count;
 
       if (got < numDefaultGetProps) {
         got += populateFromDefaultGetProps(next);
@@ -360,7 +370,10 @@ function RouteStateMachine(tree, _assumed) {
         setState(next);
       }
     });
-    return () => Render(state);
+    return () => {
+      console.log("rendering owned", path0);
+      return createComponent(Render, assignProps(Object.keys(state).reduce((m$, k$) => (m$[k$] = () => state[k$], dynamicProperty(m$, k$)), {}), {}));
+    };
   }
 
   function traverse(path, node) {
@@ -388,11 +401,11 @@ function RouteStateMachine(tree, _assumed) {
       const child = routes[key];
       children.push({
         prefix: key,
-        children: () => traverse(next, child)
+        children: traverse(next, child)
       });
     }
 
-    return createComponent(RenderHere, {
+    return () => createComponent(RenderHere, {
       get children() {
         return createComponent(SwitchRoutes, {
           fallback: fallback,
@@ -403,7 +416,7 @@ function RouteStateMachine(tree, _assumed) {
     });
   }
 
-  return traverse([], tree);
+  return untrack(() => traverse([], tree));
 }
 /**
  * Helper function. Use this as a [[render]] function to just render the
