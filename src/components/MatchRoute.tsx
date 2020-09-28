@@ -53,7 +53,6 @@ export function SwitchRoutes(props: {
 }): JSX.Element {
   const ctx = useContext(MatchContext);
   const route = useRouteNameRaw();
-
   const getIndex = createMemo<undefined | [number, string]>(
     () => {
       const here = route();
@@ -71,12 +70,10 @@ export function SwitchRoutes(props: {
       return same;
     }
   );
-
-  return () => {
+  return createMemo(() => {
     const ix = getIndex();
     if (ix !== undefined) {
       const [i, target] = ix;
-      console.log({ i, target });
       return (
         <MatchContext.Provider value={target}>
           {props.children[i].children}
@@ -84,7 +81,7 @@ export function SwitchRoutes(props: {
       );
     }
     return props.fallback;
-  };
+  });
 }
 
 export type ShowRouteProps = MatchRouteProps & { fallback?: JSX.Element };

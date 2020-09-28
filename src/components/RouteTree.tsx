@@ -1,5 +1,5 @@
 import { UnionToIntersection } from "ts-essentials";
-import { createState, createEffect, createMemo } from "solid-js";
+import { createState, createEffect, createMemo, untrack } from "solid-js";
 import { useRouteName } from "../context";
 import { MatchRouteProps, SwitchRoutes } from "./MatchRoute";
 import { RouteLike } from "./Link";
@@ -28,33 +28,42 @@ export default function RouteStateMachine<
 
     const numDefaultGetProps = Object.keys(defaultProps ?? {}).length;
 
-    const getPathSuffix = createMemo<[string, string[]]>(
-      () => [name, getRouteName().slice(path0.length)],
-      undefined,
-      (a, b) => a && a[0] === b[0]
+    const getPathSuffix = createMemo<string[]>(
+      () => getRouteName().slice(path0.length),
+      [],
+      (a, b) => {
+        if (a === b) return true;
+        if (a.length !== b.length) return false;
+        for (let i = 0; i < a.length; i++) {
+          const x = a[i];
+          const y = b[i];
+          if (x !== y) return false;
+        }
+        return true;
+      }
     );
 
     function populate(
       path: string[],
       node: GetPropsLike<Props>,
       next: Partial<Props>,
-      count: number
-    ): number {
+      counter: { count: number }
+    ) {
       for (const key in node) {
         const gp = (node as GetProps<Props>)[key as keyof Props];
         if (typeof gp === "function") {
           const value = gp();
+          if (value === (state as Props)[key as keyof Props]) continue;
           next[key as keyof Props] = value;
-          count++;
+          counter.count++;
           continue;
         }
         if (gp !== undefined) {
           if (path[0] === key) {
-            return populate(path.slice(1), gp as any, next, count);
+            populate(path.slice(1), gp as any, next, counter);
           }
         }
       }
-      return count;
     }
 
     function populateFromDefaultGetProps(next: Partial<Props>): number {
@@ -77,7 +86,9 @@ export default function RouteStateMachine<
 
     createEffect(() => {
       const next: Partial<Props> = {};
-      let got = populate(getPathSuffix()[1], node0, next, 0);
+      const counter = { count: 0 };
+      populate(getPathSuffix(), node0, next, counter);
+      let got = counter.count;
       if (got < numDefaultGetProps) {
         got += populateFromDefaultGetProps(next);
       }
@@ -86,7 +97,10 @@ export default function RouteStateMachine<
       }
     });
 
-    return () => Render(state as Props);
+    return () => {
+      console.log("rendering owned", path0);
+      return <Render {...(state as Props)} />;
+    };
   }
 
   function traverse(
@@ -107,26 +121,24 @@ export default function RouteStateMachine<
     }
 
     const children: MatchRouteProps[] = [];
-
     const { render: RenderHere = passthru, fallback, ...routes } = node;
-
     for (const key in routes) {
       const next = [...path, key];
       const child = routes[key]!;
       children.push({
         prefix: key,
-        children: () => traverse(next, child),
+        children: traverse(next, child),
       });
     }
 
-    return (
+    return () => (
       <RenderHere>
         <SwitchRoutes fallback={fallback} children={children} />
       </RenderHere>
     );
   }
 
-  return traverse([], tree as RenderTreeOf<RouteTreeLike>);
+  return untrack(() => traverse([], tree as RenderTreeOf<RouteTreeLike>));
 }
 
 /**
