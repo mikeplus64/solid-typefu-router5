@@ -1,5 +1,11 @@
 import { UnionToIntersection } from "ts-essentials";
-import { createState, createEffect, createMemo, untrack } from "solid-js";
+import {
+  createState,
+  createSignal,
+  createEffect,
+  createMemo,
+  untrack,
+} from "solid-js";
 import { useRouteName } from "../context";
 import { MatchRouteProps, SwitchRoutes } from "./MatchRoute";
 import { RouteLike } from "./Link";
@@ -24,9 +30,8 @@ export default function RouteStateMachine<
     defaultGetProps: undefined | GetProps<Props>,
     defaultProps: undefined | Props
   ): JSX.Element {
+    const [populated, setPopulated] = createSignal(false);
     const [state, setState] = createState<Props>(defaultProps ?? ({} as Props));
-
-    const numDefaultGetProps = Object.keys(defaultProps ?? {}).length;
 
     const getPathSuffix = createMemo<string[]>(
       () => getRouteName().slice(path0.length),
@@ -47,15 +52,16 @@ export default function RouteStateMachine<
       path: string[],
       node: GetPropsLike<Props>,
       next: Partial<Props>,
-      counter: { count: number }
+      counter: { populated: number; updated: number }
     ) {
       for (const key in node) {
         const gp = (node as GetProps<Props>)[key as keyof Props];
         if (typeof gp === "function") {
           const value = gp();
+          counter.populated++;
           if (value === (state as Props)[key as keyof Props]) continue;
           next[key as keyof Props] = value;
-          counter.count++;
+          counter.updated++;
           continue;
         }
         if (gp !== undefined) {
@@ -66,40 +72,45 @@ export default function RouteStateMachine<
       }
     }
 
-    function populateFromDefaultGetProps(next: Partial<Props>): number {
+    function populateFromDefaultGetProps(
+      next: Partial<Props>,
+      counter: { populated: number; updated: number }
+    ) {
       if (defaultGetProps === undefined) {
-        return 0;
+        return;
       }
-      let count = 0;
       for (const k_ in defaultGetProps) {
         const k: keyof Props = k_;
         if (next[k] === undefined) {
           const fn = defaultGetProps[k];
           if (typeof fn === "function") {
-            next[k as keyof Props] = fn();
-            count++;
+            const value = fn();
+            counter.populated++;
+            if (value !== next[k as keyof Props]) {
+              next[k as keyof Props] = value;
+              counter.updated++;
+            }
           }
         }
       }
-      return count;
     }
 
     createEffect(() => {
-      const next: Partial<Props> = {};
-      const counter = { count: 0 };
-      populate(getPathSuffix(), node0, next, counter);
-      let got = counter.count;
-      if (got < numDefaultGetProps) {
-        got += populateFromDefaultGetProps(next);
-      }
-      if (got > 0) {
-        setState(next);
-      }
+      const suffix = getPathSuffix();
+      untrack(() => {
+        const next: Partial<Props> = { ...(state as Props) };
+        const counter = { populated: 0, updated: 0 };
+        populate(suffix, node0, next, counter);
+        populateFromDefaultGetProps(next, counter);
+        if (counter.updated > 0) {
+          setState(next);
+        }
+        setPopulated(true);
+      });
     });
 
     return () => {
-      console.log("rendering owned", path0);
-      return <Render {...(state as Props)} />;
+      return populated() ? <Render {...(state as Props)} /> : undefined;
     };
   }
 

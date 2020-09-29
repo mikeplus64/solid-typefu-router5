@@ -1,5 +1,5 @@
 import { spread, effect, classList, setAttribute, template, delegateEvents, createComponent, Show, Match, assignProps, dynamicProperty } from 'solid-js/dom';
-import { useContext, createContext, createMemo, untrack, createState, createEffect, createSignal, onCleanup } from 'solid-js';
+import { useContext, createContext, createMemo, untrack, createSignal, createState, createEffect, onCleanup } from 'solid-js';
 
 const Context = createContext();
 function useRoute() {
@@ -296,8 +296,8 @@ function RouteStateMachine(tree, _assumed) {
   const getRouteName = useRouteName();
 
   function traverseHydrate(path0, node0, Render, defaultGetProps, defaultProps) {
+    const [populated, setPopulated] = createSignal(false);
     const [state, setState] = createState(defaultProps !== null && defaultProps !== void 0 ? defaultProps : {});
-    const numDefaultGetProps = Object.keys(defaultProps !== null && defaultProps !== void 0 ? defaultProps : {}).length;
     const getPathSuffix = createMemo(() => getRouteName().slice(path0.length), [], (a, b) => {
       if (a === b) return true;
       if (a.length !== b.length) return false;
@@ -317,9 +317,10 @@ function RouteStateMachine(tree, _assumed) {
 
         if (typeof gp === "function") {
           const value = gp();
+          counter.populated++;
           if (value === state[key]) continue;
           next[key] = value;
-          counter.count++;
+          counter.updated++;
           continue;
         }
 
@@ -331,12 +332,10 @@ function RouteStateMachine(tree, _assumed) {
       }
     }
 
-    function populateFromDefaultGetProps(next) {
+    function populateFromDefaultGetProps(next, counter) {
       if (defaultGetProps === undefined) {
-        return 0;
+        return;
       }
-
-      let count = 0;
 
       for (const k_ in defaultGetProps) {
         const k = k_;
@@ -345,34 +344,39 @@ function RouteStateMachine(tree, _assumed) {
           const fn = defaultGetProps[k];
 
           if (typeof fn === "function") {
-            next[k] = fn();
-            count++;
+            const value = fn();
+            counter.populated++;
+
+            if (value !== next[k]) {
+              next[k] = value;
+              counter.updated++;
+            }
           }
         }
       }
-
-      return count;
     }
 
     createEffect(() => {
-      const next = {};
-      const counter = {
-        count: 0
-      };
-      populate(getPathSuffix(), node0, next, counter);
-      let got = counter.count;
+      const suffix = getPathSuffix();
+      untrack(() => {
+        const next = { ...state
+        };
+        const counter = {
+          populated: 0,
+          updated: 0
+        };
+        populate(suffix, node0, next, counter);
+        populateFromDefaultGetProps(next, counter);
 
-      if (got < numDefaultGetProps) {
-        got += populateFromDefaultGetProps(next);
-      }
+        if (counter.updated > 0) {
+          setState(next);
+        }
 
-      if (got > 0) {
-        setState(next);
-      }
+        setPopulated(true);
+      });
     });
     return () => {
-      console.log("rendering owned", path0);
-      return createComponent(Render, assignProps(Object.keys(state).reduce((m$, k$) => (m$[k$] = () => state[k$], dynamicProperty(m$, k$)), {}), {}));
+      return populated() ? createComponent(Render, assignProps(Object.keys(state).reduce((m$, k$) => (m$[k$] = () => state[k$], dynamicProperty(m$, k$)), {}), {})) : undefined;
     };
   }
 
