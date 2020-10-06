@@ -1,5 +1,5 @@
-import { spread, effect, classList, setAttribute, template, delegateEvents, createComponent, Show, Match, assignProps, dynamicProperty } from 'solid-js/dom';
-import { useContext, createContext, createMemo, untrack, createSignal, createState, createEffect, onCleanup } from 'solid-js';
+import { spread, effect, classList, setAttribute, template, delegateEvents, createComponent, Show, Match } from 'solid-js/dom';
+import { useContext, createContext, createMemo, untrack, createComponent as createComponent$1, createState, createComputed, createSignal, createEffect, onCleanup } from 'solid-js';
 
 const Context = createContext();
 function useRoute() {
@@ -295,9 +295,9 @@ function createGetMatch(props) {
 function RouteStateMachine(tree, _assumed) {
   const getRouteName = useRouteName();
 
-  function traverseHydrate(path0, node0, Render, defaultGetProps, defaultProps) {
-    const [populated, setPopulated] = createSignal(false);
-    const [state, setState] = createState(defaultProps !== null && defaultProps !== void 0 ? defaultProps : {});
+  function traverseHydrate(path0, node0, Render, defaultProps) {
+    const noProps = defaultProps !== null && defaultProps !== void 0 ? defaultProps : {};
+    const [state, setState] = createState(noProps);
     const getPathSuffix = createMemo(() => getRouteName().slice(path0.length), [], (a, b) => {
       if (a === b) return true;
       if (a.length !== b.length) return false;
@@ -317,7 +317,6 @@ function RouteStateMachine(tree, _assumed) {
 
         if (typeof gp === "function") {
           const value = gp();
-          counter.populated++;
           if (value === state[key]) continue;
           next[key] = value;
           counter.updated++;
@@ -332,52 +331,22 @@ function RouteStateMachine(tree, _assumed) {
       }
     }
 
-    function populateFromDefaultGetProps(next, counter) {
-      if (defaultGetProps === undefined) {
-        return;
-      }
-
-      for (const k_ in defaultGetProps) {
-        const k = k_;
-
-        if (next[k] === undefined) {
-          const fn = defaultGetProps[k];
-
-          if (typeof fn === "function") {
-            const value = fn();
-            counter.populated++;
-
-            if (value !== next[k]) {
-              next[k] = value;
-              counter.updated++;
-            }
-          }
-        }
-      }
-    }
-
-    createEffect(() => {
+    createComputed(() => {
       const suffix = getPathSuffix();
       untrack(() => {
         const next = { ...state
         };
         const counter = {
-          populated: 0,
           updated: 0
         };
         populate(suffix, node0, next, counter);
-        populateFromDefaultGetProps(next, counter);
 
         if (counter.updated > 0) {
           setState(next);
         }
-
-        setPopulated(true);
       });
     });
-    return () => {
-      return populated() ? createComponent(Render, assignProps(Object.keys(state).reduce((m$, k$) => (m$[k$] = () => state[k$], dynamicProperty(m$, k$)), {}), {})) : undefined;
-    };
+    return createComponent$1(Render, state);
   }
 
   function traverse(path, node) {
@@ -386,10 +355,9 @@ function RouteStateMachine(tree, _assumed) {
         const {
           props,
           render,
-          defaultGetProps,
           defaultProps
         } = owned;
-        return traverseHydrate(path, props, render, defaultGetProps, defaultProps);
+        return () => traverseHydrate(path, props, render, defaultProps);
       });
     }
 

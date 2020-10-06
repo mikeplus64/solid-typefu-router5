@@ -32,11 +32,6 @@ export interface OwnedOps<Tree, Props> {
      */
     defaultProps?: Props;
     /**
-     * Default prop values for when no matches are found. Props that are optional
-     * should be typed as such within [[Props]] itself.
-     */
-    defaultGetProps?: GetProps<Props>;
-    /**
      * A tree of route paths and prop getters. A prop getter is a function of type
      * `() => PropValue`. The key of the getter determines what prop it gets, and
      * the type of that prop.
@@ -106,7 +101,6 @@ export declare type OwnedLike = <R>(cont: <Props>(self: OwnedOpsLike<Props>) => 
 export interface OwnedOpsLike<Props> {
     render: (props: Props) => JSX.Element;
     defaultProps?: Props;
-    defaultGetProps?: GetProps<Props>;
     props: GetPropsLike<Props>;
 }
 export declare type DescendDef<Path, Tree> = Path extends [infer P1, ...infer PS] ? Tree extends readonly (infer Node)[] ? Node extends {

@@ -1,9 +1,9 @@
 import { UnionToIntersection } from "ts-essentials";
 import {
-  createState,
-  createSignal,
-  createEffect,
+  createComponent,
+  createComputed,
   createMemo,
+  createState,
   untrack,
 } from "solid-js";
 import { useRouteName } from "../context";
@@ -27,11 +27,10 @@ export default function RouteStateMachine<
     path0: string[],
     node0: GetPropsLike<Props>,
     Render: (props: Props) => JSX.Element,
-    defaultGetProps: undefined | GetProps<Props>,
     defaultProps: undefined | Props
   ): JSX.Element {
-    const [populated, setPopulated] = createSignal(false);
-    const [state, setState] = createState<Props>(defaultProps ?? ({} as Props));
+    const noProps = defaultProps ?? ({} as Props);
+    const [state, setState] = createState(noProps);
 
     const getPathSuffix = createMemo<string[]>(
       () => getRouteName().slice(path0.length),
@@ -52,13 +51,12 @@ export default function RouteStateMachine<
       path: string[],
       node: GetPropsLike<Props>,
       next: Partial<Props>,
-      counter: { populated: number; updated: number }
+      counter: { updated: number }
     ) {
       for (const key in node) {
         const gp = (node as GetProps<Props>)[key as keyof Props];
         if (typeof gp === "function") {
           const value = gp();
-          counter.populated++;
           if (value === (state as Props)[key as keyof Props]) continue;
           next[key as keyof Props] = value;
           counter.updated++;
@@ -72,46 +70,19 @@ export default function RouteStateMachine<
       }
     }
 
-    function populateFromDefaultGetProps(
-      next: Partial<Props>,
-      counter: { populated: number; updated: number }
-    ) {
-      if (defaultGetProps === undefined) {
-        return;
-      }
-      for (const k_ in defaultGetProps) {
-        const k: keyof Props = k_;
-        if (next[k] === undefined) {
-          const fn = defaultGetProps[k];
-          if (typeof fn === "function") {
-            const value = fn();
-            counter.populated++;
-            if (value !== next[k as keyof Props]) {
-              next[k as keyof Props] = value;
-              counter.updated++;
-            }
-          }
-        }
-      }
-    }
-
-    createEffect(() => {
+    createComputed(() => {
       const suffix = getPathSuffix();
       untrack(() => {
         const next: Partial<Props> = { ...(state as Props) };
-        const counter = { populated: 0, updated: 0 };
+        const counter = { updated: 0 };
         populate(suffix, node0, next, counter);
-        populateFromDefaultGetProps(next, counter);
         if (counter.updated > 0) {
           setState(next);
         }
-        setPopulated(true);
       });
     });
 
-    return () => {
-      return populated() ? <Render {...(state as Props)} /> : undefined;
-    };
+    return createComponent(Render, state as Props);
   }
 
   function traverse(
@@ -120,14 +91,8 @@ export default function RouteStateMachine<
   ): JSX.Element {
     if (typeof node === "function") {
       return node(function <Props>(owned: OwnedOps<RouteTreeLike, Props>) {
-        const { props, render, defaultGetProps, defaultProps } = owned;
-        return traverseHydrate(
-          path,
-          props,
-          render,
-          defaultGetProps,
-          defaultProps
-        );
+        const { props, render, defaultProps } = owned;
+        return () => traverseHydrate(path, props, render, defaultProps);
       });
     }
 
@@ -175,12 +140,6 @@ export interface OwnedOps<Tree, Props> {
    * should be typed as such within [[Props]] itself.
    */
   defaultProps?: Props;
-
-  /**
-   * Default prop values for when no matches are found. Props that are optional
-   * should be typed as such within [[Props]] itself.
-   */
-  defaultGetProps?: GetProps<Props>;
 
   /**
    * A tree of route paths and prop getters. A prop getter is a function of type
@@ -273,7 +232,6 @@ export type OwnedLike = <R>(cont: <Props>(self: OwnedOpsLike<Props>) => R) => R;
 export interface OwnedOpsLike<Props> {
   render: (props: Props) => JSX.Element;
   defaultProps?: Props;
-  defaultGetProps?: GetProps<Props>;
   props: GetPropsLike<Props>;
 }
 

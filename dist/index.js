@@ -298,9 +298,9 @@ function createGetMatch(props) {
 function RouteStateMachine(tree, _assumed) {
   const getRouteName = useRouteName();
 
-  function traverseHydrate(path0, node0, Render, defaultGetProps, defaultProps) {
-    const [populated, setPopulated] = solidJs.createSignal(false);
-    const [state, setState] = solidJs.createState(defaultProps !== null && defaultProps !== void 0 ? defaultProps : {});
+  function traverseHydrate(path0, node0, Render, defaultProps) {
+    const noProps = defaultProps !== null && defaultProps !== void 0 ? defaultProps : {};
+    const [state, setState] = solidJs.createState(noProps);
     const getPathSuffix = solidJs.createMemo(() => getRouteName().slice(path0.length), [], (a, b) => {
       if (a === b) return true;
       if (a.length !== b.length) return false;
@@ -320,7 +320,6 @@ function RouteStateMachine(tree, _assumed) {
 
         if (typeof gp === "function") {
           const value = gp();
-          counter.populated++;
           if (value === state[key]) continue;
           next[key] = value;
           counter.updated++;
@@ -335,52 +334,22 @@ function RouteStateMachine(tree, _assumed) {
       }
     }
 
-    function populateFromDefaultGetProps(next, counter) {
-      if (defaultGetProps === undefined) {
-        return;
-      }
-
-      for (const k_ in defaultGetProps) {
-        const k = k_;
-
-        if (next[k] === undefined) {
-          const fn = defaultGetProps[k];
-
-          if (typeof fn === "function") {
-            const value = fn();
-            counter.populated++;
-
-            if (value !== next[k]) {
-              next[k] = value;
-              counter.updated++;
-            }
-          }
-        }
-      }
-    }
-
-    solidJs.createEffect(() => {
+    solidJs.createComputed(() => {
       const suffix = getPathSuffix();
       solidJs.untrack(() => {
         const next = { ...state
         };
         const counter = {
-          populated: 0,
           updated: 0
         };
         populate(suffix, node0, next, counter);
-        populateFromDefaultGetProps(next, counter);
 
         if (counter.updated > 0) {
           setState(next);
         }
-
-        setPopulated(true);
       });
     });
-    return () => {
-      return populated() ? dom.createComponent(Render, dom.assignProps(Object.keys(state).reduce((m$, k$) => (m$[k$] = () => state[k$], dom.dynamicProperty(m$, k$)), {}), {})) : undefined;
-    };
+    return solidJs.createComponent(Render, state);
   }
 
   function traverse(path, node) {
@@ -389,10 +358,9 @@ function RouteStateMachine(tree, _assumed) {
         const {
           props,
           render,
-          defaultGetProps,
           defaultProps
         } = owned;
-        return traverseHydrate(path, props, render, defaultGetProps, defaultProps);
+        return () => traverseHydrate(path, props, render, defaultProps);
       });
     }
 
