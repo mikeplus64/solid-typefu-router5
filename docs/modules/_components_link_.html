@@ -3,8 +3,8 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>&quot;components/Link&quot; | solid-typefu-router5 - v0.11.0</title>
-	<meta name="description" content="Documentation for solid-typefu-router5 - v0.11.0">
+	<title>&quot;components/Link&quot; | solid-typefu-router5 - v0.12.0</title>
+	<meta name="description" content="Documentation for solid-typefu-router5 - v0.12.0">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
 </head>
@@ -22,7 +22,7 @@
 						<li class="state loading">Preparing search index...</li>
 						<li class="state failure">The search index is not available</li>
 					</ul>
-					<a href="../index.html" class="title">solid-typefu-router5 - v0.11.0</a>
+					<a href="../index.html" class="title">solid-typefu-router5 - v0.12.0</a>
 				</div>
 				<div class="table-cell" id="tsd-widgets">
 					<div id="tsd-filter">
@@ -83,9 +83,13 @@
 						<section class="tsd-index-section ">
 							<h3>Type aliases</h3>
 							<ul class="tsd-index-list">
+								<li class="tsd-kind-type-alias tsd-parent-kind-module tsd-has-type-parameter"><a href="_components_link_.html#flattenroutename" class="tsd-kind-icon">Flatten<wbr>Route<wbr>Name</a></li>
 								<li class="tsd-kind-type-alias tsd-parent-kind-module tsd-has-type-parameter"><a href="_components_link_.html#linkprops" class="tsd-kind-icon">Link<wbr>Props</a></li>
+								<li class="tsd-kind-type-alias tsd-parent-kind-module tsd-has-type-parameter"><a href="_components_link_.html#routearrayof" class="tsd-kind-icon">Route<wbr>Array<wbr>Of</a></li>
 								<li class="tsd-kind-type-alias tsd-parent-kind-module"><a href="_components_link_.html#routelike" class="tsd-kind-icon">Route<wbr>Like</a></li>
 								<li class="tsd-kind-type-alias tsd-parent-kind-module tsd-has-type-parameter"><a href="_components_link_.html#routenameof" class="tsd-kind-icon">Route<wbr>Name<wbr>Of</a></li>
+								<li class="tsd-kind-type-alias tsd-parent-kind-module tsd-has-type-parameter"><a href="_components_link_.html#toroutearray" class="tsd-kind-icon">To<wbr>Route<wbr>Array</a></li>
+								<li class="tsd-kind-type-alias tsd-parent-kind-module tsd-has-type-parameter"><a href="_components_link_.html#unone" class="tsd-kind-icon">Un<wbr>One</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
@@ -107,12 +111,28 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Type aliases</h2>
 				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-parent-kind-module tsd-has-type-parameter">
+					<a name="flattenroutename" class="tsd-anchor"></a>
+					<h3>Flatten<wbr>Route<wbr>Name</h3>
+					<div class="tsd-signature tsd-kind-icon">Flatten<wbr>Route<wbr>Name&lt;A&gt;<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">A</span><span class="tsd-signature-symbol"> extends </span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol"> ? </span><span class="tsd-signature-type">X</span><span class="tsd-signature-symbol"> : </span><span class="tsd-signature-type">A</span><span class="tsd-signature-symbol"> extends </span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol"> ? </span><span class="tsd-signature-type">X</span><span class="tsd-signature-symbol"> extends </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> ? </span><span class="tsd-signature-type">XS</span><span class="tsd-signature-symbol"> extends </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> ? </span><span class="tsd-signature-type">&#x60;${X}.${FlattenRouteName&lt;XS&gt;}&#x60;</span><span class="tsd-signature-symbol"> : </span><span class="tsd-signature-type">never</span><span class="tsd-signature-symbol"> : </span><span class="tsd-signature-type">never</span><span class="tsd-signature-symbol"> : </span><span class="tsd-signature-type">A</span><span class="tsd-signature-symbol"> extends </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> ? </span><span class="tsd-signature-type">A</span><span class="tsd-signature-symbol"> : </span><span class="tsd-signature-type">""</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/776bbd2/src/components/Link.tsx#L157">src/components/Link.tsx:157</a></li>
+						</ul>
+					</aside>
+					<h4 class="tsd-type-parameters-title">Type parameters</h4>
+					<ul class="tsd-type-parameters">
+						<li>
+							<h4>A</h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-parent-kind-module tsd-has-type-parameter">
 					<a name="linkprops" class="tsd-anchor"></a>
 					<h3>Link<wbr>Props</h3>
 					<div class="tsd-signature tsd-kind-icon">Link<wbr>Props&lt;Route&gt;<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span>disabled<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span><span class="tsd-signature-symbol">; </span>nav<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span><span class="tsd-signature-symbol">; </span>navIgnoreParams<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span><span class="tsd-signature-symbol">; </span>onClick<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>ev<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">MouseEvent</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-symbol">{ </span>currentTarget<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">HTMLAnchorElement</span><span class="tsd-signature-symbol">; </span>target<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">HTMLAnchorElement</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-symbol">{ </span>params<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">; </span>to<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">; </span>type<span class="tsd-signature-symbol">: </span><a href="../enums/_components_link_.linknav.html#back" class="tsd-signature-type">Back</a><span class="tsd-signature-symbol"> | </span><a href="../enums/_components_link_.linknav.html#forward" class="tsd-signature-type">Forward</a><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">{ </span>params<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">; </span>to<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Route</span><span class="tsd-signature-symbol">; </span>type<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">Omit</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">IntrinsicElements</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"a"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"button"</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">"onClick"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"href"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"type"</span><span class="tsd-signature-symbol">&gt;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/70e6881/src/components/Link.tsx#L21">src/components/Link.tsx:21</a></li>
+							<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/776bbd2/src/components/Link.tsx#L24">src/components/Link.tsx:24</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -141,23 +161,71 @@
 						</li>
 					</ul>
 				</section>
+				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-parent-kind-module tsd-has-type-parameter">
+					<a name="routearrayof" class="tsd-anchor"></a>
+					<h3>Route<wbr>Array<wbr>Of</h3>
+					<div class="tsd-signature tsd-kind-icon">Route<wbr>Array<wbr>Of&lt;A&gt;<span class="tsd-signature-symbol">:</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/776bbd2/src/components/Link.tsx#L177">src/components/Link.tsx:177</a></li>
+						</ul>
+					</aside>
+					<h4 class="tsd-type-parameters-title">Type parameters</h4>
+					<ul class="tsd-type-parameters">
+						<li>
+							<h4>A</h4>
+						</li>
+					</ul>
+				</section>
 				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-parent-kind-module">
 					<a name="routelike" class="tsd-anchor"></a>
 					<h3>Route<wbr>Like</h3>
 					<div class="tsd-signature tsd-kind-icon">Route<wbr>Like<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/70e6881/src/components/Link.tsx#L45">src/components/Link.tsx:45</a></li>
+							<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/776bbd2/src/components/Link.tsx#L52">src/components/Link.tsx:52</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-parent-kind-module tsd-has-type-parameter">
 					<a name="routenameof" class="tsd-anchor"></a>
 					<h3>Route<wbr>Name<wbr>Of</h3>
-					<div class="tsd-signature tsd-kind-icon">Route<wbr>Name<wbr>Of&lt;A&gt;<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">UnOne</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Undefer</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Flatten</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TreeOf</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">A</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></div>
+					<div class="tsd-signature tsd-kind-icon">Route<wbr>Name<wbr>Of&lt;A&gt;<span class="tsd-signature-symbol">:</span> <a href="_components_link_.html#flattenroutename" class="tsd-signature-type">FlattenRouteName</a><span class="tsd-signature-symbol">&lt;</span><a href="_components_link_.html#routearrayof" class="tsd-signature-type">RouteArrayOf</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">A</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/70e6881/src/components/Link.tsx#L130">src/components/Link.tsx:130</a></li>
+							<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/776bbd2/src/components/Link.tsx#L169">src/components/Link.tsx:169</a></li>
+						</ul>
+					</aside>
+					<h4 class="tsd-type-parameters-title">Type parameters</h4>
+					<ul class="tsd-type-parameters">
+						<li>
+							<h4>A</h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-parent-kind-module tsd-has-type-parameter">
+					<a name="toroutearray" class="tsd-anchor"></a>
+					<h3>To<wbr>Route<wbr>Array</h3>
+					<div class="tsd-signature tsd-kind-icon">To<wbr>Route<wbr>Array&lt;A&gt;<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">A</span><span class="tsd-signature-symbol"> extends </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> ? </span><span class="tsd-signature-type">A</span><span class="tsd-signature-symbol"> extends </span><span class="tsd-signature-type">&#x60;${X}.${XS}&#x60;</span><span class="tsd-signature-symbol"> ? </span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol"> : </span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol"> : </span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-symbol">]</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/776bbd2/src/components/Link.tsx#L171">src/components/Link.tsx:171</a></li>
+						</ul>
+					</aside>
+					<h4 class="tsd-type-parameters-title">Type parameters</h4>
+					<ul class="tsd-type-parameters">
+						<li>
+							<h4>A</h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-parent-kind-module tsd-has-type-parameter">
+					<a name="unone" class="tsd-anchor"></a>
+					<h3>Un<wbr>One</h3>
+					<div class="tsd-signature tsd-kind-icon">Un<wbr>One&lt;A&gt;<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">A</span><span class="tsd-signature-symbol"> extends </span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol"> ? </span><span class="tsd-signature-type">U</span><span class="tsd-signature-symbol"> : </span><span class="tsd-signature-type">A</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/776bbd2/src/components/Link.tsx#L187">src/components/Link.tsx:187</a></li>
 						</ul>
 					</aside>
 					<h4 class="tsd-type-parameters-title">Type parameters</h4>
@@ -180,7 +248,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/70e6881/src/components/Link.tsx#L56">src/components/Link.tsx:56</a></li>
+									<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/776bbd2/src/components/Link.tsx#L63">src/components/Link.tsx:63</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-type-parameters-title">Type parameters</h4>
@@ -236,7 +304,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/70e6881/src/components/Link.tsx#L47">src/components/Link.tsx:47</a></li>
+									<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/776bbd2/src/components/Link.tsx#L54">src/components/Link.tsx:54</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -258,7 +326,7 @@
 					<div class="tsd-signature tsd-kind-icon">default<wbr>Link<wbr>Config<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/70e6881/src/components/Link.tsx#L52">src/components/Link.tsx:52</a></li>
+							<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/776bbd2/src/components/Link.tsx#L59">src/components/Link.tsx:59</a></li>
 						</ul>
 					</aside>
 					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
@@ -267,7 +335,7 @@
 						<div class="tsd-signature tsd-kind-icon">nav<wbr>Active<wbr>Class<wbr>Name<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;is-active&quot;</span></div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/70e6881/src/components/Link.tsx#L53">src/components/Link.tsx:53</a></li>
+								<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/776bbd2/src/components/Link.tsx#L60">src/components/Link.tsx:60</a></li>
 							</ul>
 						</aside>
 					</section>
@@ -309,13 +377,25 @@
 						<a href="../interfaces/_components_link_.linkconfig.html" class="tsd-kind-icon">Link<wbr>Config</a>
 					</li>
 					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-has-type-parameter">
+						<a href="_components_link_.html#flattenroutename" class="tsd-kind-icon">Flatten<wbr>Route<wbr>Name</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-has-type-parameter">
 						<a href="_components_link_.html#linkprops" class="tsd-kind-icon">Link<wbr>Props</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-has-type-parameter">
+						<a href="_components_link_.html#routearrayof" class="tsd-kind-icon">Route<wbr>Array<wbr>Of</a>
 					</li>
 					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
 						<a href="_components_link_.html#routelike" class="tsd-kind-icon">Route<wbr>Like</a>
 					</li>
 					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-has-type-parameter">
 						<a href="_components_link_.html#routenameof" class="tsd-kind-icon">Route<wbr>Name<wbr>Of</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-has-type-parameter">
+						<a href="_components_link_.html#toroutearray" class="tsd-kind-icon">To<wbr>Route<wbr>Array</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-has-type-parameter">
+						<a href="_components_link_.html#unone" class="tsd-kind-icon">Un<wbr>One</a>
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-module tsd-has-type-parameter">
 						<a href="_components_link_.html#createlink" class="tsd-kind-icon">create<wbr>Link</a>
