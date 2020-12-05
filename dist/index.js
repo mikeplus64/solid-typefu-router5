@@ -68,15 +68,16 @@ const _tmpl$ = dom.template(`<button disabled=""></button>`, 2),
       _tmpl$2 = dom.template(`<a></a>`, 2);
 
 (function (LinkNav) {
-  LinkNav[LinkNav["Back"] = 0] = "Back";
-  LinkNav[LinkNav["Forward"] = 1] = "Forward";
+  LinkNav["Back"] = "back";
+  LinkNav["Forward"] = "forward";
 })(exports.LinkNav || (exports.LinkNav = {}));
+
 function renderRouteLike(route) {
-  if (typeof route === 'string') return route;
-  return route.join('.');
+  if (typeof route === "string") return route;
+  return route.join(".");
 }
 const defaultLinkConfig = {
-  navActiveClassName: 'is-active'
+  navActiveClassName: "is-active"
 };
 function createLink(self, config = defaultLinkConfig) {
   const {
@@ -99,20 +100,13 @@ function createLink(self, config = defaultLinkConfig) {
 
       return classList;
     });
-    const getInnerProps = solidJs.createMemo(() => {
-      const {
-        classList: _cl,
-        onClick: _oc,
-        ...innerProps
-      } = props;
-      return innerProps;
-    });
+    const [linkProps, innerProps] = solidJs.splitProps(props, ["type", "onClick", "classList", "to", "params", "nav", "navIgnoreParams", "disabled"]);
     const getHref = solidJs.createMemo(() => {
       if (props.type === undefined) {
         try {
           return router5.buildPath(renderRouteLike(props.to), props.params);
         } catch (err) {
-          console.warn('<Link> buildPath failed:', err);
+          console.warn("<Link> buildPath failed:", err);
         }
       }
 
@@ -121,7 +115,7 @@ function createLink(self, config = defaultLinkConfig) {
     return () => props.disabled ? (() => {
       const _el$ = _tmpl$.cloneNode(true);
 
-      dom.spread(_el$, () => getInnerProps(), false, false);
+      dom.spread(_el$, innerProps, false, false);
 
       dom.effect(_$p => dom.classList(_el$, getClassList(), _$p));
 
@@ -130,14 +124,14 @@ function createLink(self, config = defaultLinkConfig) {
       const _el$2 = _tmpl$2.cloneNode(true);
 
       _el$2.__click = ev => {
-        var _props$params;
+        var _linkProps$params;
 
         ev.preventDefault();
 
         switch (props.type) {
           case undefined:
-            router5.navigate(renderRouteLike(props.to), (_props$params = props.params) !== null && _props$params !== void 0 ? _props$params : {});
-            if (typeof props.onClick === 'function') props.onClick(ev);
+            router5.navigate(renderRouteLike(linkProps.to), (_linkProps$params = linkProps.params) !== null && _linkProps$params !== void 0 ? _linkProps$params : {});
+            if (typeof linkProps.onClick === "function") linkProps.onClick(ev);
             break;
 
           case exports.LinkNav.Back:
@@ -152,7 +146,7 @@ function createLink(self, config = defaultLinkConfig) {
         ev.target.blur();
       };
 
-      dom.spread(_el$2, () => getInnerProps(), false, false);
+      dom.spread(_el$2, innerProps, false, false);
 
       dom.effect(_p$ => {
         const _v$ = getClassList(),

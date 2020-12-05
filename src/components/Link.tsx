@@ -1,10 +1,10 @@
 import { SharedRouterValue, RoutesLike } from "../types";
 import { useIsActive } from "../context";
-import { createMemo } from "solid-js";
+import { createMemo, splitProps } from "solid-js";
 
 export enum LinkNav {
-  Back,
-  Forward,
+  Back = "back",
+  Forward = "forward",
 }
 
 /** Props for making a `Link` component.
@@ -90,10 +90,16 @@ export default function createLink<
       return classList;
     });
 
-    const getInnerProps = createMemo(() => {
-      const { classList: _cl, onClick: _oc, ...innerProps } = props;
-      return innerProps;
-    });
+    const [linkProps, innerProps] = splitProps(props, [
+      "type",
+      "onClick",
+      "classList",
+      "to",
+      "params",
+      "nav",
+      "navIgnoreParams",
+      "disabled",
+    ]);
 
     const getHref: () => string | undefined = createMemo(() => {
       if (props.type === undefined) {
@@ -109,13 +115,13 @@ export default function createLink<
     return () =>
       props.disabled ? (
         <button
-          {...(getInnerProps() as JSX.IntrinsicElements["button"])}
+          {...(innerProps as JSX.IntrinsicElements["button"])}
           disabled
           classList={getClassList()}
         />
       ) : (
         <a
-          {...(getInnerProps() as JSX.IntrinsicElements["a"])}
+          {...(innerProps as JSX.IntrinsicElements["a"])}
           classList={getClassList()}
           href={getHref()}
           onClick={(ev) => {
@@ -123,10 +129,11 @@ export default function createLink<
             switch (props.type) {
               case undefined:
                 router5.navigate(
-                  renderRouteLike(props.to as RouteLike),
-                  props.params ?? {}
+                  renderRouteLike(linkProps.to as RouteLike),
+                  linkProps.params ?? {}
                 );
-                if (typeof props.onClick === "function") props.onClick(ev);
+                if (typeof linkProps.onClick === "function")
+                  linkProps.onClick(ev);
                 break;
               case LinkNav.Back:
                 window.history.back();

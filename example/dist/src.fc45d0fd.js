@@ -3036,17 +3036,17 @@ var LinkNav;
 exports.LinkNav = LinkNav;
 
 (function (LinkNav) {
-  LinkNav[LinkNav["Back"] = 0] = "Back";
-  LinkNav[LinkNav["Forward"] = 1] = "Forward";
+  LinkNav["Back"] = "back";
+  LinkNav["Forward"] = "forward";
 })(LinkNav || (exports.LinkNav = LinkNav = {}));
 
 function renderRouteLike(route) {
-  if (typeof route === 'string') return route;
-  return route.join('.');
+  if (typeof route === "string") return route;
+  return route.join(".");
 }
 
 const defaultLinkConfig = {
-  navActiveClassName: 'is-active'
+  navActiveClassName: "is-active"
 };
 
 function createLink(self, config = defaultLinkConfig) {
@@ -3070,20 +3070,13 @@ function createLink(self, config = defaultLinkConfig) {
 
       return classList;
     });
-    const getInnerProps = (0, _solidJs.createMemo)(() => {
-      const {
-        classList: _cl,
-        onClick: _oc,
-        ...innerProps
-      } = props;
-      return innerProps;
-    });
+    const [linkProps, innerProps] = (0, _solidJs.splitProps)(props, ["type", "onClick", "classList", "to", "params", "nav", "navIgnoreParams", "disabled"]);
     const getHref = (0, _solidJs.createMemo)(() => {
       if (props.type === undefined) {
         try {
           return router5.buildPath(renderRouteLike(props.to), props.params);
         } catch (err) {
-          console.warn('<Link> buildPath failed:', err);
+          console.warn("<Link> buildPath failed:", err);
         }
       }
 
@@ -3092,21 +3085,21 @@ function createLink(self, config = defaultLinkConfig) {
     return () => props.disabled ? (() => {
       const _el$ = _tmpl$.cloneNode(true);
 
-      (0, _dom.spread)(_el$, () => getInnerProps(), false, false);
+      (0, _dom.spread)(_el$, innerProps, false, false);
       (0, _dom.effect)(_$p => (0, _dom.classList)(_el$, getClassList(), _$p));
       return _el$;
     })() : (() => {
       const _el$2 = _tmpl$2.cloneNode(true);
 
       _el$2.__click = ev => {
-        var _props$params;
+        var _linkProps$params;
 
         ev.preventDefault();
 
         switch (props.type) {
           case undefined:
-            router5.navigate(renderRouteLike(props.to), (_props$params = props.params) !== null && _props$params !== void 0 ? _props$params : {});
-            if (typeof props.onClick === 'function') props.onClick(ev);
+            router5.navigate(renderRouteLike(linkProps.to), (_linkProps$params = linkProps.params) !== null && _linkProps$params !== void 0 ? _linkProps$params : {});
+            if (typeof linkProps.onClick === "function") linkProps.onClick(ev);
             break;
 
           case LinkNav.Back:
@@ -3121,7 +3114,7 @@ function createLink(self, config = defaultLinkConfig) {
         ev.target.blur();
       };
 
-      (0, _dom.spread)(_el$2, () => getInnerProps(), false, false);
+      (0, _dom.spread)(_el$2, innerProps, false, false);
       (0, _dom.effect)(_p$ => {
         const _v$ = getClassList(),
               _v$2 = getHref();
@@ -3173,15 +3166,11 @@ function SwitchRoutes(props) {
     const same = a === b || a !== undefined && b !== undefined && a[0] === b[0];
     return same;
   });
-  return () => {
+  return (0, _solidJs.createMemo)(() => {
     const ix = getIndex();
 
     if (ix !== undefined) {
       const [i, target] = ix;
-      console.log({
-        i,
-        target
-      });
       return (0, _dom.createComponent)(MatchContext.Provider, {
         value: target,
 
@@ -3193,7 +3182,7 @@ function SwitchRoutes(props) {
     }
 
     return props.fallback;
-  };
+  });
 }
 /**
  * Create a [[Show]] node against a given route.
@@ -3270,68 +3259,58 @@ function createGetMatch(props) {
 function RouteStateMachine(tree, _assumed) {
   const getRouteName = useRouteName();
 
-  function traverseHydrate(path0, node0, Render, defaultGetProps, defaultProps) {
-    const [state, setState] = (0, _solidJs.createState)(defaultProps !== null && defaultProps !== void 0 ? defaultProps : {});
-    const numDefaultGetProps = Object.keys(defaultProps !== null && defaultProps !== void 0 ? defaultProps : {}).length;
-    const getPathSuffix = (0, _solidJs.createMemo)(() => [name, getRouteName().slice(path0.length)], undefined, (a, b) => a && a[0] === b[0]);
+  function traverseHydrate(path0, node0, Render, defaultProps) {
+    const noProps = defaultProps !== null && defaultProps !== void 0 ? defaultProps : {};
+    const [state, setState] = (0, _solidJs.createState)(noProps);
+    const getPathSuffix = (0, _solidJs.createMemo)(() => getRouteName().slice(path0.length), [], (a, b) => {
+      if (a === b) return true;
+      if (a.length !== b.length) return false;
 
-    function populate(path, node, next, count) {
+      for (let i = 0; i < a.length; i++) {
+        const x = a[i];
+        const y = b[i];
+        if (x !== y) return false;
+      }
+
+      return true;
+    });
+
+    function populate(path, node, next, counter) {
       for (const key in node) {
         const gp = node[key];
 
         if (typeof gp === "function") {
           const value = gp();
+          if (value === state[key]) continue;
           next[key] = value;
-          count++;
+          counter.updated++;
           continue;
         }
 
         if (gp !== undefined) {
           if (path[0] === key) {
-            return populate(path.slice(1), gp, next, count);
+            populate(path.slice(1), gp, next, counter);
           }
         }
       }
-
-      return count;
     }
 
-    function populateFromDefaultGetProps(next) {
-      if (defaultGetProps === undefined) {
-        return 0;
-      }
+    (0, _solidJs.createComputed)(() => {
+      const suffix = getPathSuffix();
+      (0, _solidJs.untrack)(() => {
+        const next = { ...state
+        };
+        const counter = {
+          updated: 0
+        };
+        populate(suffix, node0, next, counter);
 
-      let count = 0;
-
-      for (const k_ in defaultGetProps) {
-        const k = k_;
-
-        if (next[k] === undefined) {
-          const fn = defaultGetProps[k];
-
-          if (typeof fn === "function") {
-            next[k] = fn();
-            count++;
-          }
+        if (counter.updated > 0) {
+          setState(next);
         }
-      }
-
-      return count;
-    }
-
-    (0, _solidJs.createEffect)(() => {
-      const next = {};
-      let got = populate(getPathSuffix()[1], node0, next, 0);
-
-      if (got < numDefaultGetProps) {
-        got += populateFromDefaultGetProps(next);
-      }
-
-      if (got > 0) {
-        setState(next);
-      }
+      });
     });
-    return () => Render(state);
+    return (0, _solidJs.createComponent)(Render, state);
   }
 
   function traverse(path, node) {
@@ -3340,10 +3319,9 @@ function RouteStateMachine(tree, _assumed) {
         const {
           props,
           render,
-          defaultGetProps,
           defaultProps
         } = owned;
-        return traverseHydrate(path, props, render, defaultGetProps, defaultProps);
+        return () => traverseHydrate(path, props, render, defaultProps);
       });
     }
 
@@ -3359,11 +3337,11 @@ function RouteStateMachine(tree, _assumed) {
       const child = routes[key];
       children.push({
         prefix: key,
-        children: () => traverse(next, child)
+        children: traverse(next, child)
       });
     }
 
-    return (0, _dom.createComponent)(RenderHere, {
+    return () => (0, _dom.createComponent)(RenderHere, {
       get children() {
         return (0, _dom.createComponent)(SwitchRoutes, {
           fallback: fallback,
@@ -3374,7 +3352,7 @@ function RouteStateMachine(tree, _assumed) {
     });
   }
 
-  return traverse([], tree);
+  return (0, _solidJs.untrack)(() => traverse([], tree));
 }
 /**
  * Helper function. Use this as a [[render]] function to just render the
@@ -7273,7 +7251,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "39373" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "36295" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

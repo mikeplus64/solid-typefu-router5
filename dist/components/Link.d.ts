@@ -1,7 +1,7 @@
-import { SharedRouterValue, RoutesLike } from '../types';
+import { SharedRouterValue, RoutesLike } from "../types";
 export declare enum LinkNav {
-    Back = 0,
-    Forward = 1
+    Back = "back",
+    Forward = "forward"
 }
 /** Props for making a `Link` component.
  *
@@ -33,7 +33,7 @@ export declare type LinkProps<Route> = {
     type?: undefined;
     to: Route;
     params?: Record<string, any>;
-}) & Omit<JSX.IntrinsicElements['a' | 'button'], 'onClick' | 'href' | 'type'>;
+}) & Omit<JSX.IntrinsicElements["a" | "button"], "onClick" | "href" | "type">;
 export interface LinkConfig {
     navActiveClassName: string;
 }
