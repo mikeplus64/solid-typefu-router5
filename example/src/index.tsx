@@ -24,6 +24,7 @@ const routes = [
     name: "baz",
     path: "/baz/:id",
   },
+  { name: "bar.asdf", path: "/bar/asdf" },
 ] as const;
 
 const { Link, Router, Provider: RouterProvider } = createSolidRouter(routes, {
@@ -83,7 +84,7 @@ const Wrapper = (props: { children?: JSX.Element }) => (
 const Foo = (props: { children?: JSX.Element }) => (
   <div>
     <h1>foo</h1>
-    <Link nav to={["foo", "child1"]} params={{ id1: 1 }}>
+    <Link nav to="foo.child1" params={{ id1: 1 }}>
       foo.child1
     </Link>
     {props.children}
@@ -108,7 +109,7 @@ const Child2List = () => {
           {(id2) => (
             <li>
               <Link
-                to={["foo", "child1", "child2"]}
+                to="foo.child1.child2"
                 params={{ id1: route().params.id1, id2 }}
               >
                 foo.child1.child2
@@ -129,10 +130,11 @@ const App = () => {
   const route = useRoute();
   return (
     <>
-      <Router assume={["foo", "child1"]}>
+      <Router assume="foo">
         {{
           render: (p) => <>child1 {p.children}</>,
-          child2: { render: () => "child2" },
+          fallback: () => "... no foo.child1!",
+          child1: { render: () => "child1" },
         }}
       </Router>
       <Router>
@@ -140,6 +142,7 @@ const App = () => {
           render: Wrapper,
           bar: {
             render: () => "bar goes here",
+            asdf: { render: () => "bar.asdf!" },
           },
           baz: (owned) =>
             owned({

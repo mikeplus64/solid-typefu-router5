@@ -1,26 +1,52 @@
-import { State as RouteState, Router as Router5, Route } from 'router5';
-import { DefaultDependencies } from 'router5/dist/types/router';
-import { Unsubscribe } from 'router5/dist/types/base';
-import { createSignal, createEffect, createMemo, onCleanup } from 'solid-js';
-import { SharedRouterValue, RoutesLike } from './types';
-import Context from './context';
-import createLink, { LinkConfig, LinkProps, RouteLike, RouteNameOf } from './components/Link';
-import RouteStateMachine, { RenderTreeOf, RenderTreeLike, Descend } from './components/RouteTree';
+import { State as RouteState, Router as Router5, Route } from "router5";
+import { DefaultDependencies } from "router5/dist/types/router";
+import { Unsubscribe } from "router5/dist/types/base";
+import { createSignal, createEffect, createMemo, onCleanup } from "solid-js";
+import { SharedRouterValue, RoutesLike } from "./types";
+import Context from "./context";
+import createLink, {
+  LinkConfig,
+  LinkProps,
+  RouteLike,
+  RouteNameOf,
+} from "./components/Link";
+import RouteStateMachine, {
+  RenderTreeOf,
+  RenderTreeLike,
+  Descend,
+} from "./components/RouteTree";
 
-export { LinkNav, LinkConfig } from './components/Link';
-export { MatchRoute, ShowRoute, SwitchRoutes } from './components/MatchRoute';
-export { passthru } from './components/RouteTree';
-export { default as Context, useRoute, useRouteName, useIsActive, isActive } from './context';
+export { LinkNav } from "./components/Link";
+export { MatchRoute, ShowRoute, SwitchRoutes } from "./components/MatchRoute";
+export { passthru } from "./components/RouteTree";
+export {
+  default as Context,
+  useRoute,
+  useRouteName,
+  useIsActive,
+  isActive,
+} from "./context";
 
-export type { MatchRouteProps, ShowRouteProps } from './components/MatchRoute';
-export type { LinkProps, RouteNameOf } from './components/Link';
-export type { RenderTreeOf } from './components/RouteTree';
-export type { RoutesLike, SharedRouterValue, RouterContextValue } from './types';
+export type { MatchRouteProps, ShowRouteProps } from "./components/MatchRoute";
+export type {
+  LinkConfig,
+  LinkProps,
+  RouteArrayOf,
+  RouteNameOf,
+} from "./components/Link";
+export type { RenderTreeOf } from "./components/RouteTree";
+export type {
+  RoutesLike,
+  SharedRouterValue,
+  RouterContextValue,
+} from "./types";
 
 export interface Config<Deps> {
-  createRouter5: (routes: Route<Deps>[]) => Router5<Deps> | [Router5<Deps>, ...Unsubscribe[]],
-  onStart?: (router: Router5<Deps>) => void,
-  link?: LinkConfig,
+  createRouter5: (
+    routes: Route<Deps>[]
+  ) => Router5<Deps> | [Router5<Deps>, ...Unsubscribe[]];
+  onStart?: (router: Router5<Deps>) => void;
+  link?: LinkConfig;
 }
 
 /**
@@ -52,27 +78,28 @@ export interface Config<Deps> {
  * export const { Provider, Link, Router } = createSolidRouter(routes, { createRouter5, onStart });
  * ```
  */
-export default function createSolidRouter<Routes extends RoutesLike<Deps>, Deps = DefaultDependencies>(
+export default function createSolidRouter<
+  Routes extends RoutesLike<Deps>,
+  Deps = DefaultDependencies
+>(
   routes: Routes,
-  {
-    createRouter5,
-    onStart,
-    link: linkConfig,
-  }: Config<Deps>,
+  { createRouter5, onStart, link: linkConfig }: Config<Deps>
 ): {
-  Provider(props: { children: JSX.Element }): JSX.Element,
+  Provider(props: { children: JSX.Element }): JSX.Element;
 
   /** See [[createLink]] */
-  Link(props: LinkProps<RouteNameOf<Routes>>): JSX.Element,
+  Link(props: LinkProps<RouteNameOf<Routes>>): JSX.Element;
 
   /** See [[RouteStateMachine]] */
-  Router<AssumePath extends RouteNameOf<Routes> | [] = []>(props: {
-    children: AssumePath extends [] ? RenderTreeOf<Routes> : RenderTreeOf<Descend<AssumePath, Routes>>,
-    assume?: AssumePath,
-  }): JSX.Element,
+  Router<AssumePath extends RouteNameOf<Routes> | undefined>(props: {
+    children: AssumePath extends string
+      ? RenderTreeOf<Descend<AssumePath, Routes>>
+      : RenderTreeOf<Routes>;
+    assume?: AssumePath;
+  }): JSX.Element;
 
   /** Probably don't use this. */
-  router: SharedRouterValue<Deps, Routes>,
+  router: SharedRouterValue<Deps, Routes>;
 
   /**
    * Type hints you can use to give type names to aspects of your router like
@@ -83,16 +110,15 @@ export default function createSolidRouter<Routes extends RoutesLike<Deps>, Deps 
    * ```
    */
   hints: Phantom<{
-    routes: Routes,
-    name: RouteNameOf<Routes>,
-    tree: RenderTreeOf<Routes>
-  }>,
+    routes: Routes;
+    name: RouteNameOf<Routes>;
+    tree: RenderTreeOf<Routes>;
+  }>;
 } {
-
   const [router5, unsubs] = (() => {
     let router5: Router5<Deps>;
     let unsubs: Unsubscribe[];
-    const r = createRouter5(routes as any as Route<Deps>[]);
+    const r = createRouter5((routes as any) as Route<Deps>[]);
     if (Array.isArray(r)) {
       [router5, ...unsubs] = r;
     } else {
@@ -110,18 +136,26 @@ export default function createSolidRouter<Routes extends RoutesLike<Deps>, Deps 
     Link: createLink(self, linkConfig),
 
     Router(props) {
-      return RouteStateMachine(props.children as RenderTreeLike, props.assume as RouteLike);
+      return RouteStateMachine(
+        props.children as RenderTreeLike,
+        props.assume as RouteLike
+      );
     },
 
     Provider(props: { children: JSX.Element }): JSX.Element {
-      const initialState = router5.getState() ?? { name: '' };
+      const initialState = router5.getState() ?? { name: "" };
       const [getRoute, setRoute] = createSignal<RouteState>(initialState);
 
-      const getRouteName = createMemo(() =>
-        getRoute().name, initialState.name, (a, b) => a === b);
+      const getRouteName = createMemo(
+        () => getRoute().name,
+        initialState.name,
+        (a, b) => a === b
+      );
 
-      const getSplitRouteName = createMemo(() =>
-        Object.freeze(getRouteName().split('.')), initialState.name.split('.'));
+      const getSplitRouteName = createMemo(
+        () => Object.freeze(getRouteName().split(".")),
+        initialState.name.split(".")
+      );
 
       const value = {
         getRoute,
@@ -131,20 +165,21 @@ export default function createSolidRouter<Routes extends RoutesLike<Deps>, Deps 
       };
 
       createEffect(() => {
-        router5.subscribe(state => setRoute(Object.freeze(state.route)));
+        router5.subscribe((state) => setRoute(Object.freeze(state.route)));
         router5.start();
-        if (typeof onStart === 'function') onStart(router5);
+        if (typeof onStart === "function") onStart(router5);
       });
 
       onCleanup(() => {
-        for (const unsub of unsubs) { unsub(); }
+        for (const unsub of unsubs) {
+          unsub();
+        }
         router5.stop();
       });
 
       return (
-        <Context.Provider value={value}>
-          {props.children}
-        </Context.Provider>);
+        <Context.Provider value={value}>{props.children}</Context.Provider>
+      );
     },
     router: self,
     hints: {} as any,
@@ -152,4 +187,3 @@ export default function createSolidRouter<Routes extends RoutesLike<Deps>, Deps 
 }
 
 export type Phantom<T> = { __phantom__: never } & T;
-

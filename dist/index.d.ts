@@ -1,17 +1,17 @@
-import { Router as Router5, Route } from 'router5';
-import { DefaultDependencies } from 'router5/dist/types/router';
-import { Unsubscribe } from 'router5/dist/types/base';
-import { SharedRouterValue, RoutesLike } from './types';
-import { LinkConfig, LinkProps, RouteNameOf } from './components/Link';
-import { RenderTreeOf, Descend } from './components/RouteTree';
-export { LinkNav, LinkConfig } from './components/Link';
-export { MatchRoute, ShowRoute, SwitchRoutes } from './components/MatchRoute';
-export { passthru } from './components/RouteTree';
-export { default as Context, useRoute, useRouteName, useIsActive, isActive } from './context';
-export type { MatchRouteProps, ShowRouteProps } from './components/MatchRoute';
-export type { LinkProps, RouteNameOf } from './components/Link';
-export type { RenderTreeOf } from './components/RouteTree';
-export type { RoutesLike, SharedRouterValue, RouterContextValue } from './types';
+import { Router as Router5, Route } from "router5";
+import { DefaultDependencies } from "router5/dist/types/router";
+import { Unsubscribe } from "router5/dist/types/base";
+import { SharedRouterValue, RoutesLike } from "./types";
+import { LinkConfig, LinkProps, RouteNameOf } from "./components/Link";
+import { RenderTreeOf, Descend } from "./components/RouteTree";
+export { LinkNav } from "./components/Link";
+export { MatchRoute, ShowRoute, SwitchRoutes } from "./components/MatchRoute";
+export { passthru } from "./components/RouteTree";
+export { default as Context, useRoute, useRouteName, useIsActive, isActive, } from "./context";
+export type { MatchRouteProps, ShowRouteProps } from "./components/MatchRoute";
+export type { LinkConfig, LinkProps, RouteArrayOf, RouteNameOf, } from "./components/Link";
+export type { RenderTreeOf } from "./components/RouteTree";
+export type { RoutesLike, SharedRouterValue, RouterContextValue, } from "./types";
 export interface Config<Deps> {
     createRouter5: (routes: Route<Deps>[]) => Router5<Deps> | [Router5<Deps>, ...Unsubscribe[]];
     onStart?: (router: Router5<Deps>) => void;
@@ -46,15 +46,15 @@ export interface Config<Deps> {
  * export const { Provider, Link, Router } = createSolidRouter(routes, { createRouter5, onStart });
  * ```
  */
-export default function createSolidRouter<Routes extends RoutesLike<Deps>, Deps = DefaultDependencies>(routes: Routes, { createRouter5, onStart, link: linkConfig, }: Config<Deps>): {
+export default function createSolidRouter<Routes extends RoutesLike<Deps>, Deps = DefaultDependencies>(routes: Routes, { createRouter5, onStart, link: linkConfig }: Config<Deps>): {
     Provider(props: {
         children: JSX.Element;
     }): JSX.Element;
     /** See [[createLink]] */
     Link(props: LinkProps<RouteNameOf<Routes>>): JSX.Element;
     /** See [[RouteStateMachine]] */
-    Router<AssumePath extends RouteNameOf<Routes> | [] = []>(props: {
-        children: AssumePath extends [] ? RenderTreeOf<Routes> : RenderTreeOf<Descend<AssumePath, Routes>>;
+    Router<AssumePath extends RouteNameOf<Routes> | undefined>(props: {
+        children: AssumePath extends string ? RenderTreeOf<Descend<AssumePath, Routes>> : RenderTreeOf<Routes>;
         assume?: AssumePath;
     }): JSX.Element;
     /** Probably don't use this. */

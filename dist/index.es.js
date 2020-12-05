@@ -84,24 +84,24 @@ function createLink(self, config = defaultLinkConfig) {
     navActiveClassName = defaultLinkConfig.navActiveClassName
   } = config;
   return props => {
-    const isActive = props.to !== undefined ? useIsActive(props.to, props.navIgnoreParams ? undefined : props.params) : alwaysInactive;
+    const [linkProps, innerProps] = splitProps(props, ["type", "onClick", "classList", "to", "params", "nav", "navIgnoreParams", "disabled"]);
+    const isActive = linkProps.to !== undefined ? useIsActive(linkProps.to, linkProps.navIgnoreParams ? undefined : linkProps.params) : alwaysInactive;
     const getClassList = createMemo(() => {
-      var _props$classList;
+      var _linkProps$classList;
 
-      const classList = (_props$classList = props.classList) !== null && _props$classList !== void 0 ? _props$classList : {};
+      const classList = (_linkProps$classList = linkProps.classList) !== null && _linkProps$classList !== void 0 ? _linkProps$classList : {};
 
-      if (props.type === undefined && props.nav) {
+      if (linkProps.type === undefined && linkProps.nav) {
         classList[navActiveClassName] = isActive();
         return classList;
       }
 
       return classList;
     });
-    const [linkProps, innerProps] = splitProps(props, ["type", "onClick", "classList", "to", "params", "nav", "navIgnoreParams", "disabled"]);
     const getHref = createMemo(() => {
-      if (props.type === undefined) {
+      if (linkProps.type === undefined) {
         try {
-          return router5.buildPath(renderRouteLike(props.to), props.params);
+          return router5.buildPath(renderRouteLike(linkProps.to), linkProps.params);
         } catch (err) {
           console.warn("<Link> buildPath failed:", err);
         }
@@ -109,7 +109,7 @@ function createLink(self, config = defaultLinkConfig) {
 
       return undefined;
     });
-    return () => props.disabled ? (() => {
+    return () => linkProps.disabled ? (() => {
       const _el$ = _tmpl$.cloneNode(true);
 
       spread(_el$, innerProps, false, false);
@@ -460,11 +460,11 @@ function createSolidRouter(routes, {
       var _router5$getState;
 
       const initialState = (_router5$getState = router5.getState()) !== null && _router5$getState !== void 0 ? _router5$getState : {
-        name: ''
+        name: ""
       };
       const [getRoute, setRoute] = createSignal(initialState);
       const getRouteName = createMemo(() => getRoute().name, initialState.name, (a, b) => a === b);
-      const getSplitRouteName = createMemo(() => Object.freeze(getRouteName().split('.')), initialState.name.split('.'));
+      const getSplitRouteName = createMemo(() => Object.freeze(getRouteName().split(".")), initialState.name.split("."));
       const value = {
         getRoute,
         getRouteName: getSplitRouteName,
@@ -474,7 +474,7 @@ function createSolidRouter(routes, {
       createEffect(() => {
         router5.subscribe(state => setRoute(Object.freeze(state.route)));
         router5.start();
-        if (typeof onStart === 'function') onStart(router5);
+        if (typeof onStart === "function") onStart(router5);
       });
       onCleanup(() => {
         for (const unsub of unsubs) {

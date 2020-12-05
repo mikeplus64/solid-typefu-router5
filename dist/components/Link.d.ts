@@ -41,20 +41,14 @@ export declare type RouteLike = string | string[];
 export declare function renderRouteLike(route: RouteLike): string;
 export declare const defaultLinkConfig: LinkConfig;
 export default function createLink<Deps, Routes extends RoutesLike<Deps>, RouteName extends RouteNameOf<Routes> & RouteLike>(self: SharedRouterValue<Deps, Routes>, config?: Partial<LinkConfig>): (props: LinkProps<RouteName>) => JSX.Element;
-export declare type RouteNameOf<A> = UnOne<Undefer<Flatten<TreeOf<A>, []>>>;
-declare type TreeOf<A> = A extends readonly (infer U)[] ? U extends {
+export declare type FlattenRouteName<A> = A extends [infer X] ? X : A extends [infer X, ...infer XS] ? X extends string ? XS extends string[] ? `${X}.${FlattenRouteName<XS>}` : never : never : A extends string ? A : "";
+export declare type RouteNameOf<A> = FlattenRouteName<RouteArrayOf<A>>;
+export declare type ToRouteArray<A> = A extends string ? A extends `${infer X}.${infer XS}` ? [X, ...ToRouteArray<XS>] : [A] : [];
+export declare type RouteArrayOf<A> = A extends readonly (infer U)[] ? U extends {
     name: infer Name;
     children: infer Children;
-} ? Children extends {} ? [Name] | [Name, TreeOf<Children>] : Name : U extends {
+} ? Children extends {} ? ToRouteArray<Name> | [...ToRouteArray<Name>, ...RouteArrayOf<Children>] : ToRouteArray<Name> : U extends {
     name: infer Name;
-} ? [Name] : never : never;
-declare type UnOne<A> = A extends [infer U] ? U : A;
-declare type Flatten<Arg, Acc extends any[]> = Arg extends [infer X] ? [...Acc, X] : Arg extends [infer X, infer XS] ? Defer<Flatten<XS, [...Acc, X]>> : never;
-interface Defer<X> {
-    self: Undefer<X>;
-}
-declare type Undefer<X> = X extends {
-    self: infer U;
-} ? U : X;
-export {};
+} ? ToRouteArray<Name> : [] : [];
+export declare type UnOne<A> = A extends [infer U] ? U : A;
 //# sourceMappingURL=Link.d.ts.map

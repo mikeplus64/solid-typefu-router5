@@ -1,5 +1,5 @@
 import { UnionToIntersection } from "ts-essentials";
-import { RouteLike } from "./Link";
+import { RouteLike, ToRouteArray } from "./Link";
 /**
  * Given a tree of routes and render instructions for each route, return an
  * element that selects the correct renderer for the current route.
@@ -108,7 +108,7 @@ export declare type DescendDef<Path, Tree> = Path extends [infer P1, ...infer PS
     children?: infer Children;
 } ? Name extends P1 ? Defer<DescendDef<PS, Children>> : never : never : never : Tree;
 declare type One<T> = T extends any[] ? T : [T];
-export declare type Descend<P, T> = Undefer<DescendDef<One<P>, T>>;
+export declare type Descend<P, T> = Undefer<DescendDef<One<ToRouteArray<P>>, T>>;
 interface Defer<X> {
     ____defer: Undefer<X>;
 }

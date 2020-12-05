@@ -73,23 +73,6 @@ export default function createLink<
   const { navActiveClassName = defaultLinkConfig.navActiveClassName } = config;
 
   return (props: LinkProps<RouteName>): JSX.Element => {
-    const isActive =
-      props.to !== undefined
-        ? useIsActive(
-            props.to,
-            props.navIgnoreParams ? undefined : props.params
-          )
-        : alwaysInactive;
-
-    const getClassList = createMemo(() => {
-      const classList = props.classList ?? {};
-      if (props.type === undefined && props.nav) {
-        classList[navActiveClassName] = isActive();
-        return classList;
-      }
-      return classList;
-    });
-
     const [linkProps, innerProps] = splitProps(props, [
       "type",
       "onClick",
@@ -101,10 +84,30 @@ export default function createLink<
       "disabled",
     ]);
 
+    const isActive =
+      linkProps.to !== undefined
+        ? useIsActive(
+            linkProps.to,
+            linkProps.navIgnoreParams ? undefined : linkProps.params
+          )
+        : alwaysInactive;
+
+    const getClassList = createMemo(() => {
+      const classList = linkProps.classList ?? {};
+      if (linkProps.type === undefined && linkProps.nav) {
+        classList[navActiveClassName] = isActive();
+        return classList;
+      }
+      return classList;
+    });
+
     const getHref: () => string | undefined = createMemo(() => {
-      if (props.type === undefined) {
+      if (linkProps.type === undefined) {
         try {
-          return router5.buildPath(renderRouteLike(props.to), props.params);
+          return router5.buildPath(
+            renderRouteLike(linkProps.to as RouteName),
+            linkProps.params
+          );
         } catch (err) {
           console.warn("<Link> buildPath failed:", err);
         }
@@ -113,7 +116,7 @@ export default function createLink<
     });
 
     return () =>
-      props.disabled ? (
+      linkProps.disabled ? (
         <button
           {...(innerProps as JSX.IntrinsicElements["button"])}
           disabled
@@ -151,30 +154,34 @@ export default function createLink<
 
 const alwaysInactive = () => false;
 
-// Beware, here be dragons
-export type RouteNameOf<A> = UnOne<Undefer<Flatten<TreeOf<A>, []>>>;
+export type FlattenRouteName<A> = A extends [infer X]
+  ? X
+  : A extends [infer X, ...infer XS]
+  ? X extends string
+    ? XS extends string[]
+      ? `${X}.${FlattenRouteName<XS>}`
+      : never
+    : never
+  : A extends string
+  ? A
+  : "";
 
-type TreeOf<A> = A extends readonly (infer U)[]
+export type RouteNameOf<A> = FlattenRouteName<RouteArrayOf<A>>;
+
+export type ToRouteArray<A> = A extends string
+  ? A extends `${infer X}.${infer XS}`
+    ? [X, ...ToRouteArray<XS>]
+    : [A]
+  : [];
+
+export type RouteArrayOf<A> = A extends readonly (infer U)[]
   ? U extends { name: infer Name; children: infer Children }
     ? Children extends {}
-      ? [Name] | [Name, TreeOf<Children>]
-      : Name
+      ? ToRouteArray<Name> | [...ToRouteArray<Name>, ...RouteArrayOf<Children>]
+      : ToRouteArray<Name>
     : U extends { name: infer Name }
-    ? [Name]
-    : never
-  : never;
+    ? ToRouteArray<Name>
+    : []
+  : [];
 
-type UnOne<A> = A extends [infer U] ? U : A;
-
-// This is what requires typescript 4.0+
-type Flatten<Arg, Acc extends any[]> = Arg extends [infer X]
-  ? [...Acc, X]
-  : Arg extends [infer X, infer XS]
-  ? Defer<Flatten<XS, [...Acc, X]>>
-  : never;
-
-// Same trick as in https://github.com/microsoft/TypeScript/pull/21613
-interface Defer<X> {
-  self: Undefer<X>;
-}
-type Undefer<X> = X extends { self: infer U } ? U : X;
+export type UnOne<A> = A extends [infer U] ? U : A;

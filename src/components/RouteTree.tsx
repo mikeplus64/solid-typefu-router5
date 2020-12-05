@@ -8,7 +8,7 @@ import {
 } from "solid-js";
 import { useRouteName } from "../context";
 import { MatchRouteProps, SwitchRoutes } from "./MatchRoute";
-import { RouteLike } from "./Link";
+import { RouteLike, ToRouteArray } from "./Link";
 
 /**
  * Given a tree of routes and render instructions for each route, return an
@@ -246,7 +246,7 @@ export type DescendDef<Path, Tree> = Path extends [infer P1, ...infer PS]
   : Tree;
 
 type One<T> = T extends any[] ? T : [T];
-export type Descend<P, T> = Undefer<DescendDef<One<P>, T>>;
+export type Descend<P, T> = Undefer<DescendDef<One<ToRouteArray<P>>, T>>;
 
 // Same trick as in https://github.com/microsoft/TypeScript/pull/21613
 interface Defer<X> {

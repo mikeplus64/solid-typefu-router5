@@ -3057,24 +3057,24 @@ function createLink(self, config = defaultLinkConfig) {
     navActiveClassName = defaultLinkConfig.navActiveClassName
   } = config;
   return props => {
-    const isActive = props.to !== undefined ? useIsActive(props.to, props.navIgnoreParams ? undefined : props.params) : alwaysInactive;
+    const [linkProps, innerProps] = (0, _solidJs.splitProps)(props, ["type", "onClick", "classList", "to", "params", "nav", "navIgnoreParams", "disabled"]);
+    const isActive = linkProps.to !== undefined ? useIsActive(linkProps.to, linkProps.navIgnoreParams ? undefined : linkProps.params) : alwaysInactive;
     const getClassList = (0, _solidJs.createMemo)(() => {
-      var _props$classList;
+      var _linkProps$classList;
 
-      const classList = (_props$classList = props.classList) !== null && _props$classList !== void 0 ? _props$classList : {};
+      const classList = (_linkProps$classList = linkProps.classList) !== null && _linkProps$classList !== void 0 ? _linkProps$classList : {};
 
-      if (props.type === undefined && props.nav) {
+      if (linkProps.type === undefined && linkProps.nav) {
         classList[navActiveClassName] = isActive();
         return classList;
       }
 
       return classList;
     });
-    const [linkProps, innerProps] = (0, _solidJs.splitProps)(props, ["type", "onClick", "classList", "to", "params", "nav", "navIgnoreParams", "disabled"]);
     const getHref = (0, _solidJs.createMemo)(() => {
-      if (props.type === undefined) {
+      if (linkProps.type === undefined) {
         try {
-          return router5.buildPath(renderRouteLike(props.to), props.params);
+          return router5.buildPath(renderRouteLike(linkProps.to), linkProps.params);
         } catch (err) {
           console.warn("<Link> buildPath failed:", err);
         }
@@ -3082,7 +3082,7 @@ function createLink(self, config = defaultLinkConfig) {
 
       return undefined;
     });
-    return () => props.disabled ? (() => {
+    return () => linkProps.disabled ? (() => {
       const _el$ = _tmpl$.cloneNode(true);
 
       (0, _dom.spread)(_el$, innerProps, false, false);
@@ -3431,11 +3431,11 @@ function createSolidRouter(routes, {
       var _router5$getState;
 
       const initialState = (_router5$getState = router5.getState()) !== null && _router5$getState !== void 0 ? _router5$getState : {
-        name: ''
+        name: ""
       };
       const [getRoute, setRoute] = (0, _solidJs.createSignal)(initialState);
       const getRouteName = (0, _solidJs.createMemo)(() => getRoute().name, initialState.name, (a, b) => a === b);
-      const getSplitRouteName = (0, _solidJs.createMemo)(() => Object.freeze(getRouteName().split('.')), initialState.name.split('.'));
+      const getSplitRouteName = (0, _solidJs.createMemo)(() => Object.freeze(getRouteName().split(".")), initialState.name.split("."));
       const value = {
         getRoute,
         getRouteName: getSplitRouteName,
@@ -3445,7 +3445,7 @@ function createSolidRouter(routes, {
       (0, _solidJs.createEffect)(() => {
         router5.subscribe(state => setRoute(Object.freeze(state.route)));
         router5.start();
-        if (typeof onStart === 'function') onStart(router5);
+        if (typeof onStart === "function") onStart(router5);
       });
       (0, _solidJs.onCleanup)(() => {
         for (const unsub of unsubs) {
@@ -6976,6 +6976,9 @@ var routes = [{
 }, {
   name: "baz",
   path: "/baz/:id"
+}, {
+  name: "bar.asdf",
+  path: "/bar/asdf"
 }];
 
 var _a = solid_typefu_router5_1.default(routes, {
@@ -7087,7 +7090,7 @@ var Foo = function Foo(props) {
 
     (0, _dom.insert)(_el$15, (0, _dom.createComponent)(Link, {
       nav: true,
-      to: ["foo", "child1"],
+      to: "foo.child1",
       params: {
         id1: 1
       },
@@ -7125,7 +7128,7 @@ var Child2List = function Child2List() {
           var _el$19 = _tmpl$7.cloneNode(true);
 
           (0, _dom.insert)(_el$19, (0, _dom.createComponent)(Link, {
-            to: ["foo", "child1", "child2"],
+            to: "foo.child1.child2",
 
             get params() {
               return {
@@ -7159,16 +7162,19 @@ function Baz(props) {
 var App = function App() {
   var route = solid_typefu_router5_1.useRoute();
   return [(0, _dom.createComponent)(Router, {
-    assume: ["foo", "child1"],
+    assume: "foo",
     children: {
       render: function render(p) {
         return ["child1 ", (0, _dom.memo)(function () {
           return p.children;
         })];
       },
-      child2: {
+      fallback: function fallback() {
+        return "... no foo.child1!";
+      },
+      child1: {
         render: function render() {
-          return "child2";
+          return "child1";
         }
       }
     }
@@ -7178,6 +7184,11 @@ var App = function App() {
       bar: {
         render: function render() {
           return "bar goes here";
+        },
+        asdf: {
+          render: function render() {
+            return "bar.asdf!";
+          }
         }
       },
       baz: function baz(owned) {
@@ -7251,7 +7262,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "36295" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "33339" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
