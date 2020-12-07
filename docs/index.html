@@ -3,8 +3,8 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>solid-typefu-router5 - v0.12.0</title>
-	<meta name="description" content="Documentation for solid-typefu-router5 - v0.12.0">
+	<title>solid-typefu-router5 - v0.13.1</title>
+	<meta name="description" content="Documentation for solid-typefu-router5 - v0.13.1">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="assets/css/main.css">
 </head>
@@ -22,7 +22,7 @@
 						<li class="state loading">Preparing search index...</li>
 						<li class="state failure">The search index is not available</li>
 					</ul>
-					<a href="index.html" class="title">solid-typefu-router5 - v0.12.0</a>
+					<a href="index.html" class="title">solid-typefu-router5 - v0.13.1</a>
 				</div>
 				<div class="table-cell" id="tsd-widgets">
 					<div id="tsd-filter">
@@ -54,7 +54,7 @@
 					<a href="globals.html">Globals</a>
 				</li>
 			</ul>
-			<h1>solid-typefu-router5 - v0.12.0</h1>
+			<h1>solid-typefu-router5 - v0.13.1</h1>
 		</div>
 	</div>
 </header>
@@ -68,91 +68,23 @@
 				<p>This package provides a router with integration with
 					<a href="https://router5.js.org/">router5</a> and
 					<a href="https://github.com/ryansolid/solid">solid-js</a>, and features type safe router
-				and link creation. Requires TypeScript 4.0+.</p>
+				and link creation. Requires TypeScript 4.1+.</p>
+				<a href="#features" id="features" style="color: inherit; text-decoration: none;">
+					<h2>Features</h2>
+				</a>
+				<ul>
+					<li>Typed links</li>
+					<li>Typed link parameters</li>
+					<li>Typed routing</li>
+				</ul>
 				<a href="#usage" id="usage" style="color: inherit; text-decoration: none;">
 					<h2>Usage</h2>
 				</a>
 				<p>In order to generate the types for type-safe links and routing, you must take
 					care to give TypeScript the narrowest possible type for your routes. The easiest
-				way to do this is simply adding <code>as const</code> to your routes definition.</p>
-				<p>A full example is available at <a href="https://codesandbox.io/s/solid-typefu-router5-example-i29gi">https://codesandbox.io/s/solid-typefu-router5-example-i29gi</a></p>
-				<a href="#example-router-definition-file-mycoolprojectsrcrouterts" id="example-router-definition-file-mycoolprojectsrcrouterts" style="color: inherit; text-decoration: none;">
-					<h3>Example router definition file <code>mycoolproject/src/router.ts</code></h3>
-				</a>
-				<pre><code class="language-typescript">import createSolidRouter from &#x27;solid-typefu-router5&#x27;;
-import createRouter, { State as RouteState } from &#x27;router5&#x27;;
-import browserPluginFactory from &#x27;router5-plugin-browser&#x27;;
-/*
- * The shape of each node here should match router5&#x27;s `RouteNode` which is, as
- * of writing:
- *
-interface Route&lt;Dependencies extends DefaultDependencies = DefaultDependencies&gt; {
-    name: string;
-    path: string;
-    canActivate?: ActivationFnFactory&lt;Dependencies&gt;;
-    forwardTo?: string;
-    children?: Array&lt;Route&lt;Dependencies&gt;&gt;;
-    encodeParams?(stateParams: Params): Params;
-    decodeParams?(pathParams: Params): Params;
-    defaultParams?: Params;
-}
- * See router5&#x27;s documentation for more info.
- */
-
-const routes = [
-  { name: &#x27;home&#x27;, path: &#x27;/&#x27; },
-  { name: &#x27;users&#x27;, path: &#x27;/users/&#x27;, children: [
-    { name: &#x27;self&#x27;, path: &#x27;/self&#x27; },
-    { name: &#x27;other&#x27;, path: &#x27;/:id },
-  ] },
-] as const;
-
-export const {
-  /* Note that the type of your router&#x27;s Link will prevent invalid routes from being specified
-   * examples:
-   * &lt;Link to={[&#x27;users&#x27;, &#x27;self&#x27;]}&gt;Profile&lt;/Link&gt;
-   * &lt;Link nav to=&quot;home&quot;&gt;Home&lt;/Link&gt; 
-   */
-  Link,
-  Provider,
-  Router,
-  hints,
-} = createSolidRouter(routes, (routes) =&gt; {
-  const router = createRouter(routes, { allowNotFound: true });
-  router.usePlugin(browserPluginFactory({ useHash: false }));
-  return router;
-});
-
-type Hints = typeof hints;
-export type RouteName = Hints[&#x27;name&#x27;];
-export type Routes = Hints[&#x27;routes&#x27;];
-export type RouteTree = Hints[&#x27;tree&#x27;];</code></pre>
-				<a href="#example-use-of-your-custom-router-mycoolprojectsrcapptsx" id="example-use-of-your-custom-router-mycoolprojectsrcapptsx" style="color: inherit; text-decoration: none;">
-					<h3>Example use of your custom router <code>mycoolproject/src/App.tsx</code></h3>
-				</a>
-				<pre><code class="language-typescript"><span class="hljs-keyword">import</span> { Router, Provider <span class="hljs-keyword">as</span> RouterProvider } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;./router&#x27;</span>;
-<span class="hljs-keyword">import</span> { useRoute } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;solid-typefu-router5&#x27;</span>;
-<span class="hljs-keyword">import</span> Home <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;./components/Home&#x27;</span>;
-<span class="hljs-keyword">import</span> User <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;./components/Home&#x27;</span>;
-
-<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> () =&gt; 
-  <span class="hljs-keyword">const</span> getRoute = useRoute();
-  <span class="hljs-keyword">return</span> (
-    &lt;Provider&gt;
-      &lt;Router&gt;
-        {{
-          home: { render: Home },
-          users: <span class="hljs-function"><span class="hljs-params">owned</span> =&gt;</span> owned({
-            render: User,
-            defaultProps: { id: <span class="hljs-literal">undefined</span>, self: <span class="hljs-literal">false</span> },
-            props: {
-              profile: { id: <span class="hljs-function">() =&gt;</span> getRoute().params.id },
-              self: { self: <span class="hljs-function">() =&gt;</span> <span class="hljs-literal">true</span> }
-            },
-          }),
-        }}
-      &lt;/Router&gt;
-    &lt;/Provider&gt;);</code></pre>
+					way to do this is simply adding <code>as const</code> to your routes definition. Please see
+					the example at
+				<a href="https://github.com/mikeplus64/solid-typefu-router5/blob/master/example/src/index.tsx">https://github.com/mikeplus64/solid-typefu-router5/blob/master/example/src/index.tsx</a></p>
 			</div>
 		</div>
 		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
