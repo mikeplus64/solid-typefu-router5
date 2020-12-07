@@ -10,3 +10,4 @@ yarn-error.log*
 *.tsbuildinfo
 .npm
 .eslintcache
+/example/.cache/
