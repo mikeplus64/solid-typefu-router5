@@ -15,6 +15,6 @@ and link creation. Requires TypeScript 4.1+.
 
 In order to generate the types for type-safe links and routing, you must take
 care to give TypeScript the narrowest possible type for your routes. The easiest
-way to do this is simply adding `as const` to your routes definition.
-
-A full example is available within this repository at https://github.com/mikeplus64/solid-typefu-router5/blob/master/example/src/index.tsx
+way to do this is simply adding `as const` to your routes definition. Please see
+the example at
+https://github.com/mikeplus64/solid-typefu-router5/blob/master/example/src/index.tsx
