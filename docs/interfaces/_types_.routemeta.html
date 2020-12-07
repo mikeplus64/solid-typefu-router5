@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>RenderNode | solid-typefu-router5 - v0.12.0</title>
+	<title>RouteMeta | solid-typefu-router5 - v0.12.0</title>
 	<meta name="description" content="Documentation for solid-typefu-router5 - v0.12.0">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -54,13 +54,13 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="../modules/_components_routetree_.html">&quot;components/RouteTree&quot;</a>
+					<a href="../modules/_types_.html">&quot;types&quot;</a>
 				</li>
 				<li>
-					<a href="_components_routetree_.rendernode.html">RenderNode</a>
+					<a href="_types_.routemeta.html">RouteMeta</a>
 				</li>
 			</ul>
-			<h1>Interface RenderNode</h1>
+			<h1>Interface RouteMeta</h1>
 		</div>
 	</div>
 </header>
@@ -70,8 +70,7 @@
 			<section class="tsd-panel tsd-comment">
 				<div class="tsd-comment tsd-typography">
 					<div class="lead">
-						<p>Tells <code>solid-typefu-router5</code> how to render a node if the path leading to
-						it matches the current route name.</p>
+						<p>The shape of the return type of <a href="../modules/_types_.html#readroutes">ReadRoutes</a></p>
 					</div>
 				</div>
 			</section>
@@ -79,7 +78,7 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">RenderNode</span>
+						<span class="target">RouteMeta</span>
 					</li>
 				</ul>
 			</section>
@@ -90,8 +89,9 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_components_routetree_.rendernode.html#fallback" class="tsd-kind-icon">fallback</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_components_routetree_.rendernode.html#render" class="tsd-kind-icon">render</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_types_.routemeta.html#name" class="tsd-kind-icon">name</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_types_.routemeta.html#params" class="tsd-kind-icon">params</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_types_.routemeta.html#path" class="tsd-kind-icon">path</a></li>
 							</ul>
 						</section>
 					</div>
@@ -100,34 +100,39 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="fallback" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> fallback</h3>
-					<div class="tsd-signature tsd-kind-icon">fallback<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">JSX.Element</span></div>
+					<a name="name" class="tsd-anchor"></a>
+					<h3>name</h3>
+					<div class="tsd-signature tsd-kind-icon">name<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/776bbd2/src/components/RouteTree.tsx#L128">src/components/RouteTree.tsx:128</a></li>
+							<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/6b1a4e4/src/types.ts#L156">types.ts:156</a></li>
 						</ul>
 					</aside>
-					<div class="tsd-comment tsd-typography">
-						<div class="lead">
-							<p>Fallback children to use if none are available to give to <a href="_components_routetree_.rendernode.html#render">render</a>. Default: nothing</p>
-						</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="params" class="tsd-anchor"></a>
+					<h3>params</h3>
+					<div class="tsd-signature tsd-kind-icon">params<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{}</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/6b1a4e4/src/types.ts#L158">types.ts:158</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+						</ul>
 					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="render" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> render</h3>
-					<div class="tsd-signature tsd-kind-icon">render<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>props<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">{ </span>children<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">JSX.Element</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">JSX.Element</span><span class="tsd-signature-symbol">)</span></div>
+					<a name="path" class="tsd-anchor"></a>
+					<h3>path</h3>
+					<div class="tsd-signature tsd-kind-icon">path<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/776bbd2/src/components/RouteTree.tsx#L126">src/components/RouteTree.tsx:126</a></li>
+							<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/6b1a4e4/src/types.ts#L157">types.ts:157</a></li>
 						</ul>
 					</aside>
-					<div class="tsd-comment tsd-typography">
-						<div class="lead">
-							<p>Default: <a href="../modules/_components_routetree_.html#passthru">passthru</a></p>
-						</div>
-					</div>
 				</section>
 			</section>
 		</div>
@@ -143,7 +148,7 @@
 					<li class=" tsd-kind-module">
 						<a href="../modules/_components_matchroute_.html">&quot;components/<wbr>Match<wbr>Route&quot;</a>
 					</li>
-					<li class="current tsd-kind-module">
+					<li class=" tsd-kind-module">
 						<a href="../modules/_components_routetree_.html">&quot;components/<wbr>Route<wbr>Tree&quot;</a>
 					</li>
 					<li class=" tsd-kind-module">
@@ -152,75 +157,81 @@
 					<li class=" tsd-kind-module">
 						<a href="../modules/_index_.html">&quot;index&quot;</a>
 					</li>
-					<li class=" tsd-kind-module">
+					<li class="current tsd-kind-module">
 						<a href="../modules/_types_.html">&quot;types&quot;</a>
 					</li>
 				</ul>
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
-					<li class=" tsd-kind-interface tsd-parent-kind-module tsd-has-type-parameter">
-						<a href="_components_routetree_.ownedops.html" class="tsd-kind-icon">Owned<wbr>Ops</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-module tsd-has-type-parameter">
-						<a href="_components_routetree_.ownedopslike.html" class="tsd-kind-icon">Owned<wbr>Ops<wbr>Like</a>
-					</li>
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-interface tsd-parent-kind-module">
-						<a href="_components_routetree_.rendernode.html" class="tsd-kind-icon">Render<wbr>Node</a>
+						<a href="_types_.routemeta.html" class="tsd-kind-icon">Route<wbr>Meta</a>
 						<ul>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="_components_routetree_.rendernode.html#fallback" class="tsd-kind-icon">fallback</a>
+								<a href="_types_.routemeta.html#name" class="tsd-kind-icon">name</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="_components_routetree_.rendernode.html#render" class="tsd-kind-icon">render</a>
+								<a href="_types_.routemeta.html#params" class="tsd-kind-icon">params</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="_types_.routemeta.html#path" class="tsd-kind-icon">path</a>
 							</li>
 						</ul>
 					</li>
 				</ul>
 				<ul class="after-current">
-					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-has-type-parameter">
-						<a href="../modules/_components_routetree_.html#descend" class="tsd-kind-icon">Descend</a>
+					<li class=" tsd-kind-interface tsd-parent-kind-module tsd-has-type-parameter">
+						<a href="_types_.routerconfig.html" class="tsd-kind-icon">Router<wbr>Config</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-module tsd-has-type-parameter">
+						<a href="_types_.routercontextvalue.html" class="tsd-kind-icon">Router<wbr>Context<wbr>Value</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
+						<a href="_types_.routerstate.html" class="tsd-kind-icon">Router<wbr>State</a>
 					</li>
 					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-has-type-parameter">
-						<a href="../modules/_components_routetree_.html#descenddef" class="tsd-kind-icon">Descend<wbr>Def</a>
+						<a href="../modules/_types_.html#concat" class="tsd-kind-icon">Concat</a>
 					</li>
 					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-has-type-parameter">
-						<a href="../modules/_components_routetree_.html#getprops" class="tsd-kind-icon">Get<wbr>Props</a>
+						<a href="../modules/_types_.html#descend" class="tsd-kind-icon">Descend</a>
 					</li>
 					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-has-type-parameter">
-						<a href="../modules/_components_routetree_.html#getpropslike" class="tsd-kind-icon">Get<wbr>Props<wbr>Like</a>
+						<a href="../modules/_types_.html#intercalate" class="tsd-kind-icon">Intercalate</a>
 					</li>
 					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-has-type-parameter">
-						<a href="../modules/_components_routetree_.html#getpropswith" class="tsd-kind-icon">Get<wbr>Props<wbr>With</a>
-					</li>
-					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-has-type-parameter">
-						<a href="../modules/_components_routetree_.html#owned" class="tsd-kind-icon">Owned</a>
-					</li>
-					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-has-type-parameter">
-						<a href="../modules/_components_routetree_.html#ownedby" class="tsd-kind-icon">Owned<wbr>By</a>
+						<a href="../modules/_types_.html#optionalnestedpathto" class="tsd-kind-icon">Optional<wbr>Nested<wbr>Path<wbr>To</a>
 					</li>
 					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
-						<a href="../modules/_components_routetree_.html#ownedlike" class="tsd-kind-icon">Owned<wbr>Like</a>
-					</li>
-					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
-						<a href="../modules/_components_routetree_.html#rendertreelike" class="tsd-kind-icon">Render<wbr>Tree<wbr>Like</a>
+						<a href="../modules/_types_.html#paramsmarker" class="tsd-kind-icon">Params<wbr>Marker</a>
 					</li>
 					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-has-type-parameter">
-						<a href="../modules/_components_routetree_.html#rendertreeof" class="tsd-kind-icon">Render<wbr>Tree<wbr>Of</a>
+						<a href="../modules/_types_.html#parseparams" class="tsd-kind-icon">Parse<wbr>Params</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-has-type-parameter">
+						<a href="../modules/_types_.html#readroutes" class="tsd-kind-icon">Read<wbr>Routes</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-has-type-parameter">
+						<a href="../modules/_types_.html#renderroutename" class="tsd-kind-icon">Render<wbr>Route<wbr>Name</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-has-type-parameter">
+						<a href="../modules/_types_.html#routearrayof" class="tsd-kind-icon">Route<wbr>Array<wbr>Of</a>
 					</li>
 					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
-						<a href="../modules/_components_routetree_.html#routenodelike" class="tsd-kind-icon">Route<wbr>Node<wbr>Like</a>
+						<a href="../modules/_types_.html#routelike" class="tsd-kind-icon">Route<wbr>Like</a>
 					</li>
-					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
-						<a href="../modules/_components_routetree_.html#routetreelike" class="tsd-kind-icon">Route<wbr>Tree<wbr>Like</a>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-has-type-parameter">
+						<a href="../modules/_types_.html#routenameof" class="tsd-kind-icon">Route<wbr>Name<wbr>Of</a>
 					</li>
-					<li class=" tsd-kind-function tsd-parent-kind-module tsd-has-type-parameter">
-						<a href="../modules/_components_routetree_.html#routestatemachine" class="tsd-kind-icon">Route<wbr>State<wbr>Machine</a>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-has-type-parameter">
+						<a href="../modules/_types_.html#routeslike" class="tsd-kind-icon">Routes<wbr>Like</a>
 					</li>
-					<li class=" tsd-kind-function tsd-parent-kind-module tsd-has-type-parameter">
-						<a href="../modules/_components_routetree_.html#passthru" class="tsd-kind-icon">passthru</a>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-has-type-parameter">
+						<a href="../modules/_types_.html#toroutearray" class="tsd-kind-icon">To<wbr>Route<wbr>Array</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-has-type-parameter">
+						<a href="../modules/_types_.html#toroutenestedarray" class="tsd-kind-icon">To<wbr>Route<wbr>Nested<wbr>Array</a>
 					</li>
 				</ul>
 			</nav>
@@ -232,7 +243,6 @@
 		<h2>Legend</h2>
 		<div class="tsd-legend-group">
 			<ul class="tsd-legend">
-				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
 				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
 				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
 				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
@@ -242,9 +252,6 @@
 				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
 				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
 				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
 			</ul>
 		</div>
 	</div>
