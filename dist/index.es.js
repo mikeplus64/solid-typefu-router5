@@ -1,5 +1,5 @@
 import { spread, effect, classList, setAttribute, template, delegateEvents, createComponent } from 'solid-js/web';
-import { createMemo, createContext, useContext, splitProps, assignProps, Show, Match, untrack, createState, createEffect, produce, onCleanup } from 'solid-js';
+import { createMemo, createContext, useContext, splitProps, assignProps, Show, Match, untrack, createState, produce, onCleanup } from 'solid-js';
 
 const Context = createContext();
 function useRoute() {
@@ -349,18 +349,16 @@ function createSolidRouter(config) {
         },
         previousRoute: undefined
       });
-      createEffect(() => {
-        router.subscribe(rs => {
-          setState(produce(s => {
-            s.route = { ...rs.route,
-              nameArray: rs.route.name.split(".")
-            };
-            s.previousRoute = rs.previousRoute;
-          }));
-        });
-        router.start();
-        if (typeof config.onStart === "function") config.onStart(router);
+      router.subscribe(rs => {
+        setState(produce(s => {
+          s.route = { ...rs.route,
+            nameArray: rs.route.name.split(".")
+          };
+          s.previousRoute = rs.previousRoute;
+        }));
       });
+      router.start();
+      if (typeof config.onStart === "function") config.onStart(router);
       onCleanup(() => {
         for (const unsub of unsubs) {
           unsub();

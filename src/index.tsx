@@ -1,7 +1,7 @@
 import { Router as Router5, Route } from "router5";
 import { DefaultDependencies } from "router5/dist/types/router";
 import { Unsubscribe } from "router5/dist/types/base";
-import { JSX, createEffect, onCleanup, createState, produce } from "solid-js";
+import { JSX, onCleanup, createState, produce } from "solid-js";
 import {
   RoutesLike,
   RouteLike,
@@ -130,18 +130,18 @@ export default function createSolidRouter<
         previousRoute: undefined,
       });
 
-      createEffect(() => {
-        router.subscribe((rs) => {
-          setState(
-            produce<RouterState>((s) => {
-              s.route = { ...rs.route, nameArray: rs.route.name.split(".") };
-              s.previousRoute = rs.previousRoute;
-            })
-          );
-        });
-        router.start();
-        if (typeof config.onStart === "function") config.onStart(router);
+      router.subscribe((rs) => {
+        setState(
+          produce<RouterState>((s) => {
+            s.route = { ...rs.route, nameArray: rs.route.name.split(".") };
+            s.previousRoute = rs.previousRoute;
+          })
+        );
       });
+
+      router.start();
+
+      if (typeof config.onStart === "function") config.onStart(router);
 
       onCleanup(() => {
         for (const unsub of unsubs) {

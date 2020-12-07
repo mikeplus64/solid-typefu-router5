@@ -1,8 +1,8 @@
-import createSolidRouter, { ReadRoutes, useRoute } from "solid-typefu-router5";
+import createSolidRouter, { useRoute } from "solid-typefu-router5";
 import browserPluginFactory from "router5-plugin-browser";
 import { render } from "solid-js/dom";
 import createRouter from "router5";
-import { createMemo, For } from "solid-js";
+import { For } from "solid-js";
 
 const routes = [
   { name: "home", path: "/" },

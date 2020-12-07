@@ -353,18 +353,16 @@ function createSolidRouter(config) {
         },
         previousRoute: undefined
       });
-      solidJs.createEffect(() => {
-        router.subscribe(rs => {
-          setState(solidJs.produce(s => {
-            s.route = { ...rs.route,
-              nameArray: rs.route.name.split(".")
-            };
-            s.previousRoute = rs.previousRoute;
-          }));
-        });
-        router.start();
-        if (typeof config.onStart === "function") config.onStart(router);
+      router.subscribe(rs => {
+        setState(solidJs.produce(s => {
+          s.route = { ...rs.route,
+            nameArray: rs.route.name.split(".")
+          };
+          s.previousRoute = rs.previousRoute;
+        }));
       });
+      router.start();
+      if (typeof config.onStart === "function") config.onStart(router);
       solidJs.onCleanup(() => {
         for (const unsub of unsubs) {
           unsub();
