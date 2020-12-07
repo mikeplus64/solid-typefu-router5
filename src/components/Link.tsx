@@ -1,11 +1,7 @@
-import { SharedRouterValue, RoutesLike } from "../types";
-import { useIsActive } from "../context";
-import { createMemo, splitProps } from "solid-js";
-
-export enum LinkNav {
-  Back = "back",
-  Forward = "forward",
-}
+import { RouteMeta } from "../types";
+import Context, { useIsActive } from "../context";
+import { JSX, assignProps, createMemo, splitProps, useContext } from "solid-js";
+import { RequiredKeys } from "ts-essentials";
 
 /** Props for making a `Link` component.
  *
@@ -21,167 +17,141 @@ export enum LinkNav {
  * - `innerProps`
  * - `disabledProps`
  */
-export type LinkProps<Route> = {
-  disabled?: boolean;
+export type LinkProps<Route extends RouteMeta> = {
   nav?: boolean;
+  navActiveClass?: string;
   navIgnoreParams?: boolean;
+  children?: JSX.Element;
   onClick?: (
     ev: MouseEvent & {
-      target: HTMLAnchorElement;
-      currentTarget: HTMLAnchorElement;
+      target: HTMLElement;
+      currentTarget: HTMLElement;
     }
   ) => void;
+  back?: () => void;
+  forward?: () => void;
+  display?: "button";
+  disabled?: boolean;
 } & (
   | {
-      type: LinkNav.Back | LinkNav.Forward;
-      to?: undefined;
+      to: "@@back" | "@@forward";
       params?: undefined;
     }
-  | {
-      type?: undefined;
-      to: Route;
-      params?: Record<string, any>;
-    }
+  | (Route extends { name: infer Name; params: infer Params }
+      ? RequiresParams<Params> extends true
+        ? { to: Name; params: Params }
+        : { to: Name; params?: Params | undefined }
+      : never)
 ) &
-  Omit<JSX.IntrinsicElements["a" | "button"], "onClick" | "href" | "type">;
+  Omit<JSX.IntrinsicElements["a" | "button"], "onClick" | "href" | "children">;
+
+type RequiresParams<Params> = keyof Params extends never
+  ? false
+  : RequiredKeys<Params> extends never
+  ? false
+  : true;
 
 export interface LinkConfig {
-  navActiveClassName: string;
+  navActiveClass: string;
 }
 
-export type RouteLike = string | string[];
+export default function Link<Route extends RouteMeta>(
+  props: LinkProps<Route>
+): JSX.Element {
+  const { router: router5, config } = useContext(Context);
 
-export function renderRouteLike(route: RouteLike) {
-  if (typeof route === "string") return route;
-  return route.join(".");
-}
+  let [linkProps, innerProps] = splitProps(props, [
+    "type",
+    "onClick",
+    "classList",
+    "to",
+    "params",
+    "nav",
+    "navIgnoreParams",
+    "navActiveClass",
+    "disabled",
+    "back",
+    "forward",
+    "display",
+  ]);
 
-export const defaultLinkConfig: LinkConfig = {
-  navActiveClassName: "is-active",
-};
+  linkProps = assignProps(
+    {
+      navActiveClass: config.navActiveClass,
+      back: config.back,
+      forward: config.forward,
+    },
+    linkProps
+  ) as any;
 
-export default function createLink<
-  Deps,
-  Routes extends RoutesLike<Deps>,
-  RouteName extends RouteNameOf<Routes> & RouteLike
->(
-  self: SharedRouterValue<Deps, Routes>,
-  config: Partial<LinkConfig> = defaultLinkConfig
-): (props: LinkProps<RouteName>) => JSX.Element {
-  const { router5 } = self;
+  const isActive =
+    typeof linkProps.to === "string"
+      ? useIsActive(
+          linkProps.to,
+          linkProps.navIgnoreParams ? undefined : linkProps.params
+        )
+      : alwaysInactive;
 
-  const { navActiveClassName = defaultLinkConfig.navActiveClassName } = config;
-
-  return (props: LinkProps<RouteName>): JSX.Element => {
-    const [linkProps, innerProps] = splitProps(props, [
-      "type",
-      "onClick",
-      "classList",
-      "to",
-      "params",
-      "nav",
-      "navIgnoreParams",
-      "disabled",
-    ]);
-
-    const isActive =
-      linkProps.to !== undefined
-        ? useIsActive(
-            linkProps.to,
-            linkProps.navIgnoreParams ? undefined : linkProps.params
-          )
-        : alwaysInactive;
-
-    const getClassList = createMemo(() => {
-      const classList = linkProps.classList ?? {};
-      if (linkProps.type === undefined && linkProps.nav) {
-        classList[navActiveClassName] = isActive();
-        return classList;
+  const getHref: () => string | undefined = createMemo(() => {
+    if (typeof linkProps.to === "string" && !linkProps.to.startsWith("@@")) {
+      try {
+        return router5.buildPath(linkProps.to, linkProps.params);
+      } catch (err) {
+        console.warn("<Link> buildPath failed:", err);
       }
-      return classList;
-    });
+    }
+    return undefined;
+  });
 
-    const getHref: () => string | undefined = createMemo(() => {
-      if (linkProps.type === undefined) {
-        try {
-          return router5.buildPath(
-            renderRouteLike(linkProps.to as RouteName),
-            linkProps.params
-          );
-        } catch (err) {
-          console.warn("<Link> buildPath failed:", err);
-        }
-      }
-      return undefined;
-    });
+  const getClassList = createMemo(() => {
+    const cls: Record<string, any> = { ...linkProps.classList };
+    if (typeof linkProps.navActiveClass === "string") {
+      cls[linkProps.navActiveClass] = isActive();
+    }
+    return cls;
+  });
 
-    return () =>
-      linkProps.disabled ? (
-        <button
-          {...(innerProps as JSX.IntrinsicElements["button"])}
-          disabled
-          classList={getClassList()}
-        />
-      ) : (
-        <a
-          {...(innerProps as JSX.IntrinsicElements["a"])}
-          classList={getClassList()}
-          href={getHref()}
-          onClick={(ev) => {
-            ev.preventDefault();
-            switch (props.type) {
-              case undefined:
-                router5.navigate(
-                  renderRouteLike(linkProps.to as RouteLike),
-                  linkProps.params ?? {}
-                );
-                if (typeof linkProps.onClick === "function")
-                  linkProps.onClick(ev);
-                break;
-              case LinkNav.Back:
-                window.history.back();
-                break;
-              case LinkNav.Back:
-                window.history.back();
-                break;
-            }
-            ev.target.blur();
-          }}
-        />
-      );
-  };
+  function onClick(
+    ev: MouseEvent & { target: HTMLElement; currentTarget: HTMLElement }
+  ) {
+    ev.preventDefault();
+    switch (linkProps.to) {
+      case "@@forward":
+        linkProps.forward?.();
+        break;
+      case "@@back":
+        linkProps.back?.();
+        break;
+      default:
+        router5.navigate(linkProps.to!, linkProps.params ?? {});
+        if (typeof linkProps.onClick === "function") linkProps.onClick(ev);
+        break;
+    }
+    ev.target.blur();
+  }
+
+  return () =>
+    linkProps.display === "button" ? (
+      <button
+        {...(innerProps as any)}
+        disabled={linkProps.disabled}
+        classList={getClassList()}
+        onClick={onClick}
+      />
+    ) : linkProps.to.startsWith("@@") ? (
+      <button
+        {...(innerProps as any)}
+        classList={getClassList()}
+        onClick={onClick}
+      />
+    ) : (
+      <a
+        {...(innerProps as any)}
+        classList={getClassList()}
+        href={getHref()}
+        onClick={onClick}
+      />
+    );
 }
 
 const alwaysInactive = () => false;
-
-export type FlattenRouteName<A> = A extends [infer X]
-  ? X
-  : A extends [infer X, ...infer XS]
-  ? X extends string
-    ? XS extends string[]
-      ? `${X}.${FlattenRouteName<XS>}`
-      : never
-    : never
-  : A extends string
-  ? A
-  : "";
-
-export type RouteNameOf<A> = FlattenRouteName<RouteArrayOf<A>>;
-
-export type ToRouteArray<A> = A extends string
-  ? A extends `${infer X}.${infer XS}`
-    ? [X, ...ToRouteArray<XS>]
-    : [A]
-  : [];
-
-export type RouteArrayOf<A> = A extends readonly (infer U)[]
-  ? U extends { name: infer Name; children: infer Children }
-    ? Children extends {}
-      ? ToRouteArray<Name> | [...ToRouteArray<Name>, ...RouteArrayOf<Children>]
-      : ToRouteArray<Name>
-    : U extends { name: infer Name }
-    ? ToRouteArray<Name>
-    : []
-  : [];
-
-export type UnOne<A> = A extends [infer U] ? U : A;

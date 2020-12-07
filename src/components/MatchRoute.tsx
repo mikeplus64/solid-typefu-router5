@@ -1,5 +1,12 @@
-import { createContext, useContext, Match, Show, createMemo } from "solid-js";
-import { useRouteNameRaw } from "../context";
+import {
+  JSX,
+  createContext,
+  useContext,
+  Match,
+  Show,
+  createMemo,
+} from "solid-js";
+import { useRoute } from "../context";
 
 const MatchContext = createContext<string>("");
 
@@ -52,10 +59,10 @@ export function SwitchRoutes(props: {
   fallback?: JSX.Element;
 }): JSX.Element {
   const ctx = useContext(MatchContext);
-  const route = useRouteNameRaw();
+  const route = useRoute();
   const getIndex = createMemo<undefined | [number, string]>(
     () => {
-      const here = route();
+      const here = route().name;
       const children = props.children;
       for (let i = 0; i < children.length; i++) {
         const [target, when] = doesMatch(ctx, here, children[i]);
@@ -118,10 +125,10 @@ export function MatchRoute(props: MatchRouteProps): JSX.Element {
 }
 
 function createGetMatch(props: PathProps): () => [string, boolean] {
-  const route = useRouteNameRaw();
+  const route = useRoute();
   const ctx = useContext(MatchContext);
   return createMemo<[string, boolean]>(
-    () => doesMatch(ctx, route(), props),
+    () => doesMatch(ctx, route().name, props),
     undefined,
     (a, b) => a && a[1] === b[1]
   );

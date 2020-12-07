@@ -1,8 +1,6 @@
-import { SharedRouterValue, RoutesLike } from "../types";
-export declare enum LinkNav {
-    Back = "back",
-    Forward = "forward"
-}
+import { RouteMeta } from "../types";
+import { JSX } from "solid-js";
+import { RequiredKeys } from "ts-essentials";
 /** Props for making a `Link` component.
  *
  * @remarks
@@ -17,38 +15,36 @@ export declare enum LinkNav {
  * - `innerProps`
  * - `disabledProps`
  */
-export declare type LinkProps<Route> = {
-    disabled?: boolean;
+export declare type LinkProps<Route extends RouteMeta> = {
     nav?: boolean;
+    navActiveClass?: string;
     navIgnoreParams?: boolean;
+    children?: JSX.Element;
     onClick?: (ev: MouseEvent & {
-        target: HTMLAnchorElement;
-        currentTarget: HTMLAnchorElement;
+        target: HTMLElement;
+        currentTarget: HTMLElement;
     }) => void;
+    back?: () => void;
+    forward?: () => void;
+    display?: "button";
+    disabled?: boolean;
 } & ({
-    type: LinkNav.Back | LinkNav.Forward;
-    to?: undefined;
+    to: "@@back" | "@@forward";
     params?: undefined;
-} | {
-    type?: undefined;
-    to: Route;
-    params?: Record<string, any>;
-}) & Omit<JSX.IntrinsicElements["a" | "button"], "onClick" | "href" | "type">;
+} | (Route extends {
+    name: infer Name;
+    params: infer Params;
+} ? RequiresParams<Params> extends true ? {
+    to: Name;
+    params: Params;
+} : {
+    to: Name;
+    params?: Params | undefined;
+} : never)) & Omit<JSX.IntrinsicElements["a" | "button"], "onClick" | "href" | "children">;
+declare type RequiresParams<Params> = keyof Params extends never ? false : RequiredKeys<Params> extends never ? false : true;
 export interface LinkConfig {
-    navActiveClassName: string;
+    navActiveClass: string;
 }
-export declare type RouteLike = string | string[];
-export declare function renderRouteLike(route: RouteLike): string;
-export declare const defaultLinkConfig: LinkConfig;
-export default function createLink<Deps, Routes extends RoutesLike<Deps>, RouteName extends RouteNameOf<Routes> & RouteLike>(self: SharedRouterValue<Deps, Routes>, config?: Partial<LinkConfig>): (props: LinkProps<RouteName>) => JSX.Element;
-export declare type FlattenRouteName<A> = A extends [infer X] ? X : A extends [infer X, ...infer XS] ? X extends string ? XS extends string[] ? `${X}.${FlattenRouteName<XS>}` : never : never : A extends string ? A : "";
-export declare type RouteNameOf<A> = FlattenRouteName<RouteArrayOf<A>>;
-export declare type ToRouteArray<A> = A extends string ? A extends `${infer X}.${infer XS}` ? [X, ...ToRouteArray<XS>] : [A] : [];
-export declare type RouteArrayOf<A> = A extends readonly (infer U)[] ? U extends {
-    name: infer Name;
-    children: infer Children;
-} ? Children extends {} ? ToRouteArray<Name> | [...ToRouteArray<Name>, ...RouteArrayOf<Children>] : ToRouteArray<Name> : U extends {
-    name: infer Name;
-} ? ToRouteArray<Name> : [] : [];
-export declare type UnOne<A> = A extends [infer U] ? U : A;
+export default function Link<Route extends RouteMeta>(props: LinkProps<Route>): JSX.Element;
+export {};
 //# sourceMappingURL=Link.d.ts.map

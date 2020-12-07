@@ -117,13 +117,12 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   }
 
   return newRequire;
-})({"node_modules/solid-js/dist/index.js":[function(require,module,exports) {
+})({"node_modules/solid-js/dist/solid.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.Dynamic = Dynamic;
 exports.ErrorBoundary = ErrorBoundary;
 exports.For = For;
 exports.Index = Index;
@@ -142,6 +141,7 @@ exports.createContext = createContext;
 exports.createDeferred = createDeferred;
 exports.createEffect = createEffect;
 exports.createMemo = createMemo;
+exports.createMutable = createMutable;
 exports.createRenderEffect = createRenderEffect;
 exports.createResource = createResource;
 exports.createResourceState = createResourceState;
@@ -154,11 +154,14 @@ exports.getListener = getListener;
 exports.indexArray = indexArray;
 exports.lazy = lazy;
 exports.mapArray = mapArray;
+exports.on = on;
 exports.onCleanup = onCleanup;
 exports.onError = onError;
+exports.onMount = onMount;
 exports.produce = produce;
 exports.reconcile = reconcile;
 exports.requestCallback = requestCallback;
+exports.serializeGraph = serializeGraph;
 exports.splitProps = splitProps;
 exports.untrack = untrack;
 exports.unwrap = unwrap;
@@ -341,8 +344,8 @@ const UNOWNED = {
   owner: null
 };
 const [transPending, setTransPending] = createSignal(false, true);
-let Owner = null;
-let Listener = null;
+var Owner = null;
+var Listener = null;
 let Pending = null;
 let Updates = null;
 let Effects = null;
@@ -353,11 +356,12 @@ function createRoot(fn, detachedOwner) {
   detachedOwner && (Owner = detachedOwner);
   const listener = Listener,
         owner = Owner,
-        root = fn.length === 0 ? UNOWNED : {
+        root = fn.length === 0 && !false ? UNOWNED : {
     owned: null,
     cleanups: null,
     context: null,
-    owner
+    owner,
+    attached: !!detachedOwner
   };
   Owner = root;
   Listener = null;
@@ -373,7 +377,7 @@ function createRoot(fn, detachedOwner) {
   return result;
 }
 
-function createSignal(value, areEqual) {
+function createSignal(value, areEqual, options) {
   const s = {
     value,
     observers: null,
@@ -399,7 +403,7 @@ function createEffect(fn, value) {
         s = SuspenseContext && lookup(Owner, SuspenseContext.id);
   if (s) c.suspense = s;
   c.user = true;
-  Effects.push(c);
+  Effects && Effects.push(c);
 }
 
 function resumeEffects(e) {
@@ -439,7 +443,7 @@ function createSelector(source, fn = equalFn) {
   const node = createComputation(p => {
     const v = source();
 
-    for (const key of subs.keys()) if (fn(key, v) || fn(key, p)) {
+    for (const key of subs.keys()) if (fn(key, v) || p && fn(key, p)) {
       const c = subs.get(key);
       c.state = STALE;
       if (c.pure) Updates.push(c);else Effects.push(c);
@@ -479,13 +483,17 @@ function batch(fn) {
 
 function useTransition() {
   return [transPending, fn => {
-    Transition || (Transition = {
-      sources: new Set(),
-      effects: [],
-      promises: new Set(),
-      running: true
-    });
-    Transition.running = true;
+    if (SuspenseContext) {
+      Transition || (Transition = {
+        sources: new Set(),
+        effects: [],
+        promises: new Set(),
+        disposed: new Set(),
+        running: true
+      });
+      Transition.running = true;
+    }
+
     batch(fn);
   }];
 }
@@ -499,20 +507,59 @@ function untrack(fn) {
   return result;
 }
 
+function on(...args) {
+  const fn = args.pop();
+  let deps;
+  let isArray = true;
+  let prev;
+
+  if (args.length < 2) {
+    deps = args[0];
+    isArray = false;
+  } else deps = args;
+
+  return prevResult => {
+    let value;
+
+    if (isArray) {
+      value = [];
+      if (!prev) prev = [];
+
+      for (let i = 0; i < deps.length; i++) value.push(deps[i]());
+    } else value = deps();
+
+    const result = untrack(() => fn(value, prev, prevResult));
+    prev = value;
+    return result;
+  };
+}
+
+function onMount(fn) {
+  createEffect(() => untrack(fn));
+}
+
 function onCleanup(fn) {
-  if (Owner === null) console.warn("cleanups created outside a `createRoot` or `render` will never be run");else if (Owner.cleanups === null) Owner.cleanups = [fn];else Owner.cleanups.push(fn);
+  if (Owner === null) ;else if (Owner.cleanups === null) Owner.cleanups = [fn];else Owner.cleanups.push(fn);
   return fn;
 }
 
 function onError(fn) {
   ERROR || (ERROR = Symbol("error"));
-  if (Owner === null) console.warn("error handlers created outside a `createRoot` or `render` will never be run");else if (Owner.context === null) Owner.context = {
+  if (Owner === null) ;else if (Owner.context === null) Owner.context = {
     [ERROR]: [fn]
   };else if (!Owner.context[ERROR]) Owner.context[ERROR] = [fn];else Owner.context[ERROR].push(fn);
 }
 
 function getListener() {
   return Listener;
+}
+
+function getContextOwner() {
+  return Owner;
+}
+
+function serializeGraph(owner) {
+  return {};
 }
 
 function createContext(defaultValue) {
@@ -526,10 +573,6 @@ function createContext(defaultValue) {
 
 function useContext(context) {
   return lookup(Owner, context.id) || context.defaultValue;
-}
-
-function getContextOwner() {
-  return Owner;
 }
 
 let SuspenseContext;
@@ -704,6 +747,7 @@ function writeSignal(value, isComp) {
     runUpdates(() => {
       for (let i = 0; i < this.observers.length; i += 1) {
         const o = this.observers[i];
+        if (Transition && Transition.running && Transition.disposed.has(o)) continue;
         if (o.observers && o.state !== PENDING) markUpstream(o);
         o.state = STALE;
         if (o.pure) Updates.push(o);else Effects.push(o);
@@ -750,6 +794,9 @@ function runComputation(node, value, time) {
   if (!node.updatedAt || node.updatedAt <= time) {
     if (node.observers && node.observers.length) {
       writeSignal.call(node, nextValue, true);
+    } else if (Transition && Transition.running && node.pure) {
+      Transition.sources.add(node);
+      node.tValue = nextValue;
     } else node.value = nextValue;
 
     node.updatedAt = time;
@@ -770,7 +817,7 @@ function createComputation(fn, init, pure) {
     context: null,
     pure
   };
-  if (Owner === null) console.warn("computations created outside a `createRoot` or `render` will never be disposed");else if (Owner !== UNOWNED) {
+  if (Owner === null) ;else if (Owner !== UNOWNED) {
     if (Transition && Transition.running && Owner.pure) {
       if (!Owner.tOwned) Owner.tOwned = [c];else Owner.tOwned.push(c);
     } else {
@@ -784,8 +831,10 @@ function runTop(node) {
   let top = node.state === STALE && node,
       pending;
   if (node.suspense && untrack(node.suspense.inFallback)) return node.suspense.effects.push(node);
+  const runningTransition = Transition && Transition.running;
 
-  while (node.fn && (node = node.owner)) {
+  while ((node.fn || runningTransition && node.attached) && (node = node.owner)) {
+    if (runningTransition && Transition.disposed.has(node)) return;
     if (node.state === PENDING) pending = node;else if (node.state === STALE) {
       top = node;
       pending = undefined;
@@ -798,6 +847,14 @@ function runTop(node) {
     lookDownstream(pending);
     Updates = updates;
     if (!top || top.state !== STALE) return;
+
+    if (runningTransition) {
+      node = top;
+
+      while ((node.fn || node.attached) && (node = node.owner)) {
+        if (Transition.disposed.has(node)) return;
+      }
+    }
   }
 
   top && updateComputation(top);
@@ -815,44 +872,43 @@ function runUpdates(fn, init) {
   } catch (err) {
     handleError(err);
   } finally {
-    do {
-      if (Updates) {
-        runQueue(Updates);
-        Updates = [];
-      }
+    if (Updates) {
+      runQueue(Updates);
+      Updates = null;
+    }
 
-      if (!wait) {
-        if (Transition && Transition.running && Transition.promises.size) {
-          Transition.effects.push.apply(Transition.effects, Effects);
-        } else runEffects(Effects);
-
-        Effects = [];
-      }
-    } while (Updates && Updates.length);
-
-    Updates = null;
     if (wait) return;
-    Effects = null;
 
-    if (Transition) {
-      if (!Transition.promises.size) {
-        Transition.sources.forEach(v => {
-          v.value = v.tValue;
+    if (Transition && Transition.running) {
+      Transition.running = false;
 
-          if (v.owned) {
-            for (let i = 0, len = v.owned.length; i < len; i++) cleanNode(v.owned[i]);
-          }
-
-          if (v.tOwned) v.owned = v.tOwned;
-          delete v.tValue;
-          delete v.tOwned;
-        });
-        Transition = null;
-        setTransPending(false);
-      } else if (Transition.running) {
-        Transition.running = false;
+      if (Transition.promises.size) {
+        Transition.effects.push.apply(Transition.effects, Effects);
+        Effects = null;
         setTransPending(true);
+        return;
       }
+
+      Transition.sources.forEach(v => {
+        v.value = v.tValue;
+
+        if (v.owned) {
+          for (let i = 0, len = v.owned.length; i < len; i++) cleanNode(v.owned[i]);
+        }
+
+        if (v.tOwned) v.owned = v.tOwned;
+        delete v.tValue;
+        delete v.tOwned;
+      });
+      Transition = null;
+      setTransPending(false);
+    }
+
+    if (Effects.length) batch(() => {
+      runEffects(Effects);
+      Effects = null;
+    });else {
+      Effects = null;
     }
   }
 }
@@ -928,6 +984,8 @@ function cleanNode(node) {
 
       delete node.tOwned;
     }
+
+    reset(node, true);
   } else if (node.owned) {
     for (i = 0; i < node.owned.length; i++) cleanNode(node.owned[i]);
 
@@ -942,6 +1000,17 @@ function cleanNode(node) {
 
   node.state = 0;
   node.context = null;
+}
+
+function reset(node, top) {
+  if (!top) {
+    node.state = 0;
+    Transition.disposed.add(node);
+  }
+
+  if (node.owned) {
+    for (let i = 0; i < node.owned.length; i++) reset(node.owned[i]);
+  }
 }
 
 function handleError(err) {
@@ -973,28 +1042,60 @@ function resolveChildren(children) {
 
 function createProvider(id) {
   return function provider(props) {
-    let rendered;
-    createComputed(() => {
+    return createMemo(() => {
       Owner.context = {
         [id]: props.value
       };
-      rendered = untrack(() => resolveChildren(props.children));
+      return resolveChildren(props.children);
     });
-    return rendered;
   };
 }
 
 const $RAW = Symbol("state-raw"),
       $NODE = Symbol("state-node"),
-      $PROXY = Symbol("state-proxy");
+      $PROXY = Symbol("state-proxy"),
+      $NAME = Symbol("state-name");
 exports.$RAW = $RAW;
 
-function wrap(value, traps) {
-  return value[$PROXY] || (value[$PROXY] = new Proxy(value, traps || proxyTraps));
+function wrap(value, name, processProps, traps) {
+  let p = value[$PROXY];
+
+  if (!p) {
+    Object.defineProperty(value, $PROXY, {
+      value: p = new Proxy(value, traps || proxyTraps)
+    });
+
+    if (processProps) {
+      let keys = Object.keys(value),
+          desc = Object.getOwnPropertyDescriptors(value);
+
+      for (let i = 0, l = keys.length; i < l; i++) {
+        const prop = keys[i];
+
+        if (desc[prop].get) {
+          const get = createMemo(desc[prop].get.bind(p));
+          Object.defineProperty(value, prop, {
+            get
+          });
+        }
+
+        if (desc[prop].set) {
+          const og = desc[prop].set,
+                set = v => batch(() => og.call(p, v));
+
+          Object.defineProperty(value, prop, {
+            set
+          });
+        }
+      }
+    }
+  }
+
+  return p;
 }
 
 function isWrappable(obj) {
-  return obj != null && typeof obj === "object" && (obj.__proto__ === Object.prototype || Array.isArray(obj));
+  return obj != null && typeof obj === "object" && (!obj.__proto__ || obj.__proto__ === Object.prototype || Array.isArray(obj));
 }
 
 function unwrap(item, skipGetters) {
@@ -1027,8 +1128,21 @@ function unwrap(item, skipGetters) {
 
 function getDataNodes(target) {
   let nodes = target[$NODE];
-  if (!nodes) target[$NODE] = nodes = {};
+  if (!nodes) Object.defineProperty(target, $NODE, {
+    value: nodes = {}
+  });
   return nodes;
+}
+
+function proxyDescriptor(target, property) {
+  const desc = Reflect.getOwnPropertyDescriptor(target, property);
+  if (!desc || desc.get || property === $PROXY || property === $NODE || property === $NAME) return desc;
+  delete desc.value;
+  delete desc.writable;
+
+  desc.get = () => target[property];
+
+  return desc;
 }
 
 const proxyTraps = {
@@ -1039,7 +1153,7 @@ const proxyTraps = {
     if (property === $NODE || property === "__proto__") return value;
     const wrappable = isWrappable(value);
 
-    if (getListener() && (typeof value !== "function" || target.hasOwnProperty(property))) {
+    if (Listener && (typeof value !== "function" || target.hasOwnProperty(property))) {
       let nodes, node;
 
       if (wrappable && (nodes = getDataNodes(value))) {
@@ -1061,8 +1175,9 @@ const proxyTraps = {
 
   deleteProperty() {
     return true;
-  }
+  },
 
+  getOwnPropertyDescriptor: proxyDescriptor
 };
 
 function setProperty(state, property, value, force) {
@@ -1145,9 +1260,9 @@ function updatePath(current, path, traversed = []) {
   } else setProperty(current, part, value);
 }
 
-function createState(state) {
+function createState(state, options) {
   const unwrappedState = unwrap(state || {}, true);
-  const wrappedState = wrap(unwrappedState);
+  const wrappedState = wrap(unwrappedState, false, true);
 
   function setState(...args) {
     batch(() => updatePath(unwrappedState, args));
@@ -1167,7 +1282,7 @@ function createResourceNode(v, name) {
 function createResourceState(state, options = {}) {
   const loadingTraps = {
     get(nodes, property) {
-      const node = nodes[property] || (nodes[property] = createResourceNode(undefined, name && `${options.name}:${property}`));
+      const node = nodes[property] || (nodes[property] = createResourceNode(undefined, options.name && `${options.name}:${property}`));
       return node[3]();
     },
 
@@ -1189,7 +1304,7 @@ function createResourceState(state, options = {}) {
       if (property === $NODE || property === "__proto__") return value;
       const wrappable = isWrappable(value);
 
-      if (getListener() && (typeof value !== "function" || target.hasOwnProperty(property))) {
+      if (Listener && (typeof value !== "function" || target.hasOwnProperty(property))) {
         let nodes, node;
 
         if (wrappable && (nodes = getDataNodes(value))) {
@@ -1211,11 +1326,12 @@ function createResourceState(state, options = {}) {
 
     deleteProperty() {
       return true;
-    }
+    },
 
+    getOwnPropertyDescriptor: proxyDescriptor
   };
   const unwrappedState = unwrap(state || {}, true),
-        wrappedState = wrap(unwrappedState, resourceTraps);
+        wrappedState = wrap(unwrappedState, false, true, resourceTraps);
 
   function setState(...args) {
     batch(() => updatePath(unwrappedState, args));
@@ -1236,6 +1352,49 @@ function createResourceState(state, options = {}) {
   }
 
   return [wrappedState, loadState, setState];
+}
+
+const proxyTraps$1 = {
+  get(target, property, receiver) {
+    if (property === $RAW) return target;
+    if (property === $PROXY) return receiver;
+    const value = target[property];
+    if (property === $NODE || property === "__proto__") return value;
+    const wrappable = isWrappable(value);
+
+    if (Listener && (typeof value !== "function" || target.hasOwnProperty(property))) {
+      let nodes, node;
+
+      if (wrappable && (nodes = getDataNodes(value))) {
+        node = nodes._ || (nodes._ = createSignal());
+        node[0]();
+      }
+
+      nodes = getDataNodes(target);
+      node = nodes[property] || (nodes[property] = createSignal());
+      node[0]();
+    }
+
+    return wrappable ? wrap(value, false, false, proxyTraps$1) : value;
+  },
+
+  set(target, property, value) {
+    setProperty(target, property, unwrap(value));
+    return true;
+  },
+
+  deleteProperty(target, property) {
+    setProperty(target, property, undefined);
+    return true;
+  },
+
+  getOwnPropertyDescriptor: proxyDescriptor
+};
+
+function createMutable(state, options) {
+  const unwrappedState = unwrap(state || {}, true);
+  const wrappedState = wrap(unwrappedState, false, true, proxyTraps$1);
+  return wrappedState;
 }
 
 function applyState(target, parent, property, merge, key) {
@@ -1373,7 +1532,8 @@ function mapArray(list, mapFn, options = {}) {
       mapped = [],
       disposers = [],
       len = 0,
-      indexes = mapFn.length > 1 ? [] : null;
+      indexes = mapFn.length > 1 ? [] : null,
+      ctx = Owner;
   onCleanup(() => {
     for (let i = 0, length = disposers.length; i < length; i++) disposers[i]();
   });
@@ -1409,13 +1569,13 @@ function mapArray(list, mapFn, options = {}) {
           mapped[0] = createRoot(disposer => {
             disposers[0] = disposer;
             return options.fallback();
-          });
+          }, ctx);
           len = 1;
         }
       } else if (len === 0) {
         for (j = 0; j < newLen; j++) {
           items[j] = newItems[j];
-          mapped[j] = createRoot(mapper);
+          mapped[j] = createRoot(mapper, ctx);
         }
 
         len = newLen;
@@ -1464,7 +1624,7 @@ function mapArray(list, mapFn, options = {}) {
               indexes[j] = tempIndexes[j];
               indexes[j](j);
             }
-          } else mapped[j] = createRoot(mapper);
+          } else mapped[j] = createRoot(mapper, ctx);
         }
 
         len = mapped.length = newLen;
@@ -1494,7 +1654,8 @@ function indexArray(list, mapFn, options = {}) {
       disposers = [],
       signals = [],
       len = 0,
-      i;
+      i,
+      ctx = Owner;
   onCleanup(() => {
     for (let i = 0, length = disposers.length; i < length; i++) disposers[i]();
   });
@@ -1517,7 +1678,7 @@ function indexArray(list, mapFn, options = {}) {
           mapped[0] = createRoot(disposer => {
             disposers[0] = disposer;
             return options.fallback();
-          });
+          }, ctx);
           len = 1;
         }
 
@@ -1536,7 +1697,7 @@ function indexArray(list, mapFn, options = {}) {
         if (i < items.length && items[i] !== newItems[i]) {
           signals[i](newItems[i]);
         } else if (i >= items.length) {
-          mapped[i] = createRoot(mapper);
+          mapped[i] = createRoot(mapper, ctx);
         }
       }
 
@@ -1687,14 +1848,6 @@ function ErrorBoundary(props) {
   return createMemo(() => (e = errored()) != null ? callFn ? untrack(() => props.fallback(e)) : props.fallback : props.children);
 }
 
-function Dynamic(props) {
-  const [p, others] = splitProps(props, ["component"]);
-  return createMemo(() => {
-    const comp = p.component;
-    return comp && untrack(() => comp(others));
-  });
-}
-
 const SuspenseListContext = createContext();
 let trackSuspense = false;
 
@@ -1812,7 +1965,7 @@ function Suspense(props) {
     decrement: () => {
       if (--counter === 0) {
         setFallback(false);
-        trackSuspense && Promise.resolve().then(SuspenseContext.decrement);
+        trackSuspense && queueMicrotask(SuspenseContext.decrement);
       }
     },
     inFallback,
@@ -1844,9 +1997,7 @@ function Suspense(props) {
 
   });
 }
-
-if (!globalThis.Solid$$) globalThis.Solid$$ = true;else console.warn("You appear to have multiple instances of Solid. This can lead to unexpected behavior.");
-},{}],"node_modules/solid-js/dist/dom/index.js":[function(require,module,exports) {
+},{}],"node_modules/solid-js/web/dist/web.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1861,20 +2012,22 @@ exports.delegateEvents = delegateEvents;
 exports.dynamicProperty = dynamicProperty;
 exports.escape = escape;
 exports.generateHydrationScript = generateHydrationScript;
-exports.getHydrationKey = getHydrationKey;
 exports.getNextElement = getNextElement;
 exports.getNextMarker = getNextMarker;
 exports.hydrate = hydrate;
 exports.insert = insert;
 exports.memo = memo;
 exports.render = render;
-exports.renderDOMToString = renderDOMToString;
+exports.renderToNodeStream = renderToNodeStream;
 exports.renderToString = renderToString;
+exports.renderToWebStream = renderToWebStream;
+exports.resolveSSRNode = resolveSSRNode;
 exports.runHydrationEvents = runHydrationEvents;
 exports.setAttribute = setAttribute;
 exports.setAttributeNS = setAttributeNS;
 exports.spread = spread;
 exports.ssr = ssr;
+exports.ssrBoolean = ssrBoolean;
 exports.ssrClassList = ssrClassList;
 exports.ssrSpread = ssrSpread;
 exports.ssrStyle = ssrStyle;
@@ -1883,342 +2036,117 @@ exports.template = template;
 Object.defineProperty(exports, "ErrorBoundary", {
   enumerable: true,
   get: function () {
-    return _index.ErrorBoundary;
+    return _solidJs.ErrorBoundary;
   }
 });
 Object.defineProperty(exports, "For", {
   enumerable: true,
   get: function () {
-    return _index.For;
+    return _solidJs.For;
   }
 });
 Object.defineProperty(exports, "Index", {
   enumerable: true,
   get: function () {
-    return _index.Index;
+    return _solidJs.Index;
   }
 });
 Object.defineProperty(exports, "Match", {
   enumerable: true,
   get: function () {
-    return _index.Match;
+    return _solidJs.Match;
   }
 });
 Object.defineProperty(exports, "Show", {
   enumerable: true,
   get: function () {
-    return _index.Show;
+    return _solidJs.Show;
   }
 });
 Object.defineProperty(exports, "Suspense", {
   enumerable: true,
   get: function () {
-    return _index.Suspense;
+    return _solidJs.Suspense;
   }
 });
 Object.defineProperty(exports, "SuspenseList", {
   enumerable: true,
   get: function () {
-    return _index.SuspenseList;
+    return _solidJs.SuspenseList;
   }
 });
 Object.defineProperty(exports, "Switch", {
   enumerable: true,
   get: function () {
-    return _index.Switch;
+    return _solidJs.Switch;
   }
 });
 Object.defineProperty(exports, "assignProps", {
   enumerable: true,
   get: function () {
-    return _index.assignProps;
+    return _solidJs.assignProps;
   }
 });
 Object.defineProperty(exports, "createComponent", {
   enumerable: true,
   get: function () {
-    return _index.createComponent;
+    return _solidJs.createComponent;
   }
 });
 Object.defineProperty(exports, "currentContext", {
   enumerable: true,
   get: function () {
-    return _index.getContextOwner;
+    return _solidJs.getContextOwner;
   }
 });
 Object.defineProperty(exports, "effect", {
   enumerable: true,
   get: function () {
-    return _index.createRenderEffect;
+    return _solidJs.createRenderEffect;
   }
 });
+exports.isServer = exports.SVGNamespace = exports.SVGElements = exports.Properties = exports.NonComposedEvents = exports.ChildProperties = exports.Aliases = void 0;
 
-var _index = require("../index.js");
+var _solidJs = require("solid-js");
 
-const Types = {
-  ATTRIBUTE: "attribute",
-  PROPERTY: "property"
-},
-      Attributes = {
-  href: {
-    type: Types.ATTRIBUTE
-  },
-  width: {
-    type: Types.ATTRIBUTE
-  },
-  height: {
-    type: Types.ATTRIBUTE
-  },
-  role: {
-    type: Types.ATTRIBUTE
-  },
-  style: {
-    type: Types.PROPERTY,
-    alias: "style.cssText"
-  },
-  for: {
-    type: Types.PROPERTY,
-    alias: "htmlFor"
-  },
-  class: {
-    type: Types.PROPERTY,
-    alias: "className"
-  },
-  spellCheck: {
-    type: Types.PROPERTY,
-    alias: "spellcheck"
-  },
-  allowFullScreen: {
-    type: Types.PROPERTY,
-    alias: "allowFullscreen"
-  },
-  autoCapitalize: {
-    type: Types.PROPERTY,
-    alias: "autocapitalize"
-  },
-  autoFocus: {
-    type: Types.PROPERTY,
-    alias: "autofocus"
-  },
-  autoPlay: {
-    type: Types.PROPERTY,
-    alias: "autoplay"
-  }
-},
-      SVGAttributes = {
-  innerHTML: {
-    type: Types.PROPERTY
-  },
-  textContent: {
-    type: Types.PROPERTY
-  },
-  innerText: {
-    type: Types.PROPERTY
-  },
-  className: {
-    type: Types.ATTRIBUTE,
-    alias: "class"
-  },
-  htmlFor: {
-    type: Types.ATTRIBUTE,
-    alias: "for"
-  },
-  tabIndex: {
-    type: Types.ATTRIBUTE,
-    alias: "tabindex"
-  },
-  allowReorder: {
-    type: Types.ATTRIBUTE
-  },
-  attributeName: {
-    type: Types.ATTRIBUTE
-  },
-  attributeType: {
-    type: Types.ATTRIBUTE
-  },
-  autoReverse: {
-    type: Types.ATTRIBUTE
-  },
-  baseFrequency: {
-    type: Types.ATTRIBUTE
-  },
-  calcMode: {
-    type: Types.ATTRIBUTE
-  },
-  clipPathUnits: {
-    type: Types.ATTRIBUTE
-  },
-  contentScriptType: {
-    type: Types.ATTRIBUTE
-  },
-  contentStyleType: {
-    type: Types.ATTRIBUTE
-  },
-  diffuseConstant: {
-    type: Types.ATTRIBUTE
-  },
-  edgeMode: {
-    type: Types.ATTRIBUTE
-  },
-  externalResourcesRequired: {
-    type: Types.ATTRIBUTE
-  },
-  filterRes: {
-    type: Types.ATTRIBUTE
-  },
-  filterUnits: {
-    type: Types.ATTRIBUTE
-  },
-  gradientTransform: {
-    type: Types.ATTRIBUTE
-  },
-  gradientUnits: {
-    type: Types.ATTRIBUTE
-  },
-  kernelMatrix: {
-    type: Types.ATTRIBUTE
-  },
-  kernelUnitLength: {
-    type: Types.ATTRIBUTE
-  },
-  keyPoints: {
-    type: Types.ATTRIBUTE
-  },
-  keySplines: {
-    type: Types.ATTRIBUTE
-  },
-  keyTimes: {
-    type: Types.ATTRIBUTE
-  },
-  lengthAdjust: {
-    type: Types.ATTRIBUTE
-  },
-  limitingConeAngle: {
-    type: Types.ATTRIBUTE
-  },
-  markerHeight: {
-    type: Types.ATTRIBUTE
-  },
-  markerUnits: {
-    type: Types.ATTRIBUTE
-  },
-  maskContentUnits: {
-    type: Types.ATTRIBUTE
-  },
-  maskUnits: {
-    type: Types.ATTRIBUTE
-  },
-  numOctaves: {
-    type: Types.ATTRIBUTE
-  },
-  pathLength: {
-    type: Types.ATTRIBUTE
-  },
-  patternContentUnits: {
-    type: Types.ATTRIBUTE
-  },
-  patternTransform: {
-    type: Types.ATTRIBUTE
-  },
-  patternUnits: {
-    type: Types.ATTRIBUTE
-  },
-  pointsAtX: {
-    type: Types.ATTRIBUTE
-  },
-  pointsAtY: {
-    type: Types.ATTRIBUTE
-  },
-  pointsAtZ: {
-    type: Types.ATTRIBUTE
-  },
-  preserveAlpha: {
-    type: Types.ATTRIBUTE
-  },
-  preserveAspectRatio: {
-    type: Types.ATTRIBUTE
-  },
-  primitiveUnits: {
-    type: Types.ATTRIBUTE
-  },
-  refX: {
-    type: Types.ATTRIBUTE
-  },
-  refY: {
-    type: Types.ATTRIBUTE
-  },
-  repeatCount: {
-    type: Types.ATTRIBUTE
-  },
-  repeatDur: {
-    type: Types.ATTRIBUTE
-  },
-  requiredExtensions: {
-    type: Types.ATTRIBUTE
-  },
-  requiredFeatures: {
-    type: Types.ATTRIBUTE
-  },
-  specularConstant: {
-    type: Types.ATTRIBUTE
-  },
-  specularExponent: {
-    type: Types.ATTRIBUTE
-  },
-  spreadMethod: {
-    type: Types.ATTRIBUTE
-  },
-  startOffset: {
-    type: Types.ATTRIBUTE
-  },
-  stdDeviation: {
-    type: Types.ATTRIBUTE
-  },
-  stitchTiles: {
-    type: Types.ATTRIBUTE
-  },
-  surfaceScale: {
-    type: Types.ATTRIBUTE
-  },
-  systemLanguage: {
-    type: Types.ATTRIBUTE
-  },
-  tableValues: {
-    type: Types.ATTRIBUTE
-  },
-  targetX: {
-    type: Types.ATTRIBUTE
-  },
-  targetY: {
-    type: Types.ATTRIBUTE
-  },
-  textLength: {
-    type: Types.ATTRIBUTE
-  },
-  viewBox: {
-    type: Types.ATTRIBUTE
-  },
-  viewTarget: {
-    type: Types.ATTRIBUTE
-  },
-  xChannelSelector: {
-    type: Types.ATTRIBUTE
-  },
-  yChannelSelector: {
-    type: Types.ATTRIBUTE
-  },
-  zoomAndPan: {
-    type: Types.ATTRIBUTE
-  }
+const booleans = ["allowfullscreen", "allowpaymentrequest", "async", "autofocus", "autoplay", "checked", "controls", "default", "disabled", "formnovalidate", "hidden", "ismap", "itemscope", "loop", "multiple", "muted", "nomodule", "novalidate", "open", "playsinline", "readonly", "required", "reversed", "seamless", "selected", "truespeed"];
+const Properties = new Set(["className", "indeterminate", "value", ...booleans]);
+exports.Properties = Properties;
+const ChildProperties = new Set(["innerHTML", "textContent", "innerText", "children"]);
+exports.ChildProperties = ChildProperties;
+const Aliases = {
+  className: "class",
+  htmlFor: "for"
 };
-const NonComposedEvents = new Set(["abort", "animationstart", "animationend", "animationiteration", "blur", "change", "copy", "cut", "error", "focus", "gotpointercapture", "load", "loadend", "loadstart", "lostpointercapture", "mouseenter", "mouseleave", "paste", "progress", "reset", "scroll", "select", "submit", "transitionstart", "transitioncancel", "transitionend", "transitionrun"]);
+exports.Aliases = Aliases;
+const NonComposedEvents = new Set(["abort", "animationstart", "animationend", "animationiteration", "blur", "change", "copy", "cut", "error", "focus", "gotpointercapture", "load", "loadend", "loadstart", "lostpointercapture", "mouseenter", "mouseleave", "paste", "pointerenter", "pointerleave", "progress", "reset", "scroll", "select", "submit", "toggle", "transitionstart", "transitioncancel", "transitionend", "transitionrun"]);
+exports.NonComposedEvents = NonComposedEvents;
+const SVGElements = new Set(["altGlyph", "altGlyphDef", "altGlyphItem", "animate", "animateColor", "animateMotion", "animateTransform", "circle", "clipPath", "color-profile", "cursor", "defs", "desc", "ellipse", "feBlend", "feColorMatrix", "feComponentTransfer", "feComposite", "feConvolveMatrix", "feDiffuseLighting", "feDisplacementMap", "feDistantLight", "feFlood", "feFuncA", "feFuncB", "feFuncG", "feFuncR", "feGaussianBlur", "feImage", "feMerge", "feMergeNode", "feMorphology", "feOffset", "fePointLight", "feSpecularLighting", "feSpotLight", "feTile", "feTurbulence", "filter", "font", "font-face", "font-face-format", "font-face-name", "font-face-src", "font-face-uri", "foreignObject", "g", "glyph", "glyphRef", "hkern", "image", "line", "linearGradient", "marker", "mask", "metadata", "missing-glyph", "mpath", "path", "pattern", "polygon", "polyline", "radialGradient", "rect", "set", "stop", "svg", "switch", "symbol", "text", "textPath", "tref", "tspan", "use", "view", "vkern"]);
+exports.SVGElements = SVGElements;
 const SVGNamespace = {
   xlink: "http://www.w3.org/1999/xlink",
   xml: "http://www.w3.org/XML/1998/namespace"
 };
+exports.SVGNamespace = SVGNamespace;
 
 function memo(fn, equal) {
-  return (0, _index.createMemo)(fn, undefined, equal);
+  return (0, _solidJs.createMemo)(fn, undefined, equal);
+}
+
+function dynamicProperty(props, key) {
+  const src = props[key];
+  Object.defineProperty(props, key, {
+    get() {
+      return src();
+    },
+
+    enumerable: true
+  });
+  return props;
+}
+
+function getHydrationKey() {
+  return globalThis._$HYDRATION.context.id;
 }
 
 function reconcileArrays(parentNode, a, b) {
@@ -2288,30 +2216,14 @@ let hydration = null;
 
 function render(code, element, init) {
   let disposer;
-  (0, _index.createRoot)(dispose => {
+  (0, _solidJs.createRoot)(dispose => {
     disposer = dispose;
     insert(element, code(), element.firstChild ? null : undefined, init);
   });
-  return disposer;
-}
-
-function hydrate(code, element) {
-  hydration = globalThis._$HYDRATION || (globalThis._$HYDRATION = {});
-  hydration.context = {
-    id: "0",
-    count: 0,
-    registry: {}
+  return () => {
+    disposer();
+    element.textContent = "";
   };
-  const templates = element.querySelectorAll(`*[_hk]`);
-  Array.prototype.reduce.call(templates, (memo, node) => {
-    const id = node.getAttribute("_hk"),
-          list = memo[id] || (memo[id] = []);
-    list.push(node);
-    return memo;
-  }, hydration.context.registry);
-  const dispose = render(code, element, [...element.childNodes]);
-  delete hydration.context;
-  return dispose;
 }
 
 function template(html, check, isSVG) {
@@ -2386,18 +2298,18 @@ function style(node, value, prev) {
 
 function spread(node, accessor, isSVG, skipChildren) {
   if (typeof accessor === "function") {
-    (0, _index.createRenderEffect)(current => spreadExpression(node, accessor(), current, isSVG, skipChildren));
+    (0, _solidJs.createRenderEffect)(current => spreadExpression(node, accessor(), current, isSVG, skipChildren));
   } else spreadExpression(node, accessor, undefined, isSVG, skipChildren);
 }
 
 function insert(parent, accessor, marker, initial) {
   if (marker !== undefined && !initial) initial = [];
   if (typeof accessor !== "function") return insertExpression(parent, accessor, initial, marker);
-  (0, _index.createRenderEffect)(current => insertExpression(parent, accessor(), current, marker), initial);
+  (0, _solidJs.createRenderEffect)(current => insertExpression(parent, accessor(), current, marker), initial);
 }
 
 function assign(node, props, isSVG, skipChildren, prevProps = {}) {
-  let info;
+  let isCE, isProp, isChildProp;
 
   for (const prop in props) {
     if (prop === "children") {
@@ -2410,6 +2322,8 @@ function assign(node, props, isSVG, skipChildren, prevProps = {}) {
 
     if (prop === "style") {
       style(node, value, prevProps[prop]);
+    } else if (prop === "class" && !isSVG) {
+      node.className = value;
     } else if (prop === "classList") {
       classList(node, value, prevProps[prop]);
     } else if (prop === "ref") {
@@ -2431,141 +2345,43 @@ function assign(node, props, isSVG, skipChildren, prevProps = {}) {
 
         delegateEvents([name]);
       } else node[lc] = value;
-    } else if (!isSVG && (info = Attributes[prop])) {
-      if (info.type === "attribute") {
-        setAttribute(node, prop, value);
-      } else node[info.alias] = value;
-    } else if (isSVG || prop.indexOf("-") > -1 || prop.indexOf(":") > -1) {
-      const ns = prop.indexOf(":") > -1 && SVGNamespace[prop.split(":")[0]];
-      if (ns) setAttributeNS(node, ns, prop, value);else if (info = SVGAttributes[prop]) {
-        if (info.alias) setAttribute(node, info.alias, value);else setAttribute(node, prop, value);
-      } else setAttribute(node, prop.replace(/([A-Z])/g, g => `-${g[0].toLowerCase()}`), value);
-    } else node[prop] = value;
+    } else if ((isChildProp = ChildProperties.has(prop)) || !isSVG && (isProp = Properties.has(prop)) || (isCE = node.nodeName.includes("-"))) {
+      if (isCE && !isProp && !isChildProp) node[toPropertyName(prop)] = value;else node[prop] = value;
+    } else {
+      const ns = isSVG && prop.indexOf(":") > -1 && SVGNamespace[prop.split(":")[0]];
+      if (ns) setAttributeNS(node, ns, prop, value);else setAttribute(node, Aliases[prop] || prop, value);
+    }
 
     prevProps[prop] = value;
   }
 }
 
-function dynamicProperty(props, key) {
-  const src = props[key];
-  Object.defineProperty(props, key, {
-    get() {
-      return src();
-    },
-
-    enumerable: true
-  });
-  return props;
-}
-
-function ssrClassList(value) {
-  let classKeys = Object.keys(value),
-      result = "";
-
-  for (let i = 0, len = classKeys.length; i < len; i++) {
-    const key = classKeys[i],
-          classValue = !!value[key];
-    if (!key || !classValue) continue;
-    i && (result += " ");
-    result += key;
-  }
-
-  return result;
-}
-
-function ssrStyle(value) {
-  if (typeof value === "string") return value;
-  let result = "";
-  const k = Object.keys(value);
-
-  for (let i = 0; i < k.length; i++) {
-    const s = k[i];
-    if (i) result += ";";
-    result += `${s}:${escape(value[s], true)}`;
-  }
-
-  return result;
-}
-
-function ssrSpread(props, isSVG) {
-  return () => {
-    if (typeof props === "function") props = props();
-    const keys = Object.keys(props);
-    let result = "";
-
-    for (let i = 0; i < keys.length; i++) {
-      const prop = keys[i];
-
-      if (prop === "children") {
-        console.warn(`SSR currently does not support spread children.`);
-        continue;
-      }
-
-      const value = props[prop];
-
-      if (prop === "style") {
-        result += `style="${ssrStyle(value)}"`;
-      } else if (prop === "classList") {
-        result += `class="${ssrClassList(value)}"`;
-      } else {
-        const key = toSSRAttribute(prop, isSVG);
-        result += `${key}="${escape(value, true)}"`;
-      }
-
-      if (i !== keys.length - 1) result += " ";
-    }
-
-    return result;
+function hydrate(code, element) {
+  hydration = globalThis._$HYDRATION || (globalThis._$HYDRATION = {});
+  hydration.context = {
+    id: "0",
+    count: 0,
+    registry: {}
   };
-}
-
-const ATTR_REGEX = /[&<"]/,
-      CONTENT_REGEX = /[&<]/;
-
-function escape(html, attr) {
-  if (typeof html !== "string") return html;
-  const match = (attr ? ATTR_REGEX : CONTENT_REGEX).exec(html);
-  if (!match) return html;
-  let index = 0;
-  let lastIndex = 0;
-  let out = "";
-  let escape = "";
-
-  for (index = match.index; index < html.length; index++) {
-    switch (html.charCodeAt(index)) {
-      case 34:
-        if (!attr) continue;
-        escape = "&quot;";
-        break;
-
-      case 38:
-        escape = "&amp;";
-        break;
-
-      case 60:
-        escape = "&lt;";
-        break;
-
-      default:
-        continue;
-    }
-
-    if (lastIndex !== index) out += html.substring(lastIndex, index);
-    lastIndex = index + 1;
-    out += escape;
-  }
-
-  return lastIndex !== index ? out + html.substring(lastIndex, index) : out;
+  const templates = element.querySelectorAll(`*[data-hk]`);
+  Array.prototype.reduce.call(templates, (memo, node) => {
+    const id = node.getAttribute("data-hk"),
+          list = memo[id] || (memo[id] = []);
+    list.push(node);
+    return memo;
+  }, hydration.context.registry);
+  const dispose = render(code, element, [...element.childNodes]);
+  delete hydration.context;
+  return dispose;
 }
 
 function getNextElement(template, isSSR) {
-  hydration = globalThis._$HYDRATION;
-  const hydrate = hydration.context;
+  const hydrate = hydration && hydration.context;
   let node, key;
 
   if (!hydrate || !hydrate.registry || !((key = getHydrationKey()) && hydrate.registry[key] && (node = hydrate.registry[key].shift()))) {
     const el = template.cloneNode(true);
-    if (isSSR && hydrate) el.setAttribute("_hk", getHydrationKey());
+    if (isSSR && hydrate) el.setAttribute("data-hk", getHydrationKey());
     return el;
   }
 
@@ -2612,23 +2428,8 @@ function runHydrationEvents() {
   }
 }
 
-function getHydrationKey() {
-  return globalThis._$HYDRATION.context.id;
-}
-
-function generateHydrationScript({
-  eventNames = ["click", "input", "blur"],
-  streaming,
-  resolved
-} = {}) {
-  let s = `(()=>{_$HYDRATION={events:[],completed:new WeakSet};const t=e=>e&&e.hasAttribute&&(e.hasAttribute("_hk")&&e||t(e.host&&e.host instanceof Node?e.host:e.parentNode)),e=e=>{let o=e.composedPath&&e.composedPath()[0]||e.target,s=t(o);s&&!_$HYDRATION.completed.has(s)&&_$HYDRATION.events.push([s,e])};["${eventNames.join('","')}"].forEach(t=>document.addEventListener(t,e))})();`;
-
-  if (streaming) {
-    s += `(()=>{const e=_$HYDRATION,r={};let o=0;e.resolveResource=((e,o)=>{const t=r[e];if(!t)return r[e]=o;delete r[e],t(o)}),e.loadResource=(()=>{const e=++o,t=r[e];if(!t){let o,t=new Promise(e=>o=e);return r[e]=o,t}return delete r[e],Promise.resolve(t)})})();`;
-  }
-
-  if (resolved) s += `_$HYDRATION.resources = JSON.parse('${JSON.stringify(_$HYDRATION.resources || {})}');`;
-  return s;
+function toPropertyName(name) {
+  return name.toLowerCase().replace(/-([a-z])/g, (_, w) => w.toUpperCase());
 }
 
 function eventHandler(e) {
@@ -2656,20 +2457,20 @@ function eventHandler(e) {
 
     if (handler) {
       const data = node[`${key}Data`];
-      data ? handler(data, e) : handler(e);
+      data !== undefined ? handler(data, e) : handler(e);
       if (e.cancelBubble) return;
     }
 
-    node = node.host && node.host instanceof Node ? node.host : node.parentNode;
+    node = node.host && node.host !== node && node.host instanceof Node ? node.host : node.parentNode;
   }
 }
 
 function spreadExpression(node, props, prevProps = {}, isSVG, skipChildren) {
   if (!skipChildren && "children" in props) {
-    (0, _index.createRenderEffect)(() => prevProps.children = insertExpression(node, props.children, prevProps.children));
+    (0, _solidJs.createRenderEffect)(() => prevProps.children = insertExpression(node, props.children, prevProps.children));
   }
 
-  (0, _index.createRenderEffect)(() => assign(node, props, isSVG, true, prevProps));
+  (0, _solidJs.createRenderEffect)(() => assign(node, props, isSVG, true, prevProps));
   return prevProps;
 }
 
@@ -2701,13 +2502,13 @@ function insertExpression(parent, value, current, marker, unwrapArray) {
     if (hydration && hydration.context && hydration.context.registry) return current;
     current = cleanChildren(parent, current, marker);
   } else if (t === "function") {
-    (0, _index.createRenderEffect)(() => current = insertExpression(parent, value(), current, marker));
+    (0, _solidJs.createRenderEffect)(() => current = insertExpression(parent, value(), current, marker));
     return () => current;
   } else if (Array.isArray(value)) {
     const array = [];
 
     if (normalizeIncomingArray(array, value, unwrapArray)) {
-      (0, _index.createRenderEffect)(() => current = insertExpression(parent, array, current, marker, true));
+      (0, _solidJs.createRenderEffect)(() => current = insertExpression(parent, array, current, marker, true));
       return () => current;
     }
 
@@ -2794,124 +2595,51 @@ function cleanChildren(parent, current, marker, replacement) {
   return [node];
 }
 
-function toSSRAttribute(key, isSVG) {
-  if (isSVG) {
-    const attr = SVGAttributes[key];
+function renderToString(fn, options) {}
 
-    if (attr) {
-      if (attr.alias) key = attr.alias;
-    } else key = key.replace(/([A-Z])/g, g => `-${g[0].toLowerCase()}`);
-  } else {
-    const attr = SVGAttributes[key];
-    if (attr && attr.alias) key = attr.alias;
-    key = key.toLowerCase();
-  }
+function renderToNodeStream(fn) {}
 
-  return key;
-}
+function renderToWebStream(fn) {}
 
-function renderToString(code, options = {}) {
-  options = {
-    timeoutMs: 30000,
-    ...options
-  };
-  const hydration = globalThis._$HYDRATION || (globalThis._$HYDRATION = {});
-  hydration.context = {
-    id: "0",
-    count: 0
-  };
-  hydration.resources = {};
-  hydration.asyncSSR = true;
-  return (0, _index.createRoot)(() => {
-    const rendered = code();
+function ssr(template, ...nodes) {}
 
-    if (typeof rendered === "object" && "then" in rendered) {
-      const timeout = new Promise((_, reject) => setTimeout(() => reject("renderToString timed out"), options.timeoutMs));
-      return Promise.race([rendered, timeout]).then(resolveSSRNode);
-    }
+function resolveSSRNode(node) {}
 
-    return resolveSSRNode(rendered);
-  });
-}
+function ssrClassList(value) {}
 
-function renderDOMToString(code, options = {}) {
-  options = {
-    timeoutMs: 30000,
-    ...options
-  };
-  const hydration = globalThis._$HYDRATION || (globalThis._$HYDRATION = {});
-  hydration.context = {
-    id: "0",
-    count: 0
-  };
-  hydration.resources = {};
-  hydration.asyncSSR = true;
-  const container = document.createElement("div");
-  document.body.appendChild(container);
-  return (0, _index.createRoot)(d1 => {
-    const rendered = code();
+function ssrStyle(value) {}
 
-    function resolve(rendered) {
-      (0, _index.createRoot)(d2 => (insert(container, rendered), d1(), d2()));
-      const html = container.innerHTML;
-      document.body.removeChild(container);
-      return html;
-    }
+function ssrSpread(accessor) {}
 
-    if (typeof rendered === "object" && "then" in rendered) {
-      const timeout = new Promise((_, reject) => setTimeout(() => reject("renderToString timed out"), options.timeoutMs));
-      return Promise.race([rendered, timeout]).then(resolve);
-    }
+function ssrBoolean(key, value) {}
 
-    return resolve(rendered);
-  });
-}
+function escape(html) {}
 
-function ssr(t, ...nodes) {
-  if (!nodes.length) return {
-    t
-  };
+function generateHydrationScript(options) {}
 
-  for (let i = 0; i < nodes.length; i++) {
-    const n = nodes[i];
-    if (typeof n === "function") nodes[i] = memo(() => resolveSSRNode(n()));
-  }
-
-  return {
-    t: () => {
-      let result = "";
-
-      for (let i = 0; i < t.length; i++) {
-        result += t[i];
-        const node = nodes[i];
-        if (node !== undefined) result += resolveSSRNode(node);
-      }
-
-      return result;
-    }
-  };
-}
-
-function resolveSSRNode(node) {
-  if (Array.isArray(node)) return node.map(resolveSSRNode).join("");
-  const t = typeof node;
-  if (node && t === "object") return resolveSSRNode(node.t);
-  if (t === "function") return resolveSSRNode(node());
-  return t === "string" ? node : JSON.stringify(node);
-}
+const isServer = false;
+exports.isServer = isServer;
 
 function Portal(props) {
-  if (globalThis._$HYDRATION && globalThis._$HYDRATION.asyncSSR) return;
+  const hydration = globalThis._$HYDRATION;
   const {
     useShadow
   } = props,
         marker = document.createTextNode(""),
         mount = props.mount || document.body;
 
+  function renderPortal() {
+    if (hydration && hydration.context && hydration.context.registry) {
+      const [s, set] = (0, _solidJs.createSignal)(false);
+      queueMicrotask(() => set(true));
+      return () => s() && props.children;
+    } else return () => props.children;
+  }
+
   if (mount instanceof HTMLHeadElement) {
-    insert(mount, () => props.children, null);
+    insert(mount, renderPortal(), null);
   } else {
-    const container = document.createElement("div"),
+    const container = props.isSVG ? document.createElementNS("http://www.w3.org/2000/svg", "g") : document.createElement("div"),
           renderRoot = useShadow && container.attachShadow ? container.attachShadow({
       mode: "open"
     }) : container;
@@ -2921,23 +2649,23 @@ function Portal(props) {
       }
 
     });
-    insert(renderRoot, () => props.children);
+    insert(renderRoot, renderPortal());
     mount.appendChild(container);
     props.ref && props.ref(container);
-    (0, _index.onCleanup)(() => mount.removeChild(container));
+    (0, _solidJs.onCleanup)(() => mount.removeChild(container));
   }
 
   return marker;
 }
 
 function Dynamic(props) {
-  const [p, others] = (0, _index.splitProps)(props, ["component"]);
-  return (0, _index.createMemo)(() => {
+  const [p, others] = (0, _solidJs.splitProps)(props, ["component"]);
+  return (0, _solidJs.createMemo)(() => {
     const comp = p.component,
           t = typeof comp;
 
     if (comp) {
-      if (t === "function") return (0, _index.untrack)(() => comp(others));else if (t === "string") {
+      if (t === "function") return (0, _solidJs.untrack)(() => comp(others));else if (t === "string") {
         const el = document.createElement(comp);
         spread(el, others);
         return el;
@@ -2945,7 +2673,7 @@ function Dynamic(props) {
     }
   });
 }
-},{"../index.js":"node_modules/solid-js/dist/index.js"}],"node_modules/solid-typefu-router5/dist/index.es.js":[function(require,module,exports) {
+},{"solid-js":"node_modules/solid-js/dist/solid.js"}],"node_modules/solid-typefu-router5/dist/index.es.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2955,13 +2683,11 @@ exports.MatchRoute = MatchRoute;
 exports.ShowRoute = ShowRoute;
 exports.SwitchRoutes = SwitchRoutes;
 exports.isActive = isActive;
-exports.passthru = passthru;
 exports.useIsActive = useIsActive;
 exports.useRoute = useRoute;
-exports.useRouteName = useRouteName;
-exports.LinkNav = exports.Context = exports.default = void 0;
+exports.Context = exports.default = void 0;
 
-var _dom = require("solid-js/dom");
+var _web = require("solid-js/web");
 
 var _solidJs = require("solid-js");
 
@@ -2969,19 +2695,14 @@ const Context = (0, _solidJs.createContext)();
 exports.Context = Context;
 
 function useRoute() {
-  return (0, _solidJs.useContext)(Context).getRoute;
+  const ctx = (0, _solidJs.useContext)(Context);
+  return () => ctx.state.route;
 }
 
-function useRouteName() {
-  return (0, _solidJs.useContext)(Context).getRouteName;
-}
-
-function useRouteNameRaw() {
-  return (0, _solidJs.useContext)(Context).getRouteNameRaw;
-}
-
-function shallowStringyEq(a, b) {
+function paramsEq(a, b) {
   if (a === b) return true;
+  if (a === undefined) return b === undefined;
+  if (b === undefined) return a === undefined;
   const keys = Object.keys(a);
 
   for (const key of keys) if (!(key in b)) return false;
@@ -2991,16 +2712,10 @@ function shallowStringyEq(a, b) {
   return keys.length === Object.keys(b).length;
 }
 
-function useIsActive(link, params, isEqual = shallowStringyEq) {
-  const getRouteName = useRouteName();
-  const getIsActiveByName = (0, _solidJs.createMemo)(() => isActive(getRouteName(), link));
-  if (params === undefined) return getIsActiveByName;
-  const getRoute = useRoute();
-  const getRouteParams = (0, _solidJs.createMemo)(() => getRoute().params);
-  return (0, _solidJs.createMemo)(() => {
-    const routeParams = getRouteParams();
-    return getIsActiveByName() && isEqual(routeParams, params);
-  });
+function useIsActive(link, params, paramsIsEqual = paramsEq) {
+  const state = (0, _solidJs.useContext)(Context).state;
+  const getIsActiveByName = (0, _solidJs.createMemo)(() => isActive(state.route.name, link));
+  return (0, _solidJs.createMemo)(() => getIsActiveByName() && params !== undefined ? paramsIsEqual(state.route.params, params) : true);
 }
 /**
  * Find whether 'link' is an ancestor of, or equal to, 'here'
@@ -3010,130 +2725,116 @@ function useIsActive(link, params, isEqual = shallowStringyEq) {
 
 
 function isActive(here, link) {
-  if (here.length === 0) {
-    return false;
-  }
-
-  if (typeof link === 'string') {
-    return here[0] === link;
-  } // if link has more segments than here then it definitely cannot be an
-  // ancestor of here
-
-
-  if (link.length > here.length) return false;
-
-  for (let i = 0; i < link.length; i++) {
-    if (link[i] !== here[i]) return false;
-  }
-
-  return true;
+  return link.startsWith(here);
 }
 
-const _tmpl$ = (0, _dom.template)(`<button disabled=""></button>`, 2),
-      _tmpl$2 = (0, _dom.template)(`<a></a>`, 2);
+const _tmpl$ = (0, _web.template)(`<button></button>`, 2),
+      _tmpl$2 = (0, _web.template)(`<a></a>`, 2);
 
-var LinkNav;
-exports.LinkNav = LinkNav;
-
-(function (LinkNav) {
-  LinkNav["Back"] = "back";
-  LinkNav["Forward"] = "forward";
-})(LinkNav || (exports.LinkNav = LinkNav = {}));
-
-function renderRouteLike(route) {
-  if (typeof route === "string") return route;
-  return route.join(".");
-}
-
-const defaultLinkConfig = {
-  navActiveClassName: "is-active"
-};
-
-function createLink(self, config = defaultLinkConfig) {
+function Link(props) {
   const {
-    router5
-  } = self;
-  const {
-    navActiveClassName = defaultLinkConfig.navActiveClassName
-  } = config;
-  return props => {
-    const [linkProps, innerProps] = (0, _solidJs.splitProps)(props, ["type", "onClick", "classList", "to", "params", "nav", "navIgnoreParams", "disabled"]);
-    const isActive = linkProps.to !== undefined ? useIsActive(linkProps.to, linkProps.navIgnoreParams ? undefined : linkProps.params) : alwaysInactive;
-    const getClassList = (0, _solidJs.createMemo)(() => {
-      var _linkProps$classList;
-
-      const classList = (_linkProps$classList = linkProps.classList) !== null && _linkProps$classList !== void 0 ? _linkProps$classList : {};
-
-      if (linkProps.type === undefined && linkProps.nav) {
-        classList[navActiveClassName] = isActive();
-        return classList;
+    router: router5,
+    config
+  } = (0, _solidJs.useContext)(Context);
+  let [linkProps, innerProps] = (0, _solidJs.splitProps)(props, ["type", "onClick", "classList", "to", "params", "nav", "navIgnoreParams", "navActiveClass", "disabled", "back", "forward", "display"]);
+  linkProps = (0, _solidJs.assignProps)({
+    navActiveClass: config.navActiveClass,
+    back: config.back,
+    forward: config.forward
+  }, linkProps);
+  const isActive = typeof linkProps.to === "string" ? useIsActive(linkProps.to, linkProps.navIgnoreParams ? undefined : linkProps.params) : alwaysInactive;
+  const getHref = (0, _solidJs.createMemo)(() => {
+    if (typeof linkProps.to === "string" && !linkProps.to.startsWith("@@")) {
+      try {
+        return router5.buildPath(linkProps.to, linkProps.params);
+      } catch (err) {
+        console.warn("<Link> buildPath failed:", err);
       }
+    }
 
-      return classList;
+    return undefined;
+  });
+  const getClassList = (0, _solidJs.createMemo)(() => {
+    const cls = { ...linkProps.classList
+    };
+
+    if (typeof linkProps.navActiveClass === "string") {
+      cls[linkProps.navActiveClass] = isActive();
+    }
+
+    return cls;
+  });
+
+  function onClick(ev) {
+    var _linkProps$forward, _linkProps, _linkProps$back, _linkProps2, _linkProps$params;
+
+    ev.preventDefault();
+
+    switch (linkProps.to) {
+      case "@@forward":
+        (_linkProps$forward = (_linkProps = linkProps).forward) === null || _linkProps$forward === void 0 ? void 0 : _linkProps$forward.call(_linkProps);
+        break;
+
+      case "@@back":
+        (_linkProps$back = (_linkProps2 = linkProps).back) === null || _linkProps$back === void 0 ? void 0 : _linkProps$back.call(_linkProps2);
+        break;
+
+      default:
+        router5.navigate(linkProps.to, (_linkProps$params = linkProps.params) !== null && _linkProps$params !== void 0 ? _linkProps$params : {});
+        if (typeof linkProps.onClick === "function") linkProps.onClick(ev);
+        break;
+    }
+
+    ev.target.blur();
+  }
+
+  return () => linkProps.display === "button" ? (() => {
+    const _el$ = _tmpl$.cloneNode(true);
+
+    _el$.__click = onClick;
+    (0, _web.spread)(_el$, innerProps, false, false);
+    (0, _web.effect)(_p$ => {
+      const _v$ = linkProps.disabled,
+            _v$2 = getClassList();
+
+      _v$ !== _p$._v$ && (_el$.disabled = _p$._v$ = _v$);
+      _p$._v$2 = (0, _web.classList)(_el$, _v$2, _p$._v$2);
+      return _p$;
+    }, {
+      _v$: undefined,
+      _v$2: undefined
     });
-    const getHref = (0, _solidJs.createMemo)(() => {
-      if (linkProps.type === undefined) {
-        try {
-          return router5.buildPath(renderRouteLike(linkProps.to), linkProps.params);
-        } catch (err) {
-          console.warn("<Link> buildPath failed:", err);
-        }
-      }
+    return _el$;
+  })() : linkProps.to.startsWith("@@") ? (() => {
+    const _el$2 = _tmpl$.cloneNode(true);
 
-      return undefined;
+    _el$2.__click = onClick;
+    (0, _web.spread)(_el$2, innerProps, false, false);
+    (0, _web.effect)(_$p => (0, _web.classList)(_el$2, getClassList(), _$p));
+    return _el$2;
+  })() : (() => {
+    const _el$3 = _tmpl$2.cloneNode(true);
+
+    _el$3.__click = onClick;
+    (0, _web.spread)(_el$3, innerProps, false, false);
+    (0, _web.effect)(_p$ => {
+      const _v$3 = getClassList(),
+            _v$4 = getHref();
+
+      _p$._v$3 = (0, _web.classList)(_el$3, _v$3, _p$._v$3);
+      _v$4 !== _p$._v$4 && (0, _web.setAttribute)(_el$3, "href", _p$._v$4 = _v$4);
+      return _p$;
+    }, {
+      _v$3: undefined,
+      _v$4: undefined
     });
-    return () => linkProps.disabled ? (() => {
-      const _el$ = _tmpl$.cloneNode(true);
-
-      (0, _dom.spread)(_el$, innerProps, false, false);
-      (0, _dom.effect)(_$p => (0, _dom.classList)(_el$, getClassList(), _$p));
-      return _el$;
-    })() : (() => {
-      const _el$2 = _tmpl$2.cloneNode(true);
-
-      _el$2.__click = ev => {
-        var _linkProps$params;
-
-        ev.preventDefault();
-
-        switch (props.type) {
-          case undefined:
-            router5.navigate(renderRouteLike(linkProps.to), (_linkProps$params = linkProps.params) !== null && _linkProps$params !== void 0 ? _linkProps$params : {});
-            if (typeof linkProps.onClick === "function") linkProps.onClick(ev);
-            break;
-
-          case LinkNav.Back:
-            window.history.back();
-            break;
-
-          case LinkNav.Back:
-            window.history.back();
-            break;
-        }
-
-        ev.target.blur();
-      };
-
-      (0, _dom.spread)(_el$2, innerProps, false, false);
-      (0, _dom.effect)(_p$ => {
-        const _v$ = getClassList(),
-              _v$2 = getHref();
-
-        _p$._v$ = (0, _dom.classList)(_el$2, _v$, _p$._v$);
-        _v$2 !== _p$._v$2 && (0, _dom.setAttribute)(_el$2, "href", _p$._v$2 = _v$2);
-        return _p$;
-      }, {
-        _v$: undefined,
-        _v$2: undefined
-      });
-      return _el$2;
-    })();
-  };
+    return _el$3;
+  })();
 }
 
 const alwaysInactive = () => false;
 
-(0, _dom.delegateEvents)(["click"]);
+(0, _web.delegateEvents)(["click"]);
 const MatchContext = (0, _solidJs.createContext)("");
 
 function doesMatch(ctx, here, props) {
@@ -3151,9 +2852,9 @@ function doesMatch(ctx, here, props) {
 
 function SwitchRoutes(props) {
   const ctx = (0, _solidJs.useContext)(MatchContext);
-  const route = useRouteNameRaw();
+  const route = useRoute();
   const getIndex = (0, _solidJs.createMemo)(() => {
-    const here = route();
+    const here = route().name;
     const children = props.children;
 
     for (let i = 0; i < children.length; i++) {
@@ -3171,7 +2872,7 @@ function SwitchRoutes(props) {
 
     if (ix !== undefined) {
       const [i, target] = ix;
-      return (0, _dom.createComponent)(MatchContext.Provider, {
+      return (0, _web.createComponent)(MatchContext.Provider, {
         value: target,
 
         get children() {
@@ -3193,7 +2894,7 @@ function ShowRoute(props) {
   const getMatch = createGetMatch(props);
   return () => {
     const [target, when] = getMatch();
-    return (0, _dom.createComponent)(_dom.Show, {
+    return (0, _web.createComponent)(_solidJs.Show, {
       when: when,
 
       get fallback() {
@@ -3201,7 +2902,7 @@ function ShowRoute(props) {
       },
 
       get children() {
-        return (0, _dom.createComponent)(MatchContext.Provider, {
+        return (0, _web.createComponent)(MatchContext.Provider, {
           value: target,
 
           get children() {
@@ -3221,13 +2922,13 @@ function ShowRoute(props) {
 
 function MatchRoute(props) {
   const getMatch = createGetMatch(props);
-  return (0, _dom.createComponent)(_dom.Match, {
+  return (0, _web.createComponent)(_solidJs.Match, {
     get when() {
       return getMatch()[1];
     },
 
     get children() {
-      return (0, _dom.createComponent)(MatchContext.Provider, {
+      return (0, _web.createComponent)(MatchContext.Provider, {
         get value() {
           return getMatch()[0];
         },
@@ -3243,9 +2944,9 @@ function MatchRoute(props) {
 }
 
 function createGetMatch(props) {
-  const route = useRouteNameRaw();
+  const route = useRoute();
   const ctx = (0, _solidJs.useContext)(MatchContext);
-  return (0, _solidJs.createMemo)(() => doesMatch(ctx, route(), props), undefined, (a, b) => a && a[1] === b[1]);
+  return (0, _solidJs.createMemo)(() => doesMatch(ctx, route().name, props), undefined, (a, b) => a && a[1] === b[1]);
 }
 /**
  * Given a tree of routes and render instructions for each route, return an
@@ -3257,78 +2958,13 @@ function createGetMatch(props) {
 
 
 function RouteStateMachine(tree, _assumed) {
-  const getRouteName = useRouteName();
-
-  function traverseHydrate(path0, node0, Render, defaultProps) {
-    const noProps = defaultProps !== null && defaultProps !== void 0 ? defaultProps : {};
-    const [state, setState] = (0, _solidJs.createState)(noProps);
-    const getPathSuffix = (0, _solidJs.createMemo)(() => getRouteName().slice(path0.length), [], (a, b) => {
-      if (a === b) return true;
-      if (a.length !== b.length) return false;
-
-      for (let i = 0; i < a.length; i++) {
-        const x = a[i];
-        const y = b[i];
-        if (x !== y) return false;
-      }
-
-      return true;
-    });
-
-    function populate(path, node, next, counter) {
-      for (const key in node) {
-        const gp = node[key];
-
-        if (typeof gp === "function") {
-          const value = gp();
-          if (value === state[key]) continue;
-          next[key] = value;
-          counter.updated++;
-          continue;
-        }
-
-        if (gp !== undefined) {
-          if (path[0] === key) {
-            populate(path.slice(1), gp, next, counter);
-          }
-        }
-      }
-    }
-
-    (0, _solidJs.createComputed)(() => {
-      const suffix = getPathSuffix();
-      (0, _solidJs.untrack)(() => {
-        const next = { ...state
-        };
-        const counter = {
-          updated: 0
-        };
-        populate(suffix, node0, next, counter);
-
-        if (counter.updated > 0) {
-          setState(next);
-        }
-      });
-    });
-    return (0, _solidJs.createComponent)(Render, state);
-  }
+  const route = useRoute();
 
   function traverse(path, node) {
-    if (typeof node === "function") {
-      return node(function (owned) {
-        const {
-          props,
-          render,
-          defaultProps
-        } = owned;
-        return () => traverseHydrate(path, props, render, defaultProps);
-      });
-    }
-
     const children = [];
     const {
       render: RenderHere = passthru,
-      fallback,
+      fallback: RenderFallback = nofallback,
       ...routes
     } = node;
 
@@ -3341,10 +2977,19 @@ function RouteStateMachine(tree, _assumed) {
       });
     }
 
-    return () => (0, _dom.createComponent)(RenderHere, {
+    return () => (0, _web.createComponent)(RenderHere, {
+      get params() {
+        return route().params;
+      },
+
       get children() {
-        return (0, _dom.createComponent)(SwitchRoutes, {
-          fallback: fallback,
+        return (0, _web.createComponent)(SwitchRoutes, {
+          fallback: () => (0, _web.createComponent)(RenderFallback, {
+            get params() {
+              return route().params;
+            }
+
+          }),
           children: children
         });
       }
@@ -3354,108 +2999,67 @@ function RouteStateMachine(tree, _assumed) {
 
   return (0, _solidJs.untrack)(() => traverse([], tree));
 }
-/**
- * Helper function. Use this as a [[render]] function to just render the
- * children only.
- */
 
+function nofallback() {
+  return undefined;
+}
 
 function passthru(props) {
   return props.children;
 }
-/**
- * Create a router for use in solid-js.
- *
- * I'd recommend putting your router in its own file like './router.ts', then
- * exporting the results of this function, like
- *
- * ```ts
- * import { createRouter, Router as Router5 } from 'router5';
- * import { createSolidRouter } from 'solid-ts-router';
- *
- * const routes = [
- *   ...
- * ] as const;
- *
- * // note the "as const" is very important! this causes TypeScript to infer
- * // `routes` as the narrowest possible type.
- *
- * function createRouter5(routes: Route<Deps>[]): Router5 {
- *   return createRouter(...)
- * }
- *
- * function onStart(router: Router5): void {
- *   // initial redirect here
- *   ...
- * }
- *
- * export const { Provider, Link, Router } = createSolidRouter(routes, { createRouter5, onStart });
- * ```
- */
 
+function createSolidRouter(config) {
+  let router;
+  let unsubs;
+  const r = config.createRouter5(config.routes);
 
-function createSolidRouter(routes, {
-  createRouter5,
-  onStart,
-  link: linkConfig
-}) {
-  const [router5, unsubs] = (() => {
-    let router5;
-    let unsubs;
-    const r = createRouter5(routes);
+  if (Array.isArray(r)) {
+    [router, ...unsubs] = r;
+  } else {
+    router = r;
+    unsubs = [];
+  }
 
-    if (Array.isArray(r)) {
-      [router5, ...unsubs] = r;
-    } else {
-      router5 = r;
-      unsubs = [];
-    }
-
-    return [router5, unsubs];
-  })(); // yolo, hopefully router5 doesn't actually mutate routes =)
-
-
-  const self = {
-    routes,
-    router5
-  };
-  Object.freeze(self);
   return {
-    Link: createLink(self, linkConfig),
+    Link,
+    Router: props => RouteStateMachine(props.children, props.assume),
+    Provider: props => {
+      var _router$getState;
 
-    Router(props) {
-      return RouteStateMachine(props.children, props.assume);
-    },
-
-    Provider(props) {
-      var _router5$getState;
-
-      const initialState = (_router5$getState = router5.getState()) !== null && _router5$getState !== void 0 ? _router5$getState : {
+      const initialState = (_router$getState = router.getState()) !== null && _router$getState !== void 0 ? _router$getState : {
         name: ""
       };
-      const [getRoute, setRoute] = (0, _solidJs.createSignal)(initialState);
-      const getRouteName = (0, _solidJs.createMemo)(() => getRoute().name, initialState.name, (a, b) => a === b);
-      const getSplitRouteName = (0, _solidJs.createMemo)(() => Object.freeze(getRouteName().split(".")), initialState.name.split("."));
-      const value = {
-        getRoute,
-        getRouteName: getSplitRouteName,
-        getRouteNameRaw: getRouteName,
-        router: self
-      };
+      const [state, setState] = (0, _solidJs.createState)({
+        route: { ...initialState,
+          nameArray: initialState.name.split(".")
+        },
+        previousRoute: undefined
+      });
       (0, _solidJs.createEffect)(() => {
-        router5.subscribe(state => setRoute(Object.freeze(state.route)));
-        router5.start();
-        if (typeof onStart === "function") onStart(router5);
+        router.subscribe(rs => {
+          setState((0, _solidJs.produce)(s => {
+            s.route = { ...rs.route,
+              nameArray: rs.route.name.split(".")
+            };
+            s.previousRoute = rs.previousRoute;
+          }));
+        });
+        router.start();
+        if (typeof config.onStart === "function") config.onStart(router);
       });
       (0, _solidJs.onCleanup)(() => {
         for (const unsub of unsubs) {
           unsub();
         }
 
-        router5.stop();
+        router.stop();
       });
-      return (0, _dom.createComponent)(Context.Provider, {
-        value: value,
+      return (0, _web.createComponent)(Context.Provider, {
+        value: {
+          state,
+          router,
+          config
+        },
 
         get children() {
           return props.children;
@@ -3463,15 +3067,13 @@ function createSolidRouter(routes, {
 
       });
     },
-
-    router: self,
-    hints: {}
+    router
   };
 }
 
 var _default = createSolidRouter;
 exports.default = _default;
-},{"solid-js/dom":"node_modules/solid-js/dist/dom/index.js","solid-js":"node_modules/solid-js/dist/index.js"}],"node_modules/tslib/tslib.es6.js":[function(require,module,exports) {
+},{"solid-js/web":"node_modules/solid-js/web/dist/web.js","solid-js":"node_modules/solid-js/dist/solid.js"}],"node_modules/tslib/tslib.es6.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6892,18 +6494,21 @@ exports.default = _default;
 },{"router5":"node_modules/router5/dist/index.es.js"}],"src/index.tsx":[function(require,module,exports) {
 "use strict";
 
-var _dom = require("solid-js/dom");
+var _web = require("solid-js/web");
 
-const _tmpl$ = (0, _dom.template)(`<div><h3>Navbar</h3><ul><li></li><li></li><li></li><li></li></ul></div>`, 14),
-      _tmpl$2 = (0, _dom.template)(`<div></div>`, 2),
-      _tmpl$3 = (0, _dom.template)(`<div><div></div><div></div><div><code><pre></pre></code></div></div>`, 12),
-      _tmpl$4 = (0, _dom.template)(`<div><h1>foo</h1></div>`, 4),
-      _tmpl$5 = (0, _dom.template)(`<h3>List of foo.child1.child2 links</h3>`, 2),
-      _tmpl$6 = (0, _dom.template)(`<ul></ul>`, 2),
-      _tmpl$7 = (0, _dom.template)(`<li></li>`, 2),
-      _tmpl$8 = (0, _dom.template)(`<code>id = </code>`, 2),
-      _tmpl$9 = (0, _dom.template)(`<h3>foo.child1.child2</h3>`, 2),
-      _tmpl$10 = (0, _dom.template)(`<style>html, body { font-family: 'Sedgwick Ave' } .is-active { border: 2px solid red; box-shadow: 0 0 30px blue }</style>`, 2);
+const _tmpl$ = (0, _web.template)(`<h1>About</h1>`, 2),
+      _tmpl$2 = (0, _web.template)(`<p>This is the about page of the <code>solid-typefu-router5</code> example project.</p>`, 4),
+      _tmpl$3 = (0, _web.template)(`<h1>Home</h1>`, 2),
+      _tmpl$4 = (0, _web.template)(`<p>This is the <code>solid-typefu-router5</code> example project.</p>`, 4),
+      _tmpl$5 = (0, _web.template)(`<h1>Users</h1>`, 2),
+      _tmpl$6 = (0, _web.template)(`<p>Page: </p>`, 2),
+      _tmpl$7 = (0, _web.template)(`<ul></ul>`, 2),
+      _tmpl$8 = (0, _web.template)(`<br>`, 1),
+      _tmpl$9 = (0, _web.template)(`<hr>`, 1),
+      _tmpl$10 = (0, _web.template)(`<li></li>`, 2),
+      _tmpl$11 = (0, _web.template)(`<h1>User <!----> profile</h1>`, 3),
+      _tmpl$12 = (0, _web.template)(`<p>hello world!</p>`, 2),
+      _tmpl$13 = (0, _web.template)(`<div><b>Route: </b><code></code><hr><nav class="nav"><ul><li> / </li><li></li><li></li><li></li></ul></nav><hr></div>`, 20);
 
 var __createBinding = void 0 && (void 0).__createBinding || (Object.create ? function (o, m, k, k2) {
   if (k2 === undefined) k2 = k;
@@ -6960,28 +6565,31 @@ var router5_1 = __importDefault(require("router5"));
 var solid_js_1 = require("solid-js");
 
 var routes = [{
-  name: "foo",
-  path: "/foo",
+  name: "home",
+  path: "/"
+}, {
+  name: "users",
+  path: "/users?page",
   children: [{
-    name: "child1",
-    path: "/child1/:id1",
-    children: [{
-      name: "child2",
-      path: "/child2/:id2"
-    }]
+    name: "profile",
+    path: "/:id<\\d+>"
+  }, {
+    name: "edit",
+    path: "/edit"
   }]
 }, {
-  name: "bar",
-  path: "/bar/:id"
-}, {
-  name: "baz",
-  path: "/baz/:id"
-}, {
-  name: "bar.asdf",
-  path: "/bar/asdf"
+  name: "about",
+  path: "/about"
 }];
 
-var _a = solid_typefu_router5_1.default(routes, {
+var _a = solid_typefu_router5_1.default({
+  routes: routes,
+  back: function back() {
+    return window.history.back();
+  },
+  forward: function forward() {
+    return window.history.forward();
+  },
   createRouter5: function createRouter5(routes) {
     var router = router5_1.default(routes, {
       allowNotFound: true
@@ -6994,247 +6602,189 @@ var _a = solid_typefu_router5_1.default(routes, {
 }),
     Link = _a.Link,
     Router = _a.Router,
-    RouterProvider = _a.Provider;
+    Provider = _a.Provider;
 
-var Wrapper = function Wrapper(props) {
-  return [function () {
-    var _el$ = _tmpl$.cloneNode(true),
-        _el$2 = _el$.firstChild,
-        _el$3 = _el$2.nextSibling,
-        _el$4 = _el$3.firstChild,
-        _el$5 = _el$4.nextSibling,
-        _el$6 = _el$5.nextSibling,
-        _el$7 = _el$6.nextSibling;
-
-    _el$.style.setProperty("background", "lightgrey");
-
-    _el$.style.setProperty("padding", "0.5rem");
-
-    (0, _dom.insert)(_el$4, (0, _dom.createComponent)(Link, {
-      nav: true,
-      to: "foo",
-      children: "foo"
-    }));
-    (0, _dom.insert)(_el$5, (0, _dom.createComponent)(Link, {
-      nav: true,
-      to: "bar",
-      params: {
-        id: 1
-      },
-      children: "bar1"
-    }));
-    (0, _dom.insert)(_el$6, (0, _dom.createComponent)(Link, {
-      nav: true,
-      to: "bar",
-      params: {
-        id: 2
-      },
-      children: "bar2"
-    }));
-    (0, _dom.insert)(_el$7, (0, _dom.createComponent)(Link, {
-      nav: true,
-      to: "baz",
-      params: {
-        id: "asdfasdf"
-      },
-      children: "baz asdfasdf"
-    }));
-    return _el$;
-  }(), function () {
-    var _el$8 = _tmpl$2.cloneNode(true);
-
-    _el$8.style.setProperty("height", "1rem");
-
-    return _el$8;
-  }(), function () {
-    var _el$9 = _tmpl$3.cloneNode(true),
-        _el$10 = _el$9.firstChild,
-        _el$11 = _el$10.nextSibling,
-        _el$12 = _el$11.nextSibling,
-        _el$13 = _el$12.firstChild,
-        _el$14 = _el$13.firstChild;
-
-    _el$9.style.setProperty("display", "flex");
-
-    _el$9.style.setProperty("flex-direction", "row");
-
-    _el$10.style.setProperty("background", "lightblue");
-
-    _el$10.style.setProperty("flex-grow", 1);
-
-    _el$10.style.setProperty("padding", "0.5rem");
-
-    (0, _dom.insert)(_el$10, function () {
-      return props.children;
-    });
-
-    _el$11.style.setProperty("width", "1rem");
-
-    _el$12.style.setProperty("width", "20em");
-
-    _el$12.style.setProperty("background", "lightpink");
-
-    _el$12.style.setProperty("padding", "0.5rem");
-
-    (0, _dom.insert)(_el$14, function () {
-      return JSON.stringify(solid_typefu_router5_1.useRoute()(), null, 2);
-    });
-    return _el$9;
-  }()];
+var About = function About() {
+  return [_tmpl$.cloneNode(true), _tmpl$2.cloneNode(true)];
 };
 
-var Foo = function Foo(props) {
-  return function () {
-    var _el$15 = _tmpl$4.cloneNode(true),
-        _el$16 = _el$15.firstChild;
-
-    (0, _dom.insert)(_el$15, (0, _dom.createComponent)(Link, {
-      nav: true,
-      to: "foo.child1",
-      params: {
-        id1: 1
-      },
-      children: "foo.child1"
-    }), null);
-    (0, _dom.insert)(_el$15, function () {
-      return props.children;
-    }, null);
-    return _el$15;
-  }();
+var Home = function Home() {
+  return [_tmpl$3.cloneNode(true), _tmpl$4.cloneNode(true)];
 };
 
-var Child2List = function Child2List() {
-  var route = solid_typefu_router5_1.useRoute(); // in reality usePromise(() => api.foo.child1.getChild2s(route().params.id))
+function userList(page) {
+  return [5 * page, 5 * page + 1, 5 * page + 2, 5 * page + 3, 5 * page + 4];
+}
 
-  var availId2s = solid_js_1.createMemo(function () {
-    var here = route();
-
-    if (typeof here.params.id1 !== "number") {
-      console.warn("id1 was undefined");
-    }
-
-    return [1, 2, 3];
-  });
+var Users = function Users(props) {
   return [_tmpl$5.cloneNode(true), function () {
-    var _el$18 = _tmpl$6.cloneNode(true);
+    var _el$6 = _tmpl$6.cloneNode(true),
+        _el$7 = _el$6.firstChild;
 
-    (0, _dom.insert)(_el$18, (0, _dom.createComponent)(solid_js_1.For, {
+    (0, _web.insert)(_el$6, function () {
+      return props.page;
+    }, null);
+    return _el$6;
+  }(), function () {
+    var _el$8 = _tmpl$7.cloneNode(true);
+
+    (0, _web.insert)(_el$8, (0, _web.createComponent)(solid_js_1.For, {
       get each() {
-        return availId2s();
+        return userList(props.page);
       },
 
-      children: function children(id2) {
+      children: function children(user) {
         return function () {
-          var _el$19 = _tmpl$7.cloneNode(true);
+          var _el$11 = _tmpl$10.cloneNode(true);
 
-          (0, _dom.insert)(_el$19, (0, _dom.createComponent)(Link, {
-            to: "foo.child1.child2",
-
-            get params() {
-              return {
-                id1: route().params.id1,
-                id2: id2
-              };
+          (0, _web.insert)(_el$11, (0, _web.createComponent)(Link, {
+            to: "users.profile",
+            params: {
+              id: "" + user
             },
 
-            children: "foo.child1.child2"
+            get children() {
+              return ["To user ", user];
+            }
+
           }));
-          return _el$19;
+          return _el$11;
         }();
       }
     }));
-    return _el$18;
-  }()];
+    return _el$8;
+  }(), (0, _web.createComponent)(Link, {
+    to: "users",
+
+    get params() {
+      return {
+        page: "" + (props.page - 1)
+      };
+    },
+
+    display: "button",
+
+    get disabled() {
+      return props.page <= 0;
+    },
+
+    children: "Previous page"
+  }), _tmpl$8.cloneNode(true), (0, _web.createComponent)(Link, {
+    to: "users",
+
+    get params() {
+      return {
+        page: "" + (props.page + 1)
+      };
+    },
+
+    display: "button",
+    children: "Next page"
+  }), _tmpl$9.cloneNode(true)];
 };
 
-function Baz(props) {
-  return function () {
-    var _el$20 = _tmpl$8.cloneNode(true),
-        _el$21 = _el$20.firstChild;
+var UserProfile = function UserProfile(props) {
+  return [function () {
+    var _el$12 = _tmpl$11.cloneNode(true),
+        _el$13 = _el$12.firstChild,
+        _el$15 = _el$13.nextSibling,
+        _el$14 = _el$15.nextSibling;
 
-    (0, _dom.insert)(_el$20, function () {
+    (0, _web.insert)(_el$12, function () {
       return props.id;
-    }, null);
-    return _el$20;
-  }();
-}
+    }, _el$15);
+    return _el$12;
+  }(), _tmpl$12.cloneNode(true)];
+};
 
 var App = function App() {
   var route = solid_typefu_router5_1.useRoute();
-  return [(0, _dom.createComponent)(Router, {
-    assume: "foo",
-    children: {
-      render: function render(p) {
-        return ["child1 ", (0, _dom.memo)(function () {
-          return p.children;
-        })];
-      },
-      fallback: function fallback() {
-        return "... no foo.child1!";
-      },
-      child1: {
-        render: function render() {
-          return "child1";
-        }
-      }
-    }
-  }), (0, _dom.createComponent)(Router, {
-    children: {
-      render: Wrapper,
-      bar: {
-        render: function render() {
-          return "bar goes here";
-        },
-        asdf: {
-          render: function render() {
-            return "bar.asdf!";
-          }
-        }
-      },
-      baz: function baz(owned) {
-        return owned({
-          render: Baz,
-          props: {
-            id: function id() {
-              return route().params.id;
-            }
-          }
-        });
-      },
-      foo: {
-        render: Foo,
-        child1: {
-          render: function render(p) {
-            return function () {
-              var _el$22 = _tmpl$2.cloneNode(true);
+  return function () {
+    var _el$17 = _tmpl$13.cloneNode(true),
+        _el$18 = _el$17.firstChild,
+        _el$19 = _el$18.nextSibling,
+        _el$20 = _el$19.nextSibling,
+        _el$21 = _el$20.nextSibling,
+        _el$22 = _el$21.firstChild,
+        _el$23 = _el$22.firstChild,
+        _el$24 = _el$23.firstChild,
+        _el$25 = _el$23.nextSibling,
+        _el$26 = _el$25.nextSibling,
+        _el$27 = _el$26.nextSibling,
+        _el$28 = _el$21.nextSibling;
 
-              (0, _dom.insert)(_el$22, function () {
-                return p.children;
-              });
-              return _el$22;
-            }();
+    (0, _web.insert)(_el$19, function () {
+      return JSON.stringify(route());
+    });
+    (0, _web.insert)(_el$23, (0, _web.createComponent)(Link, {
+      to: "@@back",
+      children: "Back"
+    }), _el$24);
+    (0, _web.insert)(_el$23, (0, _web.createComponent)(Link, {
+      to: "@@forward",
+      children: "Forward"
+    }), null);
+    (0, _web.insert)(_el$25, (0, _web.createComponent)(Link, {
+      to: "home",
+      children: "Home"
+    }));
+    (0, _web.insert)(_el$26, (0, _web.createComponent)(Link, {
+      to: "users",
+      params: {
+        page: "0"
+      },
+      children: "Users"
+    }));
+    (0, _web.insert)(_el$27, (0, _web.createComponent)(Link, {
+      to: "about",
+      children: "About"
+    }));
+    (0, _web.insert)(_el$17, (0, _web.createComponent)(Router, {
+      children: {
+        about: {
+          render: About
+        },
+        home: {
+          render: Home
+        },
+        users: {
+          fallback: function fallback(p) {
+            var _a;
+
+            return (0, _web.createComponent)(Users, {
+              get page() {
+                return Number((_a = p.params.page) !== null && _a !== void 0 ? _a : 0);
+              }
+
+            });
           },
-          fallback: Child2List,
-          child2: {
-            render: function render() {
-              return [_tmpl$9.cloneNode(true), "hello world!"];
+          profile: {
+            render: function render(p) {
+              return (0, _web.createComponent)(UserProfile, {
+                get id() {
+                  return Number(p.params.id);
+                }
+
+              });
             }
           }
         }
       }
-    }
-  })];
-};
+    }), null);
+    return _el$17;
+  }();
+}; // end interesting parts
+
 
 dom_1.render(function () {
-  return [_tmpl$10.cloneNode(true), (0, _dom.createComponent)(RouterProvider, {
+  return (0, _web.createComponent)(Provider, {
     get children() {
-      return (0, _dom.createComponent)(App, {});
+      return (0, _web.createComponent)(App, {});
     }
 
-  })];
+  });
 }, document.getElementById("app"));
-},{"solid-js/dom":"node_modules/solid-js/dist/dom/index.js","solid-typefu-router5":"node_modules/solid-typefu-router5/dist/index.es.js","router5-plugin-browser":"node_modules/router5-plugin-browser/dist/index.es.js","router5":"node_modules/router5/dist/index.es.js","solid-js":"node_modules/solid-js/dist/index.js"}],"node_modules/parcel/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"solid-js/web":"node_modules/solid-js/web/dist/web.js","solid-typefu-router5":"node_modules/solid-typefu-router5/dist/index.es.js","router5-plugin-browser":"node_modules/router5-plugin-browser/dist/index.es.js","solid-js/dom":"node_modules/solid-js/web/dist/web.js","router5":"node_modules/router5/dist/index.es.js","solid-js":"node_modules/solid-js/dist/solid.js"}],"node_modules/parcel/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -7262,7 +6812,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "33339" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "46427" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

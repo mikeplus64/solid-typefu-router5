@@ -1,22 +1,13 @@
 import { Router as Router5, Route } from "router5";
 import { DefaultDependencies } from "router5/dist/types/router";
 import { Unsubscribe } from "router5/dist/types/base";
-import { SharedRouterValue, RoutesLike } from "./types";
-import { LinkConfig, LinkProps, RouteNameOf } from "./components/Link";
-import { RenderTreeOf, Descend } from "./components/RouteTree";
-export { LinkNav } from "./components/Link";
+import { JSX } from "solid-js";
+import { RoutesLike, ToRouteArray, Descend, ReadRoutes, RouteMeta } from "./types";
+import { LinkProps } from "./components/Link";
+import { RSM } from "./components/RouteTree";
 export { MatchRoute, ShowRoute, SwitchRoutes } from "./components/MatchRoute";
-export { passthru } from "./components/RouteTree";
-export { default as Context, useRoute, useRouteName, useIsActive, isActive, } from "./context";
-export type { MatchRouteProps, ShowRouteProps } from "./components/MatchRoute";
-export type { LinkConfig, LinkProps, RouteArrayOf, RouteNameOf, } from "./components/Link";
-export type { RenderTreeOf } from "./components/RouteTree";
-export type { RoutesLike, SharedRouterValue, RouterContextValue, } from "./types";
-export interface Config<Deps> {
-    createRouter5: (routes: Route<Deps>[]) => Router5<Deps> | [Router5<Deps>, ...Unsubscribe[]];
-    onStart?: (router: Router5<Deps>) => void;
-    link?: LinkConfig;
-}
+export { default as Context, useRoute, useIsActive, isActive } from "./context";
+export type { ReadRoutes } from "./types";
 /**
  * Create a router for use in solid-js.
  *
@@ -46,34 +37,25 @@ export interface Config<Deps> {
  * export const { Provider, Link, Router } = createSolidRouter(routes, { createRouter5, onStart });
  * ```
  */
-export default function createSolidRouter<Routes extends RoutesLike<Deps>, Deps = DefaultDependencies>(routes: Routes, { createRouter5, onStart, link: linkConfig }: Config<Deps>): {
+export interface SolidRouter<Deps, RM extends RouteMeta> {
     Provider(props: {
         children: JSX.Element;
     }): JSX.Element;
     /** See [[createLink]] */
-    Link(props: LinkProps<RouteNameOf<Routes>>): JSX.Element;
+    Link(props: LinkProps<RM>): JSX.Element;
     /** See [[RouteStateMachine]] */
-    Router<AssumePath extends RouteNameOf<Routes> | undefined>(props: {
-        children: AssumePath extends string ? RenderTreeOf<Descend<AssumePath, Routes>> : RenderTreeOf<Routes>;
+    Router<AssumePath extends RM["name"] | undefined>(props: {
+        children: RSM<AssumePath extends string ? Descend<ToRouteArray<AssumePath>, RM> : RM>;
         assume?: AssumePath;
     }): JSX.Element;
-    /** Probably don't use this. */
-    router: SharedRouterValue<Deps, Routes>;
-    /**
-     * Type hints you can use to give type names to aspects of your router like
-     *
-     * ```typescript
-     * type Hints = typeof hints;
-     * export type RouteName = Hints['name'];
-     * ```
-     */
-    hints: Phantom<{
-        routes: Routes;
-        name: RouteNameOf<Routes>;
-        tree: RenderTreeOf<Routes>;
-    }>;
-};
-export declare type Phantom<T> = {
-    __phantom__: never;
-} & T;
+    router: Router5<Deps>;
+}
+export default function createSolidRouter<Routes extends RoutesLike<Deps>, Deps = DefaultDependencies>(config: {
+    createRouter5: (routes: Route<Deps>[]) => Router5<Deps> | [Router5<Deps>, ...Unsubscribe[]];
+    routes: Routes;
+    onStart?: (router: Router5<Deps>) => void;
+    linkNavActiveClass?: string;
+    back?: () => void;
+    forward?: () => void;
+}): SolidRouter<Deps, ReadRoutes<Routes> extends infer I ? (I extends RouteMeta ? I : never) : never>;
 //# sourceMappingURL=index.d.ts.map

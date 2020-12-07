@@ -40,11 +40,11 @@
     "@babel/plugin-transform-runtime": "^7.10.5",
     "@rollup/plugin-babel": "^5.1.0",
     "@types/node": "^14.0.23",
-    "babel-preset-solid": "^0.20.0",
+    "babel-preset-solid": "^0.23.0",
     "rollup": "^2.22.1",
     "rollup-plugin-typescript2": "^0.27.1",
     "router5": "^8.0.1",
-    "solid-js": "^0.20.2",
+    "solid-js": "^0.23.0",
     "typedoc": "^0.17.8",
     "typescript": "^4.1.2"
   },
@@ -54,7 +54,7 @@
   },
   "peerDependencies": {
     "router5": "*",
-    "solid-js": "*"
+    "solid-js": "^0.23.0"
   },
   "scripts": {
     "prepare": "rollup -c",

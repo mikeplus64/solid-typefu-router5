@@ -1,33 +1,26 @@
-import createSolidRouter, { useRoute } from "solid-typefu-router5";
+import createSolidRouter, { ReadRoutes, useRoute } from "solid-typefu-router5";
 import browserPluginFactory from "router5-plugin-browser";
 import { render } from "solid-js/dom";
 import createRouter from "router5";
 import { createMemo, For } from "solid-js";
 
 const routes = [
+  { name: "home", path: "/" },
   {
-    name: "foo",
-    path: "/foo",
+    name: "users",
+    path: "/users?page",
     children: [
-      {
-        name: "child1",
-        path: "/child1/:id1",
-        children: [{ name: "child2", path: "/child2/:id2" }],
-      },
+      { name: "profile", path: "/:id<\\d+>" },
+      { name: "edit", path: "/edit" },
     ],
   },
-  {
-    name: "bar",
-    path: "/bar/:id",
-  },
-  {
-    name: "baz",
-    path: "/baz/:id",
-  },
-  { name: "bar.asdf", path: "/bar/asdf" },
+  { name: "about", path: "/about" },
 ] as const;
 
-const { Link, Router, Provider: RouterProvider } = createSolidRouter(routes, {
+const { Link, Router, Provider } = createSolidRouter({
+  routes,
+  back: () => window.history.back(),
+  forward: () => window.history.forward(),
   createRouter5: (routes) => {
     const router = createRouter(routes, { allowNotFound: true });
     router.usePlugin(browserPluginFactory({ useHash: false }));
@@ -35,156 +28,120 @@ const { Link, Router, Provider: RouterProvider } = createSolidRouter(routes, {
   },
 });
 
-const Wrapper = (props: { children?: JSX.Element }) => (
+const About = () => (
   <>
-    <div style={{ background: "lightgrey", padding: "0.5rem" }}>
-      <h3>Navbar</h3>
-      <ul>
-        <li>
-          <Link nav to="foo">
-            foo
-          </Link>
-        </li>
-        <li>
-          <Link nav to="bar" params={{ id: 1 }}>
-            bar1
-          </Link>
-        </li>
-        <li>
-          <Link nav to="bar" params={{ id: 2 }}>
-            bar2
-          </Link>
-        </li>
-        <li>
-          <Link nav to="baz" params={{ id: "asdfasdf" }}>
-            baz asdfasdf
-          </Link>
-        </li>
-      </ul>
-    </div>
-    <div style={{ height: "1rem" }} />
-    <div style={{ display: "flex", "flex-direction": "row" }}>
-      <div
-        style={{ background: "lightblue", "flex-grow": 1, padding: "0.5rem" }}
-      >
-        {props.children}
-      </div>
-      <div style={{ width: "1rem" }} />
-      <div
-        style={{ width: "20em", background: "lightpink", padding: "0.5rem" }}
-      >
-        <code>
-          <pre>{JSON.stringify(useRoute()(), null, 2)}</pre>
-        </code>
-      </div>
-    </div>
+    <h1>About</h1>
+    <p>
+      This is the about page of the <code>solid-typefu-router5</code> example
+      project.
+    </p>
   </>
 );
 
-const Foo = (props: { children?: JSX.Element }) => (
-  <div>
-    <h1>foo</h1>
-    <Link nav to="foo.child1" params={{ id1: 1 }}>
-      foo.child1
-    </Link>
-    {props.children}
-  </div>
+const Home = () => (
+  <>
+    <h1>Home</h1>
+    <p>
+      This is the <code>solid-typefu-router5</code> example project.
+    </p>
+  </>
 );
 
-const Child2List = () => {
-  const route = useRoute();
-  // in reality usePromise(() => api.foo.child1.getChild2s(route().params.id))
-  const availId2s = createMemo<number[]>(() => {
-    const here = route();
-    if (typeof here.params.id1 !== "number") {
-      console.warn("id1 was undefined");
-    }
-    return [1, 2, 3];
-  });
-  return (
-    <>
-      <h3>List of foo.child1.child2 links</h3>
-      <ul>
-        <For each={availId2s()}>
-          {(id2) => (
-            <li>
-              <Link
-                to="foo.child1.child2"
-                params={{ id1: route().params.id1, id2 }}
-              >
-                foo.child1.child2
-              </Link>
-            </li>
-          )}
-        </For>
-      </ul>
-    </>
-  );
-};
-
-function Baz(props: { id: string }) {
-  return <code>id = {props.id}</code>;
+function userList(page: number) {
+  return [5 * page, 5 * page + 1, 5 * page + 2, 5 * page + 3, 5 * page + 4];
 }
+
+const Users = (props: { page: number }) => (
+  <>
+    <h1>Users</h1>
+    <p>Page: {props.page}</p>
+    <ul>
+      <For each={userList(props.page)}>
+        {(user) => (
+          <li>
+            <Link to="users.profile" params={{ id: "" + user }}>
+              To user {user}
+            </Link>
+          </li>
+        )}
+      </For>
+    </ul>
+    <Link
+      to="users"
+      params={{ page: "" + (props.page - 1) }}
+      display="button"
+      disabled={props.page <= 0}
+    >
+      Previous page
+    </Link>
+    <br />
+    <Link to="users" params={{ page: "" + (props.page + 1) }} display="button">
+      Next page
+    </Link>
+    <hr />
+  </>
+);
+
+const UserProfile = (props: { id: number }) => (
+  <>
+    <h1>User {props.id} profile</h1>
+    <p>hello world!</p>
+  </>
+);
 
 const App = () => {
   const route = useRoute();
   return (
-    <>
-      <Router assume="foo">
-        {{
-          render: (p) => <>child1 {p.children}</>,
-          fallback: () => "... no foo.child1!",
-          child1: { render: () => "child1" },
-        }}
-      </Router>
+    <div>
+      <b>Route: </b>
+      <code>{JSON.stringify(route())}</code>
+      <hr />
+      <nav class="nav">
+        <ul>
+          <li>
+            <Link to="@@back">Back</Link> / <Link to="@@forward">Forward</Link>
+          </li>
+          <li>
+            <Link to="home">Home</Link>
+          </li>
+          <li>
+            <Link to="users" params={{ page: "0" }}>
+              Users
+            </Link>
+          </li>
+          <li>
+            <Link to="about">About</Link>
+          </li>
+        </ul>
+      </nav>
+      <hr />
       <Router>
         {{
-          render: Wrapper,
-          bar: {
-            render: () => "bar goes here",
-            asdf: { render: () => "bar.asdf!" },
-          },
-          baz: (owned) =>
-            owned({
-              render: Baz,
-              props: {
-                id: () => route().params.id,
-              },
-            }),
-          foo: {
-            render: Foo,
-            child1: {
-              render: (p) => <div>{p.children}</div>,
-              fallback: Child2List,
-              child2: {
-                render: () => (
-                  <>
-                    <h3>foo.child1.child2</h3>
-                    hello world!
-                  </>
-                ),
-              },
+          about: { render: About },
+          home: { render: Home },
+          users: {
+            fallback: (p: { params: { page?: string } }) => (
+              <Users page={Number(p.params.page ?? 0)} />
+            ),
+            profile: {
+              render: (p: { params: { id: string } }) => (
+                <UserProfile id={Number(p.params.id)} />
+              ),
             },
           },
         }}
       </Router>
-    </>
+    </div>
   );
 };
 
+// end interesting parts
+
 render(
   () => (
-    <>
-      <style>
-        {`
-        html, body { font-family: 'Sedgwick Ave' }
-        .is-active { border: 2px solid red; box-shadow: 0 0 30px blue }
-        `}
-      </style>
-      <RouterProvider>
-        <App />
-      </RouterProvider>
-    </>
+    <Provider>
+      <App />
+    </Provider>
   ),
   document.getElementById("app") as any
 );

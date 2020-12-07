@@ -1,3 +1,4 @@
+import { JSX } from "solid-js";
 export declare type MatchRouteProps = PathProps & {
     children: JSX.Element;
 };

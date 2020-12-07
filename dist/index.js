@@ -2,22 +2,19 @@
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-var dom = require('solid-js/dom');
+var web = require('solid-js/web');
 var solidJs = require('solid-js');
 
 const Context = solidJs.createContext();
 function useRoute() {
-  return solidJs.useContext(Context).getRoute;
-}
-function useRouteName() {
-  return solidJs.useContext(Context).getRouteName;
-}
-function useRouteNameRaw() {
-  return solidJs.useContext(Context).getRouteNameRaw;
+  const ctx = solidJs.useContext(Context);
+  return () => ctx.state.route;
 }
 
-function shallowStringyEq(a, b) {
+function paramsEq(a, b) {
   if (a === b) return true;
+  if (a === undefined) return b === undefined;
+  if (b === undefined) return a === undefined;
   const keys = Object.keys(a);
 
   for (const key of keys) if (!(key in b)) return false;
@@ -27,16 +24,10 @@ function shallowStringyEq(a, b) {
   return keys.length === Object.keys(b).length;
 }
 
-function useIsActive(link, params, isEqual = shallowStringyEq) {
-  const getRouteName = useRouteName();
-  const getIsActiveByName = solidJs.createMemo(() => isActive(getRouteName(), link));
-  if (params === undefined) return getIsActiveByName;
-  const getRoute = useRoute();
-  const getRouteParams = solidJs.createMemo(() => getRoute().params);
-  return solidJs.createMemo(() => {
-    const routeParams = getRouteParams();
-    return getIsActiveByName() && isEqual(routeParams, params);
-  });
+function useIsActive(link, params, paramsIsEqual = paramsEq) {
+  const state = solidJs.useContext(Context).state;
+  const getIsActiveByName = solidJs.createMemo(() => isActive(state.route.name, link));
+  return solidJs.createMemo(() => getIsActiveByName() && params !== undefined ? paramsIsEqual(state.route.params, params) : true);
 }
 /**
  * Find whether 'link' is an ancestor of, or equal to, 'here'
@@ -45,129 +36,124 @@ function useIsActive(link, params, isEqual = shallowStringyEq) {
  */
 
 function isActive(here, link) {
-  if (here.length === 0) {
-    return false;
-  }
-
-  if (typeof link === 'string') {
-    return here[0] === link;
-  } // if link has more segments than here then it definitely cannot be an
-  // ancestor of here
-
-
-  if (link.length > here.length) return false;
-
-  for (let i = 0; i < link.length; i++) {
-    if (link[i] !== here[i]) return false;
-  }
-
-  return true;
+  return link.startsWith(here);
 }
 
-const _tmpl$ = dom.template(`<button disabled=""></button>`, 2),
-      _tmpl$2 = dom.template(`<a></a>`, 2);
-
-(function (LinkNav) {
-  LinkNav["Back"] = "back";
-  LinkNav["Forward"] = "forward";
-})(exports.LinkNav || (exports.LinkNav = {}));
-
-function renderRouteLike(route) {
-  if (typeof route === "string") return route;
-  return route.join(".");
-}
-const defaultLinkConfig = {
-  navActiveClassName: "is-active"
-};
-function createLink(self, config = defaultLinkConfig) {
+const _tmpl$ = web.template(`<button></button>`, 2),
+      _tmpl$2 = web.template(`<a></a>`, 2);
+function Link(props) {
   const {
-    router5
-  } = self;
-  const {
-    navActiveClassName = defaultLinkConfig.navActiveClassName
-  } = config;
-  return props => {
-    const [linkProps, innerProps] = solidJs.splitProps(props, ["type", "onClick", "classList", "to", "params", "nav", "navIgnoreParams", "disabled"]);
-    const isActive = linkProps.to !== undefined ? useIsActive(linkProps.to, linkProps.navIgnoreParams ? undefined : linkProps.params) : alwaysInactive;
-    const getClassList = solidJs.createMemo(() => {
-      var _linkProps$classList;
-
-      const classList = (_linkProps$classList = linkProps.classList) !== null && _linkProps$classList !== void 0 ? _linkProps$classList : {};
-
-      if (linkProps.type === undefined && linkProps.nav) {
-        classList[navActiveClassName] = isActive();
-        return classList;
+    router: router5,
+    config
+  } = solidJs.useContext(Context);
+  let [linkProps, innerProps] = solidJs.splitProps(props, ["type", "onClick", "classList", "to", "params", "nav", "navIgnoreParams", "navActiveClass", "disabled", "back", "forward", "display"]);
+  linkProps = solidJs.assignProps({
+    navActiveClass: config.navActiveClass,
+    back: config.back,
+    forward: config.forward
+  }, linkProps);
+  const isActive = typeof linkProps.to === "string" ? useIsActive(linkProps.to, linkProps.navIgnoreParams ? undefined : linkProps.params) : alwaysInactive;
+  const getHref = solidJs.createMemo(() => {
+    if (typeof linkProps.to === "string" && !linkProps.to.startsWith("@@")) {
+      try {
+        return router5.buildPath(linkProps.to, linkProps.params);
+      } catch (err) {
+        console.warn("<Link> buildPath failed:", err);
       }
+    }
 
-      return classList;
+    return undefined;
+  });
+  const getClassList = solidJs.createMemo(() => {
+    const cls = { ...linkProps.classList
+    };
+
+    if (typeof linkProps.navActiveClass === "string") {
+      cls[linkProps.navActiveClass] = isActive();
+    }
+
+    return cls;
+  });
+
+  function onClick(ev) {
+    var _linkProps$forward, _linkProps, _linkProps$back, _linkProps2, _linkProps$params;
+
+    ev.preventDefault();
+
+    switch (linkProps.to) {
+      case "@@forward":
+        (_linkProps$forward = (_linkProps = linkProps).forward) === null || _linkProps$forward === void 0 ? void 0 : _linkProps$forward.call(_linkProps);
+        break;
+
+      case "@@back":
+        (_linkProps$back = (_linkProps2 = linkProps).back) === null || _linkProps$back === void 0 ? void 0 : _linkProps$back.call(_linkProps2);
+        break;
+
+      default:
+        router5.navigate(linkProps.to, (_linkProps$params = linkProps.params) !== null && _linkProps$params !== void 0 ? _linkProps$params : {});
+        if (typeof linkProps.onClick === "function") linkProps.onClick(ev);
+        break;
+    }
+
+    ev.target.blur();
+  }
+
+  return () => linkProps.display === "button" ? (() => {
+    const _el$ = _tmpl$.cloneNode(true);
+
+    _el$.__click = onClick;
+
+    web.spread(_el$, innerProps, false, false);
+
+    web.effect(_p$ => {
+      const _v$ = linkProps.disabled,
+            _v$2 = getClassList();
+
+      _v$ !== _p$._v$ && (_el$.disabled = _p$._v$ = _v$);
+      _p$._v$2 = web.classList(_el$, _v$2, _p$._v$2);
+      return _p$;
+    }, {
+      _v$: undefined,
+      _v$2: undefined
     });
-    const getHref = solidJs.createMemo(() => {
-      if (linkProps.type === undefined) {
-        try {
-          return router5.buildPath(renderRouteLike(linkProps.to), linkProps.params);
-        } catch (err) {
-          console.warn("<Link> buildPath failed:", err);
-        }
-      }
 
-      return undefined;
+    return _el$;
+  })() : linkProps.to.startsWith("@@") ? (() => {
+    const _el$2 = _tmpl$.cloneNode(true);
+
+    _el$2.__click = onClick;
+
+    web.spread(_el$2, innerProps, false, false);
+
+    web.effect(_$p => web.classList(_el$2, getClassList(), _$p));
+
+    return _el$2;
+  })() : (() => {
+    const _el$3 = _tmpl$2.cloneNode(true);
+
+    _el$3.__click = onClick;
+
+    web.spread(_el$3, innerProps, false, false);
+
+    web.effect(_p$ => {
+      const _v$3 = getClassList(),
+            _v$4 = getHref();
+
+      _p$._v$3 = web.classList(_el$3, _v$3, _p$._v$3);
+      _v$4 !== _p$._v$4 && web.setAttribute(_el$3, "href", _p$._v$4 = _v$4);
+      return _p$;
+    }, {
+      _v$3: undefined,
+      _v$4: undefined
     });
-    return () => linkProps.disabled ? (() => {
-      const _el$ = _tmpl$.cloneNode(true);
 
-      dom.spread(_el$, innerProps, false, false);
-
-      dom.effect(_$p => dom.classList(_el$, getClassList(), _$p));
-
-      return _el$;
-    })() : (() => {
-      const _el$2 = _tmpl$2.cloneNode(true);
-
-      _el$2.__click = ev => {
-        var _linkProps$params;
-
-        ev.preventDefault();
-
-        switch (props.type) {
-          case undefined:
-            router5.navigate(renderRouteLike(linkProps.to), (_linkProps$params = linkProps.params) !== null && _linkProps$params !== void 0 ? _linkProps$params : {});
-            if (typeof linkProps.onClick === "function") linkProps.onClick(ev);
-            break;
-
-          case exports.LinkNav.Back:
-            window.history.back();
-            break;
-
-          case exports.LinkNav.Back:
-            window.history.back();
-            break;
-        }
-
-        ev.target.blur();
-      };
-
-      dom.spread(_el$2, innerProps, false, false);
-
-      dom.effect(_p$ => {
-        const _v$ = getClassList(),
-              _v$2 = getHref();
-
-        _p$._v$ = dom.classList(_el$2, _v$, _p$._v$);
-        _v$2 !== _p$._v$2 && dom.setAttribute(_el$2, "href", _p$._v$2 = _v$2);
-        return _p$;
-      }, {
-        _v$: undefined,
-        _v$2: undefined
-      });
-
-      return _el$2;
-    })();
-  };
+    return _el$3;
+  })();
 }
 
 const alwaysInactive = () => false;
 
-dom.delegateEvents(["click"]);
+web.delegateEvents(["click"]);
 
 const MatchContext = solidJs.createContext("");
 
@@ -186,9 +172,9 @@ function doesMatch(ctx, here, props) {
 
 function SwitchRoutes(props) {
   const ctx = solidJs.useContext(MatchContext);
-  const route = useRouteNameRaw();
+  const route = useRoute();
   const getIndex = solidJs.createMemo(() => {
-    const here = route();
+    const here = route().name;
     const children = props.children;
 
     for (let i = 0; i < children.length; i++) {
@@ -206,7 +192,7 @@ function SwitchRoutes(props) {
 
     if (ix !== undefined) {
       const [i, target] = ix;
-      return dom.createComponent(MatchContext.Provider, {
+      return web.createComponent(MatchContext.Provider, {
         value: target,
 
         get children() {
@@ -227,7 +213,7 @@ function ShowRoute(props) {
   const getMatch = createGetMatch(props);
   return () => {
     const [target, when] = getMatch();
-    return dom.createComponent(dom.Show, {
+    return web.createComponent(solidJs.Show, {
       when: when,
 
       get fallback() {
@@ -235,7 +221,7 @@ function ShowRoute(props) {
       },
 
       get children() {
-        return dom.createComponent(MatchContext.Provider, {
+        return web.createComponent(MatchContext.Provider, {
           value: target,
 
           get children() {
@@ -254,13 +240,13 @@ function ShowRoute(props) {
 
 function MatchRoute(props) {
   const getMatch = createGetMatch(props);
-  return dom.createComponent(dom.Match, {
+  return web.createComponent(solidJs.Match, {
     get when() {
       return getMatch()[1];
     },
 
     get children() {
-      return dom.createComponent(MatchContext.Provider, {
+      return web.createComponent(MatchContext.Provider, {
         get value() {
           return getMatch()[0];
         },
@@ -276,9 +262,9 @@ function MatchRoute(props) {
 }
 
 function createGetMatch(props) {
-  const route = useRouteNameRaw();
+  const route = useRoute();
   const ctx = solidJs.useContext(MatchContext);
-  return solidJs.createMemo(() => doesMatch(ctx, route(), props), undefined, (a, b) => a && a[1] === b[1]);
+  return solidJs.createMemo(() => doesMatch(ctx, route().name, props), undefined, (a, b) => a && a[1] === b[1]);
 }
 
 /**
@@ -290,78 +276,13 @@ function createGetMatch(props) {
  */
 
 function RouteStateMachine(tree, _assumed) {
-  const getRouteName = useRouteName();
-
-  function traverseHydrate(path0, node0, Render, defaultProps) {
-    const noProps = defaultProps !== null && defaultProps !== void 0 ? defaultProps : {};
-    const [state, setState] = solidJs.createState(noProps);
-    const getPathSuffix = solidJs.createMemo(() => getRouteName().slice(path0.length), [], (a, b) => {
-      if (a === b) return true;
-      if (a.length !== b.length) return false;
-
-      for (let i = 0; i < a.length; i++) {
-        const x = a[i];
-        const y = b[i];
-        if (x !== y) return false;
-      }
-
-      return true;
-    });
-
-    function populate(path, node, next, counter) {
-      for (const key in node) {
-        const gp = node[key];
-
-        if (typeof gp === "function") {
-          const value = gp();
-          if (value === state[key]) continue;
-          next[key] = value;
-          counter.updated++;
-          continue;
-        }
-
-        if (gp !== undefined) {
-          if (path[0] === key) {
-            populate(path.slice(1), gp, next, counter);
-          }
-        }
-      }
-    }
-
-    solidJs.createComputed(() => {
-      const suffix = getPathSuffix();
-      solidJs.untrack(() => {
-        const next = { ...state
-        };
-        const counter = {
-          updated: 0
-        };
-        populate(suffix, node0, next, counter);
-
-        if (counter.updated > 0) {
-          setState(next);
-        }
-      });
-    });
-    return solidJs.createComponent(Render, state);
-  }
+  const route = useRoute();
 
   function traverse(path, node) {
-    if (typeof node === "function") {
-      return node(function (owned) {
-        const {
-          props,
-          render,
-          defaultProps
-        } = owned;
-        return () => traverseHydrate(path, props, render, defaultProps);
-      });
-    }
-
     const children = [];
     const {
       render: RenderHere = passthru,
-      fallback,
+      fallback: RenderFallback = nofallback,
       ...routes
     } = node;
 
@@ -374,10 +295,19 @@ function RouteStateMachine(tree, _assumed) {
       });
     }
 
-    return () => dom.createComponent(RenderHere, {
+    return () => web.createComponent(RenderHere, {
+      get params() {
+        return route().params;
+      },
+
       get children() {
-        return dom.createComponent(SwitchRoutes, {
-          fallback: fallback,
+        return web.createComponent(SwitchRoutes, {
+          fallback: () => web.createComponent(RenderFallback, {
+            get params() {
+              return route().params;
+            }
+
+          }),
           children: children
         });
       }
@@ -387,107 +317,67 @@ function RouteStateMachine(tree, _assumed) {
 
   return solidJs.untrack(() => traverse([], tree));
 }
-/**
- * Helper function. Use this as a [[render]] function to just render the
- * children only.
- */
+
+function nofallback() {
+  return undefined;
+}
 
 function passthru(props) {
   return props.children;
 }
 
-/**
- * Create a router for use in solid-js.
- *
- * I'd recommend putting your router in its own file like './router.ts', then
- * exporting the results of this function, like
- *
- * ```ts
- * import { createRouter, Router as Router5 } from 'router5';
- * import { createSolidRouter } from 'solid-ts-router';
- *
- * const routes = [
- *   ...
- * ] as const;
- *
- * // note the "as const" is very important! this causes TypeScript to infer
- * // `routes` as the narrowest possible type.
- *
- * function createRouter5(routes: Route<Deps>[]): Router5 {
- *   return createRouter(...)
- * }
- *
- * function onStart(router: Router5): void {
- *   // initial redirect here
- *   ...
- * }
- *
- * export const { Provider, Link, Router } = createSolidRouter(routes, { createRouter5, onStart });
- * ```
- */
+function createSolidRouter(config) {
+  let router;
+  let unsubs;
+  const r = config.createRouter5(config.routes);
 
-function createSolidRouter(routes, {
-  createRouter5,
-  onStart,
-  link: linkConfig
-}) {
-  const [router5, unsubs] = (() => {
-    let router5;
-    let unsubs;
-    const r = createRouter5(routes);
+  if (Array.isArray(r)) {
+    [router, ...unsubs] = r;
+  } else {
+    router = r;
+    unsubs = [];
+  }
 
-    if (Array.isArray(r)) {
-      [router5, ...unsubs] = r;
-    } else {
-      router5 = r;
-      unsubs = [];
-    }
-
-    return [router5, unsubs];
-  })(); // yolo, hopefully router5 doesn't actually mutate routes =)
-
-
-  const self = {
-    routes,
-    router5
-  };
-  Object.freeze(self);
   return {
-    Link: createLink(self, linkConfig),
+    Link,
+    Router: props => RouteStateMachine(props.children, props.assume),
+    Provider: props => {
+      var _router$getState;
 
-    Router(props) {
-      return RouteStateMachine(props.children, props.assume);
-    },
-
-    Provider(props) {
-      var _router5$getState;
-
-      const initialState = (_router5$getState = router5.getState()) !== null && _router5$getState !== void 0 ? _router5$getState : {
+      const initialState = (_router$getState = router.getState()) !== null && _router$getState !== void 0 ? _router$getState : {
         name: ""
       };
-      const [getRoute, setRoute] = solidJs.createSignal(initialState);
-      const getRouteName = solidJs.createMemo(() => getRoute().name, initialState.name, (a, b) => a === b);
-      const getSplitRouteName = solidJs.createMemo(() => Object.freeze(getRouteName().split(".")), initialState.name.split("."));
-      const value = {
-        getRoute,
-        getRouteName: getSplitRouteName,
-        getRouteNameRaw: getRouteName,
-        router: self
-      };
+      const [state, setState] = solidJs.createState({
+        route: { ...initialState,
+          nameArray: initialState.name.split(".")
+        },
+        previousRoute: undefined
+      });
       solidJs.createEffect(() => {
-        router5.subscribe(state => setRoute(Object.freeze(state.route)));
-        router5.start();
-        if (typeof onStart === "function") onStart(router5);
+        router.subscribe(rs => {
+          setState(solidJs.produce(s => {
+            s.route = { ...rs.route,
+              nameArray: rs.route.name.split(".")
+            };
+            s.previousRoute = rs.previousRoute;
+          }));
+        });
+        router.start();
+        if (typeof config.onStart === "function") config.onStart(router);
       });
       solidJs.onCleanup(() => {
         for (const unsub of unsubs) {
           unsub();
         }
 
-        router5.stop();
+        router.stop();
       });
-      return dom.createComponent(Context.Provider, {
-        value: value,
+      return web.createComponent(Context.Provider, {
+        value: {
+          state,
+          router,
+          config
+        },
 
         get children() {
           return props.children;
@@ -495,9 +385,7 @@ function createSolidRouter(routes, {
 
       });
     },
-
-    router: self,
-    hints: {}
+    router
   };
 }
 
@@ -507,8 +395,6 @@ exports.ShowRoute = ShowRoute;
 exports.SwitchRoutes = SwitchRoutes;
 exports.default = createSolidRouter;
 exports.isActive = isActive;
-exports.passthru = passthru;
 exports.useIsActive = useIsActive;
 exports.useRoute = useRoute;
-exports.useRouteName = useRouteName;
 //# sourceMappingURL=index.js.map
