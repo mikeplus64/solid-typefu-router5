@@ -11,3 +11,4 @@ yarn-error.log*
 .npm
 .eslintcache
 /example/.cache/
+/example/dist
