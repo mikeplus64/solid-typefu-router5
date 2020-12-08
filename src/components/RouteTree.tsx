@@ -1,4 +1,4 @@
-import { JSX, untrack } from "solid-js";
+import { Component, ComponentProps, JSX, untrack } from "solid-js";
 import { MatchRouteProps, SwitchRoutes } from "./MatchRoute";
 import {
   OptionalNestedPathTo,
@@ -12,9 +12,10 @@ import { useRoute } from "context";
  * Tells `solid-typefu-router5` how to render a node if the path leading to
  * it matches the current route name.
  */
+
 export type RouterRenderNode<Params> = {
   /** Defaults to rendering the children. */
-  render?: (props: { children?: JSX.Element; params: Params }) => JSX.Element;
+  render?: <C extends Component>(props: { children?: JSX.Element; params: ComponentProps<C> }) => JSX.Element;
 
   /** Fallback children to use if none are available to give to [[render]]. Default: nothing */
   fallback?: (props: { params: Params }) => JSX.Element;
