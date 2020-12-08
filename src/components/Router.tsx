@@ -1,5 +1,5 @@
 import { JSX, untrack } from "solid-js";
-import { MatchRouteProps, SwitchRoutes } from "./MatchRoute";
+import { MatchRouteProps, SwitchRoutes } from "./Switch";
 import { RouteLike, RouteMeta } from "../types";
 import { useRoute } from "context";
 import { Object } from "ts-toolbelt";

@@ -6,9 +6,10 @@ import { RequiredKeys } from "ts-essentials";
 export type LinkNav<Route extends RouteMeta> =
   | { to: "@@back" | "@@forward"; params?: undefined }
   | (Route extends { name: infer Name; params: infer Params }
-      ? RequiresParams<Params> extends true
-        ? { to: Name; params: Params }
-        : { to: Name; params?: Params | undefined }
+      ? {
+          0: { to: Name; params: Params };
+          1: { to: Name; params?: Params };
+        }[RequiresParams<Params>]
       : never);
 
 /** Props for making a `Link` component.
@@ -44,10 +45,10 @@ export type LinkProps<Route extends RouteMeta> = {
   Omit<JSX.IntrinsicElements["a" | "button"], "onClick" | "href" | "children">;
 
 type RequiresParams<Params> = keyof Params extends never
-  ? false
+  ? 1
   : RequiredKeys<Params> extends never
-  ? false
-  : true;
+  ? 1
+  : 0;
 
 export interface LinkConfig {
   navActiveClass: string;

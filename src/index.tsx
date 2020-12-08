@@ -12,10 +12,10 @@ import {
 } from "./types";
 import Context from "./context";
 import Link, { LinkNav, LinkProps } from "./components/Link";
-import RouteStateMachine, { RenderTreeLike, RSM } from "./components/RouteTree";
+import RouteStateMachine, { RenderTreeLike, RSM } from "./components/Router";
 import { ElementOf } from "ts-essentials";
 
-export { MatchRoute, ShowRoute, SwitchRoutes } from "./components/MatchRoute";
+export { MatchRoute, ShowRoute, SwitchRoutes } from "./components/Switch";
 export { default as Context, useRoute, useIsActive, isActive } from "./context";
 
 export type { ReadRoutes, ParseParams, Descend } from "./types";

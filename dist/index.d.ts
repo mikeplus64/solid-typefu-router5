@@ -4,9 +4,9 @@ import { Unsubscribe } from "router5/dist/types/base";
 import { JSX } from "solid-js";
 import { RoutesLike, Descend, RouteMeta, ReadRoutes } from "./types";
 import { LinkNav, LinkProps } from "./components/Link";
-import { RSM } from "./components/RouteTree";
+import { RSM } from "./components/Router";
 import { ElementOf } from "ts-essentials";
-export { MatchRoute, ShowRoute, SwitchRoutes } from "./components/MatchRoute";
+export { MatchRoute, ShowRoute, SwitchRoutes } from "./components/Switch";
 export { default as Context, useRoute, useIsActive, isActive } from "./context";
 export type { ReadRoutes, ParseParams, Descend } from "./types";
 export interface RouterComponent<RM extends RouteMeta[]> {
