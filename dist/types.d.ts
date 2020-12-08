@@ -48,35 +48,33 @@ export declare type AsOptParam<ParamName extends string> = {
 declare type ParseParams_<A extends string, Acc> = A extends `:${infer Param}<${any}>/${infer Tail}` ? ParseParams_<Tail, Acc & AsParam<Param>> : A extends `:${infer Param}<${any}>` ? Acc & AsParam<Param> : A extends `:${infer Param}/${infer Tail}` ? ParseParams_<Tail, Acc & AsParam<Param>> : A extends `:${infer Param}` ? AsParam<Param> : A extends `;${infer Param}<${any}>/${infer Tail}` ? ParseParams_<Tail, Acc & AsOptParam<Param>> : A extends `;${infer Param}<${any}>` ? Acc & AsOptParam<Param> : A extends `;${infer Param}/${infer Tail}` ? ParseParams_<Tail, Acc & AsOptParam<Param>> : A extends `;${infer Param}` ? Acc & AsOptParam<Param> : A extends `${any}?:${infer Param}/${infer Tail}` ? ParseParams_<Tail, Acc & AsOptParam<Param>> : A extends `${any}?:${infer Param}` ? Acc & AsOptParam<Param> : A extends `${any}?${infer Param}/${infer Tail}` ? ParseParams_<Tail, Acc & AsOptParam<Param>> : A extends `${any}?${infer Param}` ? Acc & AsOptParam<Param> : A extends `*${infer Param}` ? {
     [P in Param]?: string[];
 } : A extends `/${infer Tail}` ? ParseParams_<Tail, Acc> : A extends `${any}/${infer Tail}` ? ParseParams_<Tail, Acc> : Acc;
-export declare type ParseParams<A extends string> = ParseParams_<A, {}> extends infer P ? {
-    [K in keyof P]: P[K];
-} : never;
+export declare type ParseParams<A extends string> = ParseParams_<A, {}>;
+declare type Queue_<Tree, Ctx extends any[], Acc extends any[]> = Tree extends readonly [infer Node, ...infer Tail] ? Node extends {
+    children: infer Children;
+} ? Queue_<Tail, Ctx, Queue_<Children, [...Ctx, Node], [[...Ctx, Node], ...Acc]>> : Queue_<Tail, Ctx, [[...Ctx, Node], ...Acc]> : Acc;
+declare type Queue<Tree> = Queue_<Tree, [], []>;
+declare type RNode = {
+    name: string;
+    path: string;
+};
+declare type RR = RNode[];
+declare type Name<R extends RR> = {
+    [K in keyof R]: K extends `${number}` ? Extract<R[K], RNode>["name"] : R[K];
+};
+declare type Path<R extends RR> = {
+    [K in keyof R]: K extends `${number}` ? Extract<R[K], RNode>["path"] : R[K];
+};
+declare type ReadRoute<R> = R extends RR ? Concat<Path<R>> extends infer P ? {
+    name: Intercalate<Name<R>, ".">;
+    path: P;
+    params: ParseParams<Extract<P, string>>;
+} : never : never;
+declare type ReadRoutesQueue<Q, Acc extends any[]> = Q extends [infer X, ...infer XS] ? ReadRoutesQueue<XS, [...Acc, ReadRoute<X>]> : Acc;
 /**
  * Takes your `routes` and produces type metadata for consumption in this
  * library. The result is an array of [[RouteMeta]], one for each route.
  */
-export declare type ReadRoutes<Tree extends RoutesLike<any>> = ReadRoutesArr__<Tree, [
-], [
-]>;
-declare type ReadRoutesArr__<Tree, NameAcc extends string[], PathAcc extends string[]> = Tree extends readonly [infer Node, ...infer Tail] ? Node extends {
-    name: infer Name;
-    path: infer Path;
-    children?: infer Children;
-} ? Name extends string ? Path extends string ? [
-    {
-        name: Intercalate<[...NameAcc, Name], ".">;
-        path: Concat<[...PathAcc, Path]>;
-        params: ParseParams<Concat<[...PathAcc, Path]>>;
-    },
-    ...ReadRoutesArr__<Children, [
-        ...NameAcc,
-        Name
-    ], [
-        ...PathAcc,
-        Path
-    ]>,
-    ...ReadRoutesArr__<Tail, NameAcc, PathAcc>
-] : never : never : never : [];
+export declare type ReadRoutes<Tree> = Queue<Tree> extends infer Q ? ReadRoutesQueue<Q, []> : never;
 /**
  * The shape of the return type of [[ReadRoutes]]
  */
@@ -101,11 +99,9 @@ export declare type Descend<Path, RM> = RM extends [infer R, ...infer RS] ? [
  * Utility types
  ****************/
 declare type StartsWith<Str extends string, Start extends string> = Str extends Start ? true : Str extends `${Start}.${any}` ? true : false;
-declare type Str<A> = A extends string ? A : never;
-declare type Strs<A> = A extends string[] ? A : never;
-export declare type Concat<T extends string[]> = T extends [infer X, ...infer XS] ? `${Str<X>}${Concat<Strs<XS>>}` : "";
-export declare type Intercalate<T extends string[], Sep extends string> = T extends [
-    infer X
-] ? X : T extends [infer X0, infer X1, ...infer XS] ? `${Str<X0>}${Sep}${Str<X1>}${Intercalate<Strs<XS>, Sep>}` : "";
+declare type Concat_<T, Acc extends string> = T extends [infer X, ...infer XS] ? Concat_<Extract<XS, string[]>, `${Acc}${Extract<X, string>}`> : Acc;
+export declare type Concat<T> = Concat_<T, "">;
+export declare type Intercalate1_<T, Sep extends string, Acc extends string> = T extends [infer X] ? `${Acc}${Sep}${Extract<X, string>}` : T extends [infer X, ...infer XS] ? Intercalate1_<XS, Sep, `${Acc}${Sep}${Extract<X, string>}`> : Acc;
+export declare type Intercalate<T, Sep extends string> = T extends [infer X] ? X : T extends [infer X, ...infer XS] ? Intercalate1_<XS, Sep, `${Extract<X, string>}`> : "";
 export {};
 //# sourceMappingURL=types.d.ts.map

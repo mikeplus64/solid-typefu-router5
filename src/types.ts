@@ -117,49 +117,56 @@ type ParseParams_<A extends string, Acc> =
     ? ParseParams_<Tail, Acc>
     : Acc;
 
-export type ParseParams<A extends string> = ParseParams_<A, {}> extends infer P
-  ? { [K in keyof P]: P[K] }
+export type ParseParams<A extends string> = ParseParams_<A, {}>;
+
+type Queue_<
+  Tree,
+  Ctx extends any[],
+  Acc extends any[]
+> = Tree extends readonly [infer Node, ...infer Tail]
+  ? Node extends { children: infer Children }
+    ? Queue_<
+        Tail,
+        Ctx,
+        Queue_<Children, [...Ctx, Node], [[...Ctx, Node], ...Acc]>
+      >
+    : Queue_<Tail, Ctx, [[...Ctx, Node], ...Acc]>
+  : Acc;
+
+type Queue<Tree> = Queue_<Tree, [], []>;
+
+type RNode = { name: string; path: string };
+type RR = RNode[];
+
+type Name<R extends RR> = {
+  [K in keyof R]: K extends `${number}` ? Extract<R[K], RNode>["name"] : R[K];
+};
+
+type Path<R extends RR> = {
+  [K in keyof R]: K extends `${number}` ? Extract<R[K], RNode>["path"] : R[K];
+};
+
+type ReadRoute<R> = R extends RR
+  ? Concat<Path<R>> extends infer P
+    ? {
+        name: Intercalate<Name<R>, ".">;
+        path: P;
+        params: ParseParams<Extract<P, string>>;
+      }
+    : never
   : never;
+
+type ReadRoutesQueue<Q, Acc extends any[]> = Q extends [infer X, ...infer XS]
+  ? ReadRoutesQueue<XS, [...Acc, ReadRoute<X>]>
+  : Acc;
 
 /**
  * Takes your `routes` and produces type metadata for consumption in this
  * library. The result is an array of [[RouteMeta]], one for each route.
  */
-export type ReadRoutes<Tree extends RoutesLike<any>> = ReadRoutesArr__<
-  Tree,
-  [],
-  []
->;
-
-type ReadRoutesArr__<
-  Tree,
-  NameAcc extends string[],
-  PathAcc extends string[]
-> = Tree extends readonly [infer Node, ...infer Tail]
-  ? Node extends {
-      name: infer Name;
-      path: infer Path;
-      children?: infer Children;
-    }
-    ? Name extends string
-      ? Path extends string
-        ? [
-            {
-              name: Intercalate<[...NameAcc, Name], ".">;
-              path: Concat<[...PathAcc, Path]>;
-              params: ParseParams<Concat<[...PathAcc, Path]>>;
-            },
-            ...ReadRoutesArr__<
-              Children,
-              [...NameAcc, Name],
-              [...PathAcc, Path]
-            >,
-            ...ReadRoutesArr__<Tail, NameAcc, PathAcc>
-          ]
-        : never
-      : never
-    : never
-  : [];
+export type ReadRoutes<Tree> = Queue<Tree> extends infer Q
+  ? ReadRoutesQueue<Q, []>
+  : never;
 
 /**
  * The shape of the return type of [[ReadRoutes]]
@@ -204,17 +211,24 @@ type StartsWith<Str extends string, Start extends string> = Str extends Start
   ? true
   : false;
 
-type Str<A> = A extends string ? A : never;
-type Strs<A> = A extends string[] ? A : never;
+type Concat_<T, Acc extends string> = T extends [infer X, ...infer XS]
+  ? Concat_<Extract<XS, string[]>, `${Acc}${Extract<X, string>}`>
+  : Acc;
 
-export type Concat<T extends string[]> = T extends [infer X, ...infer XS]
-  ? `${Str<X>}${Concat<Strs<XS>>}`
-  : "";
+export type Concat<T> = Concat_<T, "">;
 
-export type Intercalate<T extends string[], Sep extends string> = T extends [
-  infer X
-]
+export type Intercalate1_<
+  T,
+  Sep extends string,
+  Acc extends string
+> = T extends [infer X]
+  ? `${Acc}${Sep}${Extract<X, string>}`
+  : T extends [infer X, ...infer XS]
+  ? Intercalate1_<XS, Sep, `${Acc}${Sep}${Extract<X, string>}`>
+  : Acc;
+
+export type Intercalate<T, Sep extends string> = T extends [infer X]
   ? X
-  : T extends [infer X0, infer X1, ...infer XS]
-  ? `${Str<X0>}${Sep}${Str<X1>}${Intercalate<Strs<XS>, Sep>}`
+  : T extends [infer X, ...infer XS]
+  ? Intercalate1_<XS, Sep, `${Extract<X, string>}`>
   : "";

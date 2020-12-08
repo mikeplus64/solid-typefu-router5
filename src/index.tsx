@@ -18,7 +18,7 @@ import { ElementOf } from "ts-essentials";
 export { MatchRoute, ShowRoute, SwitchRoutes } from "./components/MatchRoute";
 export { default as Context, useRoute, useIsActive, isActive } from "./context";
 
-export type { ReadRoutes, ParseParams, AsOptParam, AsParam } from "./types";
+export type { ReadRoutes, ParseParams } from "./types";
 
 /*
 export type {
