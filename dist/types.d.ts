@@ -38,15 +38,20 @@ export declare type AsParam<ParamName extends string> = {
 export declare type AsOptParam<ParamName extends string> = {
     [P in ParamName]?: string | undefined;
 };
-declare type QueryParamStart = "?:" | "&:" | "?" | "&";
 /**
  * Parse a router5 path into its params
  *
  * See https://router5.js.org/guides/path-syntax
  */
-export declare type ParseParams<A extends string, Acc = {}> = A extends `:${infer Param}<${any}>/${infer Tail}` ? ParseParams<Tail, Acc & AsParam<Param>> : A extends `:${infer Param}<${any}>` ? Acc & AsParam<Param> : A extends `:${infer Param}/${infer Tail}` ? ParseParams<Tail, Acc & AsParam<Param>> : A extends `:${infer Param}` ? AsParam<Param> : A extends `;${infer Param}<${any}>/${infer Tail}` ? ParseParams<Tail, Acc & AsOptParam<Param>> : A extends `;${infer Param}<${any}>` ? Acc & AsOptParam<Param> : A extends `;${infer Param}/${infer Tail}` ? ParseParams<Tail, Acc & AsOptParam<Param>> : A extends `;${infer Param}` ? Acc & AsOptParam<Param> : A extends `${any}${QueryParamStart}${infer Param}/${infer Tail}` ? ParseParams<Tail, Acc & AsOptParam<Param>> : A extends `${any}${QueryParamStart}${infer Param}` ? Acc & AsOptParam<Param> : A extends `*${infer Param}` ? {
+export declare type ParseParams<A extends string, Acc = {}> = A extends `:${infer Param}<${any}>/${infer Tail}` ? ParseParams<Tail, Acc & AsParam<Param>> : A extends `:${infer Param}<${any}>` ? Acc & AsParam<Param> : A extends `:${infer Param}/${infer Tail}` ? ParseParams<Tail, Acc & AsParam<Param>> : A extends `:${infer Param}` ? AsParam<Param> : A extends `;${infer Param}<${any}>/${infer Tail}` ? ParseParams<Tail, Acc & AsOptParam<Param>> : A extends `;${infer Param}<${any}>` ? Acc & AsOptParam<Param> : A extends `;${infer Param}/${infer Tail}` ? ParseParams<Tail, Acc & AsOptParam<Param>> : A extends `;${infer Param}` ? Acc & AsOptParam<Param> : A extends `${any}?${infer QP}/${infer Tail}` ? QP extends `:${infer QP1}` ? _ParseQueryParams1<QP1, Acc & ParseParams<Tail>, ":"> : _ParseQueryParams1<QP, Acc & ParseParams<Tail>, ""> : A extends `${any}?${infer QP}` ? QP extends `:${infer QP1}` ? _ParseQueryParams1<QP1, Acc, ":"> : _ParseQueryParams1<QP, Acc, ""> : A extends `*${infer Param}` ? {
     [P in Param]?: string[];
 } : A extends `/${infer Tail}` ? ParseParams<Tail, Acc> : A extends `${any}/${infer Tail}` ? ParseParams<Tail, Acc> : Acc;
+/**
+ * Begin parsing query parameters starting at a parameter that has already had
+ * the leading ? or ?: consumed. So if the path is "/foo?page&id" the input to
+ * this is expected to be "page&id"
+ */
+export declare type _ParseQueryParams1<QP, Acc = {}, ParamSfix extends string = ""> = QP extends `${infer Param}&${ParamSfix}${infer Tail}` ? _ParseQueryParams1<Tail, Acc & AsOptParam<Param>, ParamSfix> : QP extends `${infer Param}` ? Acc & AsOptParam<Param> : Acc;
 /**
  * Takes your `routes` and produces type metadata for consumption in this
  * library. The result is an array of [[RouteMeta]], one for each route.

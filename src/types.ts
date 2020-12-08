@@ -57,8 +57,6 @@ export type AsOptParam<ParamName extends string> = {
   [P in ParamName]?: string | undefined;
 };
 
-type QueryParamStart = "?:" | "&:" | "?" | "&";
-
 /**
  * Parse a router5 path into its params
  *
@@ -86,10 +84,14 @@ export type ParseParams<A extends string, Acc = {}> =
     : A extends `;${infer Param}`
     ? Acc & AsOptParam<Param>
     : // query parameters
-    A extends `${any}${QueryParamStart}${infer Param}/${infer Tail}`
-    ? ParseParams<Tail, Acc & AsOptParam<Param>>
-    : A extends `${any}${QueryParamStart}${infer Param}`
-    ? Acc & AsOptParam<Param>
+    A extends `${any}?${infer QP}/${infer Tail}`
+    ? QP extends `:${infer QP1}`
+      ? _ParseQueryParams1<QP1, Acc & ParseParams<Tail>, ":">
+      : _ParseQueryParams1<QP, Acc & ParseParams<Tail>, "">
+    : A extends `${any}?${infer QP}`
+    ? QP extends `:${infer QP1}`
+      ? _ParseQueryParams1<QP1, Acc, ":">
+      : _ParseQueryParams1<QP, Acc, "">
     : // splat parameters (only supports it at the end of a path)
     A extends `*${infer Param}`
     ? { [P in Param]?: string[] }
@@ -99,6 +101,21 @@ export type ParseParams<A extends string, Acc = {}> =
     : A extends `${any}/${infer Tail}`
     ? ParseParams<Tail, Acc>
     : Acc;
+
+/**
+ * Begin parsing query parameters starting at a parameter that has already had
+ * the leading ? or ?: consumed. So if the path is "/foo?page&id" the input to
+ * this is expected to be "page&id"
+ */
+export type _ParseQueryParams1<
+  QP,
+  Acc = {},
+  ParamSfix extends string = ""
+> = QP extends `${infer Param}&${ParamSfix}${infer Tail}`
+  ? _ParseQueryParams1<Tail, Acc & AsOptParam<Param>, ParamSfix>
+  : QP extends `${infer Param}`
+  ? Acc & AsOptParam<Param>
+  : Acc;
 
 /**
  * Takes your `routes` and produces type metadata for consumption in this
