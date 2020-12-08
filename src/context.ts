@@ -1,6 +1,5 @@
 import { createContext, useContext, createMemo } from "solid-js";
-import { RouterContextValue, RouteLike } from "./types";
-import { State as RouteState } from "router5";
+import { RouterContextValue, RouteState, RouteLike } from "./types";
 
 const Context = createContext<RouterContextValue>();
 

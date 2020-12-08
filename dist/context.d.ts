@@ -1,5 +1,4 @@
-import { RouterContextValue, RouteLike } from "./types";
-import { State as RouteState } from "router5";
+import { RouterContextValue, RouteState, RouteLike } from "./types";
 declare const Context: import("solid-js/types/reactive/signal").Context<RouterContextValue<any, any>>;
 export default Context;
 export declare function useRoute(): () => RouteState;

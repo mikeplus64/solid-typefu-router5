@@ -1,11 +1,15 @@
-import { State as RouteState, Router as Router5, Route } from "router5";
+import { State as R5RouteState, Router as Router5, Route } from "router5";
 import { Unsubscribe } from "router5/dist/types/base";
 import { State } from "solid-js";
 import { DeepReadonly } from "ts-essentials";
 
+export interface RouteState extends R5RouteState {
+  nameArray: string[];
+}
+
 export interface RouterState {
-  route: RouteState & { nameArray: string[] };
-  previousRoute: undefined | RouteState;
+  route: RouteState;
+  previousRoute: undefined | R5RouteState;
 }
 
 export interface RouterConfig<Deps, Routes> {
