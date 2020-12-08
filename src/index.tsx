@@ -20,24 +20,6 @@ export { default as Context, useRoute, useIsActive, isActive } from "./context";
 
 export type { ReadRoutes, ParseParams } from "./types";
 
-/*
-export type {
-  ToRouteArray,
-  RouteNameOf,
-  RouteLike,
-  Concat,
-  ParamsOf,
-  RoutesLike,
-  Intercalate,
-  RouteArrayOf,
-  RenderRouteName,
-  RouterContextValue,
-  ToRouteNestedArray,
-} from "./types";
-export type { MatchRouteProps, ShowRouteProps } from "./components/MatchRoute";
-export type { LinkConfig, LinkProps } from "./components/Link";
-*/
-
 /**
  * Create a router for use in solid-js.
  *
