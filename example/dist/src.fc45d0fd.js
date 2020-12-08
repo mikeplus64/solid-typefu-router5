@@ -3083,12 +3083,13 @@ function createSolidRouter(config) {
         previousRoute: undefined
       });
       router.subscribe(rs => {
-        setState((0, _solidJs.produce)(s => {
-          s.route = { ...rs.route,
-            nameArray: rs.route.name.split(".")
-          };
-          s.previousRoute = rs.previousRoute;
-        }));
+        (0, _solidJs.batch)(() => {
+          setState("previousRoute", (0, _solidJs.reconcile)(rs.previousRoute));
+          setState("route", (0, _solidJs.reconcile)(rs.route, {
+            merge: false,
+            key: null
+          }));
+        });
       });
       router.start();
       if (typeof config.onStart === "function") config.onStart(router);
@@ -6857,7 +6858,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "36425" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "33311" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

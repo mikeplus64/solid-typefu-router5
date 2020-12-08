@@ -401,12 +401,13 @@ function createSolidRouter(config) {
         previousRoute: undefined
       });
       router.subscribe(rs => {
-        setState(solidJs.produce(s => {
-          s.route = { ...rs.route,
-            nameArray: rs.route.name.split(".")
-          };
-          s.previousRoute = rs.previousRoute;
-        }));
+        solidJs.batch(() => {
+          setState("previousRoute", solidJs.reconcile(rs.previousRoute));
+          setState("route", solidJs.reconcile(rs.route, {
+            merge: false,
+            key: null
+          }));
+        });
       });
       router.start();
       if (typeof config.onStart === "function") config.onStart(router);

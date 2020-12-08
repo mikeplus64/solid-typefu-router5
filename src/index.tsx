@@ -1,7 +1,7 @@
 import { Router as Router5, Route } from "router5";
 import { DefaultDependencies } from "router5/dist/types/router";
 import { Unsubscribe } from "router5/dist/types/base";
-import { JSX, onCleanup, createState, produce } from "solid-js";
+import { JSX, onCleanup, createState, reconcile, batch } from "solid-js";
 import {
   RoutesLike,
   RouteLike,
@@ -135,12 +135,10 @@ export default function createSolidRouter<
       });
 
       router.subscribe((rs) => {
-        setState(
-          produce<RouterState>((s) => {
-            s.route = { ...rs.route, nameArray: rs.route.name.split(".") };
-            s.previousRoute = rs.previousRoute;
-          })
-        );
+        batch(() => {
+          setState("previousRoute", reconcile(rs.previousRoute));
+          setState("route", reconcile(rs.route, { merge: false, key: null }));
+        });
       });
 
       router.start();
