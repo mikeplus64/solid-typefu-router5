@@ -403,7 +403,9 @@ function createSolidRouter(config) {
       router.subscribe(rs => {
         solidJs.batch(() => {
           setState("previousRoute", solidJs.reconcile(rs.previousRoute));
-          setState("route", solidJs.reconcile(rs.route, {
+          setState("route", solidJs.reconcile({ ...rs.route,
+            nameArray: rs.route.name.split(".")
+          }, {
             merge: false,
             key: null
           }));

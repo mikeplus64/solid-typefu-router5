@@ -137,7 +137,13 @@ export default function createSolidRouter<
       router.subscribe((rs) => {
         batch(() => {
           setState("previousRoute", reconcile(rs.previousRoute));
-          setState("route", reconcile(rs.route, { merge: false, key: null }));
+          setState(
+            "route",
+            reconcile(
+              { ...rs.route, nameArray: rs.route.name.split(".") },
+              { merge: false, key: null }
+            )
+          );
         });
       });
 

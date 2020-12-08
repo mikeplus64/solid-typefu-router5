@@ -399,7 +399,9 @@ function createSolidRouter(config) {
       router.subscribe(rs => {
         batch(() => {
           setState("previousRoute", reconcile(rs.previousRoute));
-          setState("route", reconcile(rs.route, {
+          setState("route", reconcile({ ...rs.route,
+            nameArray: rs.route.name.split(".")
+          }, {
             merge: false,
             key: null
           }));
