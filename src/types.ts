@@ -71,6 +71,8 @@ export type AsOptParam<ParamName extends string> = {
   [P in ParamName]?: string | undefined;
 };
 
+type QueryParamStart = "?:" | "&:" | "?" | "&";
+
 /**
  * Parse a router5 path into its params
  *
@@ -97,15 +99,10 @@ type ParseParams_<A extends string, Acc> =
     ? ParseParams_<Tail, Acc & AsOptParam<Param>>
     : A extends `;${infer Param}`
     ? Acc & AsOptParam<Param>
-    : // query parameters with leading colon
-    A extends `${any}?:${infer Param}/${infer Tail}`
+    : // query parameters
+    A extends `${any}${QueryParamStart}${infer Param}/${infer Tail}`
     ? ParseParams_<Tail, Acc & AsOptParam<Param>>
-    : A extends `${any}?:${infer Param}`
-    ? Acc & AsOptParam<Param>
-    : // query parameters without leading colon
-    A extends `${any}?${infer Param}/${infer Tail}`
-    ? ParseParams_<Tail, Acc & AsOptParam<Param>>
-    : A extends `${any}?${infer Param}`
+    : A extends `${any}${QueryParamStart}${infer Param}`
     ? Acc & AsOptParam<Param>
     : // splat parameters (only supports it at the end of a path)
     A extends `*${infer Param}`

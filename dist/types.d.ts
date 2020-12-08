@@ -40,12 +40,13 @@ export declare type AsParam<ParamName extends string> = {
 export declare type AsOptParam<ParamName extends string> = {
     [P in ParamName]?: string | undefined;
 };
+declare type QueryParamStart = "?:" | "&:" | "?" | "&";
 /**
  * Parse a router5 path into its params
  *
  * See https://router5.js.org/guides/path-syntax
  */
-declare type ParseParams_<A extends string, Acc> = A extends `:${infer Param}<${any}>/${infer Tail}` ? ParseParams_<Tail, Acc & AsParam<Param>> : A extends `:${infer Param}<${any}>` ? Acc & AsParam<Param> : A extends `:${infer Param}/${infer Tail}` ? ParseParams_<Tail, Acc & AsParam<Param>> : A extends `:${infer Param}` ? AsParam<Param> : A extends `;${infer Param}<${any}>/${infer Tail}` ? ParseParams_<Tail, Acc & AsOptParam<Param>> : A extends `;${infer Param}<${any}>` ? Acc & AsOptParam<Param> : A extends `;${infer Param}/${infer Tail}` ? ParseParams_<Tail, Acc & AsOptParam<Param>> : A extends `;${infer Param}` ? Acc & AsOptParam<Param> : A extends `${any}?:${infer Param}/${infer Tail}` ? ParseParams_<Tail, Acc & AsOptParam<Param>> : A extends `${any}?:${infer Param}` ? Acc & AsOptParam<Param> : A extends `${any}?${infer Param}/${infer Tail}` ? ParseParams_<Tail, Acc & AsOptParam<Param>> : A extends `${any}?${infer Param}` ? Acc & AsOptParam<Param> : A extends `*${infer Param}` ? {
+declare type ParseParams_<A extends string, Acc> = A extends `:${infer Param}<${any}>/${infer Tail}` ? ParseParams_<Tail, Acc & AsParam<Param>> : A extends `:${infer Param}<${any}>` ? Acc & AsParam<Param> : A extends `:${infer Param}/${infer Tail}` ? ParseParams_<Tail, Acc & AsParam<Param>> : A extends `:${infer Param}` ? AsParam<Param> : A extends `;${infer Param}<${any}>/${infer Tail}` ? ParseParams_<Tail, Acc & AsOptParam<Param>> : A extends `;${infer Param}<${any}>` ? Acc & AsOptParam<Param> : A extends `;${infer Param}/${infer Tail}` ? ParseParams_<Tail, Acc & AsOptParam<Param>> : A extends `;${infer Param}` ? Acc & AsOptParam<Param> : A extends `${any}${QueryParamStart}${infer Param}/${infer Tail}` ? ParseParams_<Tail, Acc & AsOptParam<Param>> : A extends `${any}${QueryParamStart}${infer Param}` ? Acc & AsOptParam<Param> : A extends `*${infer Param}` ? {
     [P in Param]?: string[];
 } : A extends `/${infer Tail}` ? ParseParams_<Tail, Acc> : A extends `${any}/${infer Tail}` ? ParseParams_<Tail, Acc> : Acc;
 export declare type ParseParams<A extends string> = ParseParams_<A, {}>;
