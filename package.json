@@ -50,7 +50,8 @@
   },
   "dependencies": {
     "@babel/runtime": "*",
-    "ts-essentials": "^7.0.0"
+    "ts-essentials": "^7.0.0",
+    "ts-toolbelt": "^8.0.7"
   },
   "peerDependencies": {
     "router5": "*",

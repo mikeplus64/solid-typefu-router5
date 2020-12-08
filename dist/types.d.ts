@@ -24,16 +24,12 @@ export interface RouterContextValue<Deps = any, Routes = any> {
 }
 export declare type RouteLike = string;
 export declare type RoutesLike<Deps> = DeepReadonly<Route<Deps>[]>;
-export declare type RenderRouteName<A> = A extends [infer X] ? X : A extends [infer X, ...infer XS] ? X extends string ? XS extends string[] ? `${X}.${RenderRouteName<XS>}` : never : never : A extends string ? A : "";
-export declare type RouteArrayOf<A> = A extends readonly (infer U)[] ? U extends {
-    name: infer Name;
-    children: infer Children;
-} ? Children extends {} ? ToRouteArray<Name> | [...ToRouteArray<Name>, ...RouteArrayOf<Children>] : ToRouteArray<Name> : U extends {
-    name: infer Name;
-} ? ToRouteArray<Name> : [] : [];
-export declare type RouteNameOf<A> = RenderRouteName<RouteArrayOf<A>>;
-export declare type ToRouteArray<A> = A extends string ? A extends `${infer X}.${infer XS}` ? [X, ...ToRouteArray<XS>] : [A] : [];
-export declare type ToRouteNestedArray<A> = A extends string ? A extends `${infer X}.${infer XS}` ? [X, ToRouteArray<XS>] : [A] : [];
+/**
+ * Parse a route name ("foo.bar") into its components (["foo", "bar"])
+ */
+export declare type ToRouteArray<A> = _ToRouteArray<A>;
+declare type _ToRouteArray<A> = A extends string ? A extends `${infer X}.${infer XS}` ? _ToRouteArray1<XS, [X]> : [A] : [];
+declare type _ToRouteArray1<A, Acc extends string[]> = A extends string ? A extends `${infer X}.${infer XS}` ? _ToRouteArray1<XS, [...Acc, X]> : Acc : Acc;
 export declare type AsParam<ParamName extends string> = {
     [P in ParamName]: string;
 };
@@ -46,63 +42,62 @@ declare type QueryParamStart = "?:" | "&:" | "?" | "&";
  *
  * See https://router5.js.org/guides/path-syntax
  */
-declare type ParseParams_<A extends string, Acc> = A extends `:${infer Param}<${any}>/${infer Tail}` ? ParseParams_<Tail, Acc & AsParam<Param>> : A extends `:${infer Param}<${any}>` ? Acc & AsParam<Param> : A extends `:${infer Param}/${infer Tail}` ? ParseParams_<Tail, Acc & AsParam<Param>> : A extends `:${infer Param}` ? AsParam<Param> : A extends `;${infer Param}<${any}>/${infer Tail}` ? ParseParams_<Tail, Acc & AsOptParam<Param>> : A extends `;${infer Param}<${any}>` ? Acc & AsOptParam<Param> : A extends `;${infer Param}/${infer Tail}` ? ParseParams_<Tail, Acc & AsOptParam<Param>> : A extends `;${infer Param}` ? Acc & AsOptParam<Param> : A extends `${any}${QueryParamStart}${infer Param}/${infer Tail}` ? ParseParams_<Tail, Acc & AsOptParam<Param>> : A extends `${any}${QueryParamStart}${infer Param}` ? Acc & AsOptParam<Param> : A extends `*${infer Param}` ? {
+export declare type ParseParams<A extends string, Acc = {}> = A extends `:${infer Param}<${any}>/${infer Tail}` ? ParseParams<Tail, Acc & AsParam<Param>> : A extends `:${infer Param}<${any}>` ? Acc & AsParam<Param> : A extends `:${infer Param}/${infer Tail}` ? ParseParams<Tail, Acc & AsParam<Param>> : A extends `:${infer Param}` ? AsParam<Param> : A extends `;${infer Param}<${any}>/${infer Tail}` ? ParseParams<Tail, Acc & AsOptParam<Param>> : A extends `;${infer Param}<${any}>` ? Acc & AsOptParam<Param> : A extends `;${infer Param}/${infer Tail}` ? ParseParams<Tail, Acc & AsOptParam<Param>> : A extends `;${infer Param}` ? Acc & AsOptParam<Param> : A extends `${any}${QueryParamStart}${infer Param}/${infer Tail}` ? ParseParams<Tail, Acc & AsOptParam<Param>> : A extends `${any}${QueryParamStart}${infer Param}` ? Acc & AsOptParam<Param> : A extends `*${infer Param}` ? {
     [P in Param]?: string[];
-} : A extends `/${infer Tail}` ? ParseParams_<Tail, Acc> : A extends `${any}/${infer Tail}` ? ParseParams_<Tail, Acc> : Acc;
-export declare type ParseParams<A extends string> = ParseParams_<A, {}>;
-declare type Queue_<Tree, Ctx extends any[], Acc extends any[]> = Tree extends readonly [infer Node, ...infer Tail] ? Node extends {
-    children: infer Children;
-} ? Queue_<Tail, Ctx, Queue_<Children, [...Ctx, Node], [[...Ctx, Node], ...Acc]>> : Queue_<Tail, Ctx, [[...Ctx, Node], ...Acc]> : Acc;
-declare type Queue<Tree> = Queue_<Tree, [], []>;
-declare type RNode = {
-    name: string;
-    path: string;
-};
-declare type RR = RNode[];
-declare type Name<R extends RR> = {
-    [K in keyof R]: K extends `${number}` ? Extract<R[K], RNode>["name"] : R[K];
-};
-declare type Path<R extends RR> = {
-    [K in keyof R]: K extends `${number}` ? Extract<R[K], RNode>["path"] : R[K];
-};
-declare type ReadRoute<R> = R extends RR ? Concat<Path<R>> extends infer P ? {
-    name: Intercalate<Name<R>, ".">;
-    path: P;
-    params: ParseParams<Extract<P, string>>;
-} : never : never;
-declare type ReadRoutesQueue<Q, Acc extends any[]> = Q extends [infer X, ...infer XS] ? ReadRoutesQueue<XS, [...Acc, ReadRoute<X>]> : Acc;
+} : A extends `/${infer Tail}` ? ParseParams<Tail, Acc> : A extends `${any}/${infer Tail}` ? ParseParams<Tail, Acc> : Acc;
 /**
  * Takes your `routes` and produces type metadata for consumption in this
  * library. The result is an array of [[RouteMeta]], one for each route.
  */
-export declare type ReadRoutes<Tree> = Queue<Tree> extends infer Q ? ReadRoutesQueue<Q, []> : never;
+export declare type ReadRoutes<Tree> = _RouteQueue<Tree> extends infer Q ? _ReadRoutesQueue<Q> : never;
+declare type _RouteQueue<Tree, Ctx extends any[] = [], Acc extends any[] = []> = Tree extends readonly [infer Node, ...infer Tail] ? Node extends {
+    children: infer Children;
+} ? _RouteQueue<Tail, Ctx, _RouteQueue<Children, [...Ctx, Node], [...Acc, [...Ctx, Node]]>> : _RouteQueue<Tail, Ctx, [...Acc, [...Ctx, Node]]> : Acc;
+declare type _ReadRoutesQueue<Q, Acc extends any[] = []> = Q extends [
+    infer X,
+    ...infer XS
+] ? _ReadRoutesQueue<XS, [...Acc, _ReadRoute<X>]> : Acc;
+declare type _ReadRoute<R> = R extends _RouteNode[] ? _MkName<R> extends infer Name ? {
+    nameArray: Name;
+    name: Intercalate<Name, ".">;
+    params: ParseParams<Extract<Concat<_MkPath<R>>, string>>;
+} : never : never;
+declare type _MkName<R extends _RouteNode[]> = {
+    [K in keyof R]: K extends `${number}` ? Extract<R[K], _RouteNode>["name"] : R[K];
+};
+declare type _MkPath<R extends _RouteNode[]> = {
+    [K in keyof R]: K extends `${number}` ? Extract<R[K], _RouteNode>["path"] : R[K];
+};
+interface _RouteNode {
+    name: string;
+    path: string;
+}
 /**
  * The shape of the return type of [[ReadRoutes]]
  */
 export interface RouteMeta {
     name: string;
-    path: string;
+    nameArray: string[];
     params: {};
 }
-export declare type OptionalNestedPathTo<Path, Dest> = Path extends [
-    infer X,
-    ...infer XS
-] ? X extends string | number | symbol ? {
-    [_ in X]?: OptionalNestedPathTo<XS, Dest>;
-} : never : Dest;
-export declare type Descend<Path, RM> = RM extends [infer R, ...infer RS] ? [
-    ...(R extends {
-        name: infer Name;
-    } ? Name extends string ? Path extends string ? StartsWith<Name, Path> extends true ? [R] : [] : never : never : never),
-    ...Descend<Path, RS>
-] : [];
+/**
+ * Filter for routes that start with a specific path. The routes that fail to match get replaced with `never`
+ */
+export declare type Descend<Path extends string, RM extends RouteMeta[]> = {
+    [K in keyof RM]-?: {
+        1: never;
+        0: RM[K];
+    }[StartsWith<Extract<RM[K], RouteMeta>["name"], Path>];
+};
 /****************
  * Utility types
  ****************/
-declare type StartsWith<Str extends string, Start extends string> = Str extends Start ? true : Str extends `${Start}.${any}` ? true : false;
-declare type Concat_<T, Acc extends string> = T extends [infer X, ...infer XS] ? Concat_<Extract<XS, string[]>, `${Acc}${Extract<X, string>}`> : Acc;
-export declare type Concat<T> = Concat_<T, "">;
-export declare type Intercalate1_<T, Sep extends string, Acc extends string> = T extends [infer X] ? `${Acc}${Sep}${Extract<X, string>}` : T extends [infer X, ...infer XS] ? Intercalate1_<XS, Sep, `${Acc}${Sep}${Extract<X, string>}`> : Acc;
-export declare type Intercalate<T, Sep extends string> = T extends [infer X] ? X : T extends [infer X, ...infer XS] ? Intercalate1_<XS, Sep, `${Extract<X, string>}`> : "";
+declare type StartsWith<Str, Start extends string> = Str extends Start ? 0 : Str extends `${Start}.${any}` ? 0 : 1;
+export declare type Concat<T, Acc extends string = ""> = T extends [
+    infer X,
+    ...infer XS
+] ? Concat<Extract<XS, string[]>, `${Acc}${Extract<X, string>}`> : Acc;
+export declare type Intercalate<T, Sep extends string> = T extends [infer X] ? X : T extends [infer X, ...infer XS] ? _Intercalate1<XS, Sep, `${Extract<X, string>}`> : "";
+export declare type _Intercalate1<T, Sep extends string, Acc extends string> = T extends [infer X] ? `${Acc}${Sep}${Extract<X, string>}` : T extends [infer X, ...infer XS] ? _Intercalate1<XS, Sep, `${Acc}${Sep}${Extract<X, string>}`> : Acc;
 export {};
 //# sourceMappingURL=types.d.ts.map

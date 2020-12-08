@@ -1,4 +1,4 @@
-import createSolidRouter, { useRoute } from "solid-typefu-router5";
+import createSolidRouter, { ReadRoutes, useRoute } from "solid-typefu-router5";
 import browserPluginFactory from "router5-plugin-browser";
 import { render } from "solid-js/dom";
 import createRouter from "router5";

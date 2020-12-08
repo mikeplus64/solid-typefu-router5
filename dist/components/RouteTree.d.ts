@@ -1,5 +1,6 @@
 import { JSX } from "solid-js";
-import { OptionalNestedPathTo, RouteLike, RouteMeta, ToRouteArray } from "../types";
+import { RouteLike, RouteMeta } from "../types";
+import { Object } from "ts-toolbelt";
 /**
  * Tells `solid-typefu-router5` how to render a node if the path leading to
  * it matches the current route name.
@@ -15,10 +16,14 @@ export declare type RouterRenderNode<Params> = {
         params: Params;
     }) => JSX.Element;
 };
-export declare type RSM<RM extends RouteMeta[]> = RM extends [infer R, ...infer RS] ? R extends {
-    name: infer Name;
+export declare type RSM<RM extends RouteMeta[]> = _RSM<RM, {}>;
+declare type _RSM<RM, Acc> = RM extends [infer R, ...infer RS] ? _RSM<RS, R extends {
+    nameArray: infer Name;
     params: infer Params;
-} ? RS extends RouteMeta[] ? OptionalNestedPathTo<ToRouteArray<Name>, RouterRenderNode<Params>> & RSM<RS> : never : never : {};
+} ? Object.P.Record<Extract<Name, string[]>, RouterRenderNode<Params>, [
+    "?",
+    "W"
+]> & Acc : Acc> : Acc;
 export declare type RenderNodeLike = RouterRenderNode<any>;
 export declare type RouteNodeLike = {
     name: string;
@@ -36,4 +41,5 @@ export declare type RenderTreeLike = RenderNodeLike & {
  * renderer.
  */
 export default function RouteStateMachine<T extends RenderTreeLike, A extends RouteLike>(tree: T, _assumed?: A): JSX.Element;
+export {};
 //# sourceMappingURL=RouteTree.d.ts.map

@@ -8,7 +8,31 @@ import { RSM } from "./components/RouteTree";
 import { ElementOf } from "ts-essentials";
 export { MatchRoute, ShowRoute, SwitchRoutes } from "./components/MatchRoute";
 export { default as Context, useRoute, useIsActive, isActive } from "./context";
-export type { ReadRoutes, ParseParams } from "./types";
+export type { ReadRoutes, ParseParams, Descend } from "./types";
+export interface RouterComponent<RM extends RouteMeta[]> {
+    (props: {
+        children: RSM<RM>;
+        assume?: undefined;
+    }): JSX.Element;
+    <AssumeRoute extends ElementOf<RM>["name"]>(props: {
+        children: Descend<AssumeRoute, RM> extends infer D ? D extends RouteMeta[] ? RSM<D> : never : never;
+        assume?: AssumeRoute;
+    }): JSX.Element;
+}
+export interface LinkComponent<RM extends RouteMeta[]> {
+    (props: LinkProps<ElementOf<RM>>): JSX.Element;
+}
+export interface SolidRouter<Deps, RM extends RouteMeta[]> {
+    Provider: (props: {
+        children: JSX.Element;
+    }) => JSX.Element;
+    /** See [[RouteStateMachine]] */
+    Router: RouterComponent<RM>;
+    /** See [[createLink]] */
+    Link: LinkComponent<RM>;
+    navigate(link: LinkNav<ElementOf<RM>>): void;
+    router: Router5<Deps>;
+}
 /**
  * Create a router for use in solid-js.
  *
@@ -35,29 +59,15 @@ export type { ReadRoutes, ParseParams } from "./types";
  *   ...
  * }
  *
- * export const { Provider, Link, Router } = createSolidRouter(routes, { createRouter5, onStart });
+ * export const { Provider, Link, Router } = createSolidRouter({ routes, createRouter5, onStart });
  * ```
  */
-export interface SolidRouter<Deps, RM extends RouteMeta[]> {
-    Provider(props: {
-        children: JSX.Element;
-    }): JSX.Element;
-    /** See [[createLink]] */
-    Link(props: LinkProps<ElementOf<RM>>): JSX.Element;
-    /** See [[RouteStateMachine]] */
-    Router<AssumePath extends ElementOf<RM>["name"] | undefined>(props: {
-        children: RSM<AssumePath extends string ? Descend<AssumePath, RM> : RM>;
-        assume?: AssumePath;
-    }): JSX.Element;
-    navigate(link: LinkNav<ElementOf<RM>>): void;
-    router: Router5<Deps>;
-}
-export default function createSolidRouter<Routes extends RoutesLike<Deps>, Deps = DefaultDependencies>(config: {
+export default function createSolidRouter<Routes extends RoutesLike<Deps>, RM extends ReadRoutes<Routes>, Deps = DefaultDependencies>(config: {
     createRouter5: (routes: Route<Deps>[]) => Router5<Deps> | [Router5<Deps>, ...Unsubscribe[]];
     routes: Routes;
     onStart?: (router: Router5<Deps>) => void;
     linkNavActiveClass?: string;
     back?: () => void;
     forward?: () => void;
-}): SolidRouter<Deps, ReadRoutes<Routes> extends infer I ? I extends RouteMeta[] ? I : never : never>;
+}): SolidRouter<Deps, RM>;
 //# sourceMappingURL=index.d.ts.map

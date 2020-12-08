@@ -1,12 +1,8 @@
 import { JSX, untrack } from "solid-js";
 import { MatchRouteProps, SwitchRoutes } from "./MatchRoute";
-import {
-  OptionalNestedPathTo,
-  RouteLike,
-  RouteMeta,
-  ToRouteArray,
-} from "../types";
+import { RouteLike, RouteMeta } from "../types";
 import { useRoute } from "context";
+import { Object } from "ts-toolbelt";
 
 /**
  * Tells `solid-typefu-router5` how to render a node if the path leading to
@@ -20,14 +16,21 @@ export type RouterRenderNode<Params> = {
   fallback?: (props: { params: Params }) => JSX.Element;
 };
 
-export type RSM<RM extends RouteMeta[]> = RM extends [infer R, ...infer RS]
-  ? R extends { name: infer Name; params: infer Params }
-    ? RS extends RouteMeta[]
-      ? OptionalNestedPathTo<ToRouteArray<Name>, RouterRenderNode<Params>> &
-          RSM<RS>
-      : never
-    : never
-  : {};
+export type RSM<RM extends RouteMeta[]> = _RSM<RM, {}>;
+
+type _RSM<RM, Acc> = RM extends [infer R, ...infer RS]
+  ? _RSM<
+      RS,
+      R extends { nameArray: infer Name; params: infer Params }
+        ? Object.P.Record<
+            Extract<Name, string[]>,
+            RouterRenderNode<Params>,
+            ["?", "W"]
+          > &
+            Acc
+        : Acc
+    >
+  : Acc;
 
 export type RenderNodeLike = RouterRenderNode<any>;
 export type RouteNodeLike = { name: string; children?: RouteTreeLike };
