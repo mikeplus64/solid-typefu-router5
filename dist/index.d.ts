@@ -2,12 +2,13 @@ import { Router as Router5, Route } from "router5";
 import { DefaultDependencies } from "router5/dist/types/router";
 import { Unsubscribe } from "router5/dist/types/base";
 import { JSX } from "solid-js";
-import { RoutesLike, ToRouteArray, Descend, ReadRoutes, RouteMeta } from "./types";
+import { RoutesLike, Descend, RouteMeta, ReadRoutes } from "./types";
 import { LinkProps } from "./components/Link";
 import { RSM } from "./components/RouteTree";
+import { ElementOf } from "ts-essentials";
 export { MatchRoute, ShowRoute, SwitchRoutes } from "./components/MatchRoute";
 export { default as Context, useRoute, useIsActive, isActive } from "./context";
-export type { ReadRoutes } from "./types";
+export type { ReadRoutes, ParseParams, AsOptParam, AsParam } from "./types";
 /**
  * Create a router for use in solid-js.
  *
@@ -37,15 +38,15 @@ export type { ReadRoutes } from "./types";
  * export const { Provider, Link, Router } = createSolidRouter(routes, { createRouter5, onStart });
  * ```
  */
-export interface SolidRouter<Deps, RM extends RouteMeta> {
+export interface SolidRouter<Deps, RM extends RouteMeta[]> {
     Provider(props: {
         children: JSX.Element;
     }): JSX.Element;
     /** See [[createLink]] */
-    Link(props: LinkProps<RM>): JSX.Element;
+    Link(props: LinkProps<ElementOf<RM>>): JSX.Element;
     /** See [[RouteStateMachine]] */
-    Router<AssumePath extends RM["name"] | undefined>(props: {
-        children: RSM<AssumePath extends string ? Descend<ToRouteArray<AssumePath>, RM> : RM>;
+    Router<AssumePath extends ElementOf<RM>["name"] | undefined>(props: {
+        children: RSM<AssumePath extends string ? Descend<AssumePath, RM> : RM>;
         assume?: AssumePath;
     }): JSX.Element;
     router: Router5<Deps>;
@@ -57,5 +58,5 @@ export default function createSolidRouter<Routes extends RoutesLike<Deps>, Deps 
     linkNavActiveClass?: string;
     back?: () => void;
     forward?: () => void;
-}): SolidRouter<Deps, ReadRoutes<Routes> extends infer I ? (I extends RouteMeta ? I : never) : never>;
+}): SolidRouter<Deps, ReadRoutes<Routes> extends infer I ? I extends RouteMeta[] ? I : never : never>;
 //# sourceMappingURL=index.d.ts.map

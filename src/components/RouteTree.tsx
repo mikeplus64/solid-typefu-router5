@@ -1,4 +1,3 @@
-import { UnionToIntersection } from "ts-essentials";
 import { JSX, untrack } from "solid-js";
 import { MatchRouteProps, SwitchRoutes } from "./MatchRoute";
 import {
@@ -13,21 +12,22 @@ import { useRoute } from "context";
  * Tells `solid-typefu-router5` how to render a node if the path leading to
  * it matches the current route name.
  */
-export interface RouterRenderNode<Params> {
+export type RouterRenderNode<Params> = {
   /** Defaults to rendering the children. */
   render?: (props: { children?: JSX.Element; params: Params }) => JSX.Element;
 
   /** Fallback children to use if none are available to give to [[render]]. Default: nothing */
   fallback?: (props: { params: Params }) => JSX.Element;
-}
+};
 
-export type RSM<R extends RouteMeta> = UnionToIntersection<
-  R extends infer O
-    ? O extends { name: infer Name; params: infer Params }
-      ? OptionalNestedPathTo<ToRouteArray<Name>, RouterRenderNode<Params>>
+export type RSM<RM extends RouteMeta[]> = RM extends [infer R, ...infer RS]
+  ? R extends { name: infer Name; params: infer Params }
+    ? RS extends RouteMeta[]
+      ? OptionalNestedPathTo<ToRouteArray<Name>, RouterRenderNode<Params>> &
+          RSM<RS>
       : never
     : never
->;
+  : {};
 
 export type RenderNodeLike = RouterRenderNode<any>;
 export type RouteNodeLike = { name: string; children?: RouteTreeLike };
@@ -77,6 +77,6 @@ function nofallback() {
   return undefined;
 }
 
-function passthru<T>(props: { children: T }): T {
+function passthru(props: { children?: JSX.Element; params: any }): JSX.Element {
   return props.children;
 }

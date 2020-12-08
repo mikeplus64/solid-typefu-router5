@@ -1,11 +1,10 @@
-import { UnionToIntersection } from "ts-essentials";
 import { JSX } from "solid-js";
 import { OptionalNestedPathTo, RouteLike, RouteMeta, ToRouteArray } from "../types";
 /**
  * Tells `solid-typefu-router5` how to render a node if the path leading to
  * it matches the current route name.
  */
-export interface RouterRenderNode<Params> {
+export declare type RouterRenderNode<Params> = {
     /** Defaults to rendering the children. */
     render?: (props: {
         children?: JSX.Element;
@@ -15,11 +14,11 @@ export interface RouterRenderNode<Params> {
     fallback?: (props: {
         params: Params;
     }) => JSX.Element;
-}
-export declare type RSM<R extends RouteMeta> = UnionToIntersection<R extends infer O ? O extends {
+};
+export declare type RSM<RM extends RouteMeta[]> = RM extends [infer R, ...infer RS] ? R extends {
     name: infer Name;
     params: infer Params;
-} ? OptionalNestedPathTo<ToRouteArray<Name>, RouterRenderNode<Params>> : never : never>;
+} ? RS extends RouteMeta[] ? OptionalNestedPathTo<ToRouteArray<Name>, RouterRenderNode<Params>> & RSM<RS> : never : never : {};
 export declare type RenderNodeLike = RouterRenderNode<any>;
 export declare type RouteNodeLike = {
     name: string;

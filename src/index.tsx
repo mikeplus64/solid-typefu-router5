@@ -6,19 +6,19 @@ import {
   RoutesLike,
   RouteLike,
   RouterState,
-  ToRouteArray,
   Descend,
-  ReadRoutes,
   RouteMeta,
+  ReadRoutes,
 } from "./types";
 import Context from "./context";
 import Link, { LinkProps } from "./components/Link";
 import RouteStateMachine, { RenderTreeLike, RSM } from "./components/RouteTree";
+import { ElementOf } from "ts-essentials";
 
 export { MatchRoute, ShowRoute, SwitchRoutes } from "./components/MatchRoute";
 export { default as Context, useRoute, useIsActive, isActive } from "./context";
 
-export type { ReadRoutes } from "./types";
+export type { ReadRoutes, ParseParams, AsOptParam, AsParam } from "./types";
 
 /*
 export type {
@@ -68,17 +68,15 @@ export type { LinkConfig, LinkProps } from "./components/Link";
  * ```
  */
 
-export interface SolidRouter<Deps, RM extends RouteMeta> {
+export interface SolidRouter<Deps, RM extends RouteMeta[]> {
   Provider(props: { children: JSX.Element }): JSX.Element;
 
   /** See [[createLink]] */
-  Link(props: LinkProps<RM>): JSX.Element;
+  Link(props: LinkProps<ElementOf<RM>>): JSX.Element;
 
   /** See [[RouteStateMachine]] */
-  Router<AssumePath extends RM["name"] | undefined>(props: {
-    children: RSM<
-      AssumePath extends string ? Descend<ToRouteArray<AssumePath>, RM> : RM
-    >;
+  Router<AssumePath extends ElementOf<RM>["name"] | undefined>(props: {
+    children: RSM<AssumePath extends string ? Descend<AssumePath, RM> : RM>;
     assume?: AssumePath;
   }): JSX.Element;
 
@@ -99,7 +97,11 @@ export default function createSolidRouter<
   forward?: () => void;
 }): SolidRouter<
   Deps,
-  ReadRoutes<Routes> extends infer I ? (I extends RouteMeta ? I : never) : never
+  ReadRoutes<Routes> extends infer I
+    ? I extends RouteMeta[]
+      ? I
+      : never
+    : never
 > {
   let router: Router5<Deps>;
   let unsubs: Unsubscribe[];

@@ -66,70 +66,76 @@ export type ToRouteNestedArray<A> = A extends string
     : [A]
   : [];
 
-type AsParam<ParamName extends string> = { [P in ParamName]: string };
-type AsOptParam<ParamName extends string> = { [P in ParamName]?: string };
+export type AsParam<ParamName extends string> = { [P in ParamName]: string };
+export type AsOptParam<ParamName extends string> = {
+  [P in ParamName]?: string | undefined;
+};
 
 /**
  * Parse a router5 path into its params
  *
  * See https://router5.js.org/guides/path-syntax
  */
-export type ParseParams<A extends string> =
+type ParseParams_<A extends string, Acc> =
   // url params w/ regex
   A extends `:${infer Param}<${any}>/${infer Tail}`
-    ? AsParam<Param> & ParseParams<Tail>
+    ? ParseParams_<Tail, Acc & AsParam<Param>>
     : A extends `:${infer Param}<${any}>`
-    ? AsParam<Param>
+    ? Acc & AsParam<Param>
     : // plain url params
     A extends `:${infer Param}/${infer Tail}`
-    ? AsParam<Param> & ParseParams<Tail>
+    ? ParseParams_<Tail, Acc & AsParam<Param>>
     : A extends `:${infer Param}`
     ? AsParam<Param>
     : // matrix params w/ regex
     A extends `;${infer Param}<${any}>/${infer Tail}`
-    ? AsOptParam<Param> & ParseParams<Tail>
+    ? ParseParams_<Tail, Acc & AsOptParam<Param>>
     : A extends `;${infer Param}<${any}>`
-    ? AsOptParam<Param>
+    ? Acc & AsOptParam<Param>
     : // plain matrix params
     A extends `;${infer Param}/${infer Tail}`
-    ? AsOptParam<Param> & ParseParams<Tail>
+    ? ParseParams_<Tail, Acc & AsOptParam<Param>>
     : A extends `;${infer Param}`
-    ? AsOptParam<Param>
+    ? Acc & AsOptParam<Param>
     : // query parameters with leading colon
     A extends `${any}?:${infer Param}/${infer Tail}`
-    ? AsOptParam<Param> & ParseParams<Tail>
+    ? ParseParams_<Tail, Acc & AsOptParam<Param>>
     : A extends `${any}?:${infer Param}`
-    ? AsOptParam<Param>
+    ? Acc & AsOptParam<Param>
     : // query parameters without leading colon
     A extends `${any}?${infer Param}/${infer Tail}`
-    ? AsOptParam<Param> & ParseParams<Tail>
+    ? ParseParams_<Tail, Acc & AsOptParam<Param>>
     : A extends `${any}?${infer Param}`
-    ? AsOptParam<Param>
+    ? Acc & AsOptParam<Param>
     : // splat parameters (only supports it at the end of a path)
     A extends `*${infer Param}`
     ? { [P in Param]?: string[] }
     : // a path
     A extends `/${infer Tail}`
-    ? ParseParams<Tail>
+    ? ParseParams_<Tail, Acc>
     : A extends `${any}/${infer Tail}`
-    ? ParseParams<Tail>
-    : {};
+    ? ParseParams_<Tail, Acc>
+    : Acc;
+
+export type ParseParams<A extends string> = ParseParams_<A, {}> extends infer P
+  ? { [K in keyof P]: P[K] }
+  : never;
 
 /**
  * Takes your `routes` and produces type metadata for consumption in this
- * library. The result is a union of [[RouteMeta]]s for each route.
+ * library. The result is an array of [[RouteMeta]], one for each route.
  */
-export type ReadRoutes<Tree extends RoutesLike<any>> = ReadRoutes__<
+export type ReadRoutes<Tree extends RoutesLike<any>> = ReadRoutesArr__<
   Tree,
   [],
   []
 >;
 
-type ReadRoutes__<
+type ReadRoutesArr__<
   Tree,
   NameAcc extends string[],
   PathAcc extends string[]
-> = Tree extends readonly (infer Node)[]
+> = Tree extends readonly [infer Node, ...infer Tail]
   ? Node extends {
       name: infer Name;
       path: infer Path;
@@ -137,17 +143,23 @@ type ReadRoutes__<
     }
     ? Name extends string
       ? Path extends string
-        ?
-            | {
-                name: Intercalate<[...NameAcc, Name], ".">;
-                path: Concat<[...PathAcc, Path]>;
-                params: ParseParams<Concat<[...PathAcc, Path]>>;
-              }
-            | ReadRoutes__<Children, [...NameAcc, Name], [...PathAcc, Path]>
+        ? [
+            {
+              name: Intercalate<[...NameAcc, Name], ".">;
+              path: Concat<[...PathAcc, Path]>;
+              params: ParseParams<Concat<[...PathAcc, Path]>>;
+            },
+            ...ReadRoutesArr__<
+              Children,
+              [...NameAcc, Name],
+              [...PathAcc, Path]
+            >,
+            ...ReadRoutesArr__<Tail, NameAcc, PathAcc>
+          ]
         : never
       : never
     : never
-  : never;
+  : [];
 
 /**
  * The shape of the return type of [[ReadRoutes]]
@@ -167,23 +179,30 @@ export type OptionalNestedPathTo<Path, Dest> = Path extends [
     : never
   : Dest;
 
-export type ParamsMarker = {
-  readonly "@@params": true;
-};
-
-export type Descend<Path, Tree> = Path extends [infer P1, ...infer PS]
-  ? Tree extends readonly (infer Node)[]
-    ? Node extends { name: infer Name; children?: infer Children }
-      ? Name extends P1
-        ? Descend<PS, Children>
-        : never
-      : never
-    : never
-  : Tree;
+export type Descend<Path, RM> = RM extends [infer R, ...infer RS]
+  ? [
+      ...(R extends { name: infer Name }
+        ? Name extends string
+          ? Path extends string
+            ? StartsWith<Name, Path> extends true
+              ? [R]
+              : []
+            : never
+          : never
+        : never),
+      ...Descend<Path, RS>
+    ]
+  : [];
 
 /****************
  * Utility types
  ****************/
+
+type StartsWith<Str extends string, Start extends string> = Str extends Start
+  ? true
+  : Str extends `${Start}.${any}`
+  ? true
+  : false;
 
 type Str<A> = A extends string ? A : never;
 type Strs<A> = A extends string[] ? A : never;

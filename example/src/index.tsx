@@ -89,6 +89,18 @@ const UserProfile = (props: { id: number }) => (
   </>
 );
 
+type Test = {
+  users?: {
+    fallback?: (props: { params: { page?: string } }) => undefined;
+  };
+};
+
+const x: Test = {
+  users: {
+    fallback: (p) => undefined,
+  },
+};
+
 const App = () => {
   const route = useRoute();
   return (
@@ -120,9 +132,7 @@ const App = () => {
           about: { render: About },
           home: { render: Home },
           users: {
-            fallback: (p: { params: { page?: string } }) => (
-              <Users page={Number(p.params.page ?? 0)} />
-            ),
+            fallback: (p) => <Users page={Number(p.params.page ?? 0)} />,
             profile: {
               render: (p: { params: { id: string } }) => (
                 <UserProfile id={Number(p.params.id)} />
