@@ -1,6 +1,7 @@
 import { JSX } from "solid-js";
 import { RouteLike, RouteMeta } from "../types";
-import { Object } from "ts-toolbelt";
+import { Any, List, Object } from "ts-toolbelt";
+import { UnionToIntersection } from "ts-essentials";
 /**
  * Tells `solid-typefu-router5` how to render a node if the path leading to
  * it matches the current route name.
@@ -16,14 +17,15 @@ export declare type RouterRenderNode<Params> = {
         params: Params;
     }) => JSX.Element;
 };
-export declare type RSM<RM extends RouteMeta[]> = _RSM<RM, {}>;
-declare type _RSM<RM, Acc> = RM extends [infer R, ...infer RS] ? _RSM<RS, R extends {
-    nameArray: infer Name;
-    params: infer Params;
-} ? Object.P.Record<Extract<Name, string[]>, RouterRenderNode<Params>, [
-    "?",
-    "W"
-]> & Acc : Acc> : Acc;
+export declare type RSM<RM extends RouteMeta[]> = RouterRenderNode<undefined> & Any.Compute<UnionToIntersection<{
+    [K in keyof RM]: RM[K] extends infer R ? R extends {
+        nameArray: infer Name;
+        params: infer Params;
+    } ? Object.P.Record<Extract<Name, string[]>, RouterRenderNode<Params>, [
+        "?",
+        "W"
+    ]> : never : never;
+}[List.Keys<RM>]>>;
 export declare type RenderNodeLike = RouterRenderNode<any>;
 export declare type RouteNodeLike = {
     name: string;
@@ -41,5 +43,4 @@ export declare type RenderTreeLike = RenderNodeLike & {
  * renderer.
  */
 export default function RouteStateMachine<T extends RenderTreeLike, A extends RouteLike>(tree: T, _assumed?: A): JSX.Element;
-export {};
 //# sourceMappingURL=Router.d.ts.map

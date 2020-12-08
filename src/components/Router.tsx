@@ -2,7 +2,8 @@ import { JSX, untrack } from "solid-js";
 import { MatchRouteProps, SwitchRoutes } from "./Switch";
 import { RouteLike, RouteMeta } from "../types";
 import { useRoute } from "context";
-import { Object } from "ts-toolbelt";
+import { Any, List, Object } from "ts-toolbelt";
+import { UnionToIntersection } from "ts-essentials";
 
 /**
  * Tells `solid-typefu-router5` how to render a node if the path leading to
@@ -16,21 +17,22 @@ export type RouterRenderNode<Params> = {
   fallback?: (props: { params: Params }) => JSX.Element;
 };
 
-export type RSM<RM extends RouteMeta[]> = _RSM<RM, {}>;
-
-type _RSM<RM, Acc> = RM extends [infer R, ...infer RS]
-  ? _RSM<
-      RS,
-      R extends { nameArray: infer Name; params: infer Params }
-        ? Object.P.Record<
-            Extract<Name, string[]>,
-            RouterRenderNode<Params>,
-            ["?", "W"]
-          > &
-            Acc
-        : Acc
+export type RSM<RM extends RouteMeta[]> = RouterRenderNode<undefined> &
+  Any.Compute<
+    UnionToIntersection<
+      {
+        [K in keyof RM]: RM[K] extends infer R
+          ? R extends { nameArray: infer Name; params: infer Params }
+            ? Object.P.Record<
+                Extract<Name, string[]>,
+                RouterRenderNode<Params>,
+                ["?", "W"]
+              >
+            : never
+          : never;
+      }[List.Keys<RM>]
     >
-  : Acc;
+  >;
 
 export type RenderNodeLike = RouterRenderNode<any>;
 export type RouteNodeLike = { name: string; children?: RouteTreeLike };

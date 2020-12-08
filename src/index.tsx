@@ -29,7 +29,7 @@ export interface RouterComponent<RM extends RouteMeta[]> {
         ? RSM<D>
         : never
       : never;
-    assume?: AssumeRoute;
+    assume: AssumeRoute;
   }): JSX.Element;
 }
 

@@ -16,7 +16,7 @@ export interface RouterComponent<RM extends RouteMeta[]> {
     }): JSX.Element;
     <AssumeRoute extends ElementOf<RM>["name"]>(props: {
         children: Descend<AssumeRoute, RM> extends infer D ? D extends RouteMeta[] ? RSM<D> : never : never;
-        assume?: AssumeRoute;
+        assume: AssumeRoute;
     }): JSX.Element;
 }
 export interface LinkComponent<RM extends RouteMeta[]> {

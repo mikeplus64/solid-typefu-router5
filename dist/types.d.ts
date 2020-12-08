@@ -1,3 +1,4 @@
+import { ListOf } from "Object/_api";
 import { State as R5RouteState, Router as Router5, Route } from "router5";
 import { Unsubscribe } from "router5/dist/types/base";
 import { State } from "solid-js";
@@ -84,15 +85,20 @@ export interface RouteMeta {
 /**
  * Filter for routes that start with a specific path. The routes that fail to match get replaced with `never`
  */
-export declare type Descend<Path extends string, RM extends RouteMeta[]> = {
-    [K in keyof RM]-?: {
+export declare type Descend<Path extends string, RM extends RouteMeta[]> = ListOf<{
+    [K in keyof RM]-?: RM[K] extends RouteMeta ? {
         1: never;
-        0: RM[K];
-    }[StartsWith<Extract<RM[K], RouteMeta>["name"], Path>];
-};
+        0: StripPrefix<RM[K]["name"], Path> extends infer Name ? Name extends string ? {
+            name: Name;
+            nameArray: ToRouteArray<Name>;
+            params: RM[K]["params"];
+        } : never : never;
+    }[StartsWith<RM[K]["name"], Path>] : never;
+}>;
 /****************
  * Utility types
  ****************/
+declare type StripPrefix<Str, Start extends string> = Str extends Start ? never : Str extends `${Start}.${infer Tail}` ? Tail : never;
 declare type StartsWith<Str, Start extends string> = Str extends Start ? 0 : Str extends `${Start}.${any}` ? 0 : 1;
 export declare type Concat<T, Acc extends string = ""> = T extends [
     infer X,
