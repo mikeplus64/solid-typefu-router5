@@ -1,3 +1,4 @@
+// example by https://github.com/MrFoxPro
 import createSolidRouter, { useRoute } from "solid-typefu-router5";
 import browserPluginFactory from "router5-plugin-browser";
 import { render } from "solid-js/web";
@@ -90,7 +91,7 @@ function App() {
           parent: {
             render: Parent,
             child: {
-              render: ({ params }) => <Child date={params.date} />,
+              render: (props) => <Child date={props.params.date} />,
             },
           },
         }}
