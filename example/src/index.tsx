@@ -89,18 +89,6 @@ const UserProfile = (props: { id: number }) => (
   </>
 );
 
-type Test = {
-  users?: {
-    fallback?: (props: { params: { page?: string } }) => undefined;
-  };
-};
-
-const x: Test = {
-  users: {
-    fallback: (p) => undefined,
-  },
-};
-
 const App = () => {
   const route = useRoute();
   return (

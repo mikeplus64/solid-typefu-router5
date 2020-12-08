@@ -6695,14 +6695,6 @@ var UserProfile = function UserProfile(props) {
   }(), _tmpl$12.cloneNode(true)];
 };
 
-var x = {
-  users: {
-    fallback: function fallback(p) {
-      return undefined;
-    }
-  }
-};
-
 var App = function App() {
   var route = solid_typefu_router5_1.useRoute();
   return function () {
