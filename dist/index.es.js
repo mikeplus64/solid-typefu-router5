@@ -336,6 +336,23 @@ function createSolidRouter(config) {
 
   return {
     Link,
+    navigate: opts => {
+      var _config$forward, _config$back;
+
+      switch (opts.to) {
+        case "@@forward":
+          (_config$forward = config.forward) === null || _config$forward === void 0 ? void 0 : _config$forward.call(config);
+          break;
+
+        case "@@back":
+          (_config$back = config.back) === null || _config$back === void 0 ? void 0 : _config$back.call(config);
+          break;
+
+        default:
+          router.navigate(opts.to, opts.params);
+          break;
+      }
+    },
     Router: props => RouteStateMachine(props.children, props.assume),
     Provider: props => {
       var _router$getState;

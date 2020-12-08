@@ -1,6 +1,19 @@
 import { RouteMeta } from "../types";
 import { JSX } from "solid-js";
 import { RequiredKeys } from "ts-essentials";
+export declare type LinkNav<Route extends RouteMeta> = {
+    to: "@@back" | "@@forward";
+    params?: undefined;
+} | (Route extends {
+    name: infer Name;
+    params: infer Params;
+} ? RequiresParams<Params> extends true ? {
+    to: Name;
+    params: Params;
+} : {
+    to: Name;
+    params?: Params | undefined;
+} : never);
 /** Props for making a `Link` component.
  *
  * @remarks
@@ -28,19 +41,7 @@ export declare type LinkProps<Route extends RouteMeta> = {
     forward?: () => void;
     display?: "button";
     disabled?: boolean;
-} & ({
-    to: "@@back" | "@@forward";
-    params?: undefined;
-} | (Route extends {
-    name: infer Name;
-    params: infer Params;
-} ? RequiresParams<Params> extends true ? {
-    to: Name;
-    params: Params;
-} : {
-    to: Name;
-    params?: Params | undefined;
-} : never)) & Omit<JSX.IntrinsicElements["a" | "button"], "onClick" | "href" | "children">;
+} & LinkNav<Route> & Omit<JSX.IntrinsicElements["a" | "button"], "onClick" | "href" | "children">;
 declare type RequiresParams<Params> = keyof Params extends never ? false : RequiredKeys<Params> extends never ? false : true;
 export interface LinkConfig {
     navActiveClass: string;

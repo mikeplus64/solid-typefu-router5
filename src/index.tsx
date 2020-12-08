@@ -11,7 +11,7 @@ import {
   ReadRoutes,
 } from "./types";
 import Context from "./context";
-import Link, { LinkProps } from "./components/Link";
+import Link, { LinkNav, LinkProps } from "./components/Link";
 import RouteStateMachine, { RenderTreeLike, RSM } from "./components/RouteTree";
 import { ElementOf } from "ts-essentials";
 
@@ -62,6 +62,8 @@ export interface SolidRouter<Deps, RM extends RouteMeta[]> {
     assume?: AssumePath;
   }): JSX.Element;
 
+  navigate(link: LinkNav<ElementOf<RM>>): void;
+
   router: Router5<Deps>;
 }
 
@@ -97,6 +99,20 @@ export default function createSolidRouter<
 
   return {
     Link,
+
+    navigate: (opts: any) => {
+      switch (opts.to) {
+        case "@@forward":
+          config.forward?.();
+          break;
+        case "@@back":
+          config.back?.();
+          break;
+        default:
+          router.navigate(opts.to, opts.params);
+          break;
+      }
+    },
 
     Router: (props) =>
       RouteStateMachine(

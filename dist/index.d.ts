@@ -3,7 +3,7 @@ import { DefaultDependencies } from "router5/dist/types/router";
 import { Unsubscribe } from "router5/dist/types/base";
 import { JSX } from "solid-js";
 import { RoutesLike, Descend, RouteMeta, ReadRoutes } from "./types";
-import { LinkProps } from "./components/Link";
+import { LinkNav, LinkProps } from "./components/Link";
 import { RSM } from "./components/RouteTree";
 import { ElementOf } from "ts-essentials";
 export { MatchRoute, ShowRoute, SwitchRoutes } from "./components/MatchRoute";
@@ -49,6 +49,7 @@ export interface SolidRouter<Deps, RM extends RouteMeta[]> {
         children: RSM<AssumePath extends string ? Descend<AssumePath, RM> : RM>;
         assume?: AssumePath;
     }): JSX.Element;
+    navigate(link: LinkNav<ElementOf<RM>>): void;
     router: Router5<Deps>;
 }
 export default function createSolidRouter<Routes extends RoutesLike<Deps>, Deps = DefaultDependencies>(config: {

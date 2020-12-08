@@ -3,6 +3,14 @@ import Context, { useIsActive } from "../context";
 import { JSX, assignProps, createMemo, splitProps, useContext } from "solid-js";
 import { RequiredKeys } from "ts-essentials";
 
+export type LinkNav<Route extends RouteMeta> =
+  | { to: "@@back" | "@@forward"; params?: undefined }
+  | (Route extends { name: infer Name; params: infer Params }
+      ? RequiresParams<Params> extends true
+        ? { to: Name; params: Params }
+        : { to: Name; params?: Params | undefined }
+      : never);
+
 /** Props for making a `Link` component.
  *
  * @remarks
@@ -32,17 +40,7 @@ export type LinkProps<Route extends RouteMeta> = {
   forward?: () => void;
   display?: "button";
   disabled?: boolean;
-} & (
-  | {
-      to: "@@back" | "@@forward";
-      params?: undefined;
-    }
-  | (Route extends { name: infer Name; params: infer Params }
-      ? RequiresParams<Params> extends true
-        ? { to: Name; params: Params }
-        : { to: Name; params?: Params | undefined }
-      : never)
-) &
+} & LinkNav<Route> &
   Omit<JSX.IntrinsicElements["a" | "button"], "onClick" | "href" | "children">;
 
 type RequiresParams<Params> = keyof Params extends never
