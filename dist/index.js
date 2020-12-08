@@ -341,7 +341,7 @@ function createSolidRouter(config) {
   return {
     Link,
     navigate: opts => {
-      var _config$forward, _config$back;
+      var _config$forward, _config$back, _opts$params;
 
       switch (opts.to) {
         case "@@forward":
@@ -353,7 +353,7 @@ function createSolidRouter(config) {
           break;
 
         default:
-          router.navigate(opts.to, opts.params);
+          router.navigate(opts.to, (_opts$params = opts.params) !== null && _opts$params !== void 0 ? _opts$params : {});
           break;
       }
     },

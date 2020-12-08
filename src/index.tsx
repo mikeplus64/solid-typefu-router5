@@ -109,7 +109,7 @@ export default function createSolidRouter<
           config.back?.();
           break;
         default:
-          router.navigate(opts.to, opts.params);
+          router.navigate(opts.to, opts.params ?? {});
           break;
       }
     },
