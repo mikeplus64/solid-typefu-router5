@@ -10,33 +10,33 @@ export function useRoute(): () => RouteState {
   return () => ctx.state.route;
 }
 
-function paramsEq<
-  A extends undefined | Record<string, any>,
-  B extends undefined | Record<string, any>
->(a: A, b: B): boolean {
+function paramsEq(
+  a: undefined | Record<string, any>,
+  b: undefined | Record<string, any>
+): boolean {
   if (a === b) return true;
   if (a === undefined) return b === undefined;
   if (b === undefined) return a === undefined;
-  const keys = Object.keys(a!);
-  for (const key of keys) if (!(key in b)) return false;
-  for (const key of keys) if (String(a[key]) !== String(b[key])) return false;
-  return keys.length === Object.keys(b!).length;
+  const keysA = Object.keys(a!);
+  for (const key of keysA) if (!(key in b)) return false;
+  for (const key of keysA) if (String(a[key]) !== String(b[key])) return false;
+  return keysA.length === Object.keys(b!).length;
 }
 
 export function useIsActive<Link extends RouteLike>(
   link: Link,
   params?: Record<string, any>,
-  paramsIsEqual: <A extends Record<string, any>, B extends Record<string, any>>(
-    a: A,
-    b: B
+  paramsIsEqual: (
+    a: undefined | Record<string, any>,
+    b: undefined | Record<string, any>
   ) => boolean = paramsEq
 ): () => boolean {
   const state = useContext(Context).state;
   const getIsActiveByName = createMemo(() => isActive(state.route.name, link));
-  return createMemo(() =>
-    getIsActiveByName() && params !== undefined
-      ? paramsIsEqual(state.route.params, params)
-      : true
+  return createMemo(
+    () =>
+      getIsActiveByName() &&
+      (params === undefined || paramsIsEqual(state.route.params, params))
   );
 }
 
@@ -46,5 +46,5 @@ export function useIsActive<Link extends RouteLike>(
  * Maybe useful for creating your own `Link` component.
  */
 export function isActive<Link extends RouteLike>(here: string, link: Link) {
-  return link.startsWith(here);
+  return link === here || link.startsWith(here);
 }

@@ -2,7 +2,7 @@ import { RouterContextValue, RouteState, RouteLike } from "./types";
 declare const Context: import("solid-js/types/reactive/signal").Context<RouterContextValue<any, any>>;
 export default Context;
 export declare function useRoute(): () => RouteState;
-export declare function useIsActive<Link extends RouteLike>(link: Link, params?: Record<string, any>, paramsIsEqual?: <A extends Record<string, any>, B extends Record<string, any>>(a: A, b: B) => boolean): () => boolean;
+export declare function useIsActive<Link extends RouteLike>(link: Link, params?: Record<string, any>, paramsIsEqual?: (a: undefined | Record<string, any>, b: undefined | Record<string, any>) => boolean): () => boolean;
 /**
  * Find whether 'link' is an ancestor of, or equal to, 'here'
  *

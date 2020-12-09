@@ -15,19 +15,19 @@ function paramsEq(a, b) {
   if (a === b) return true;
   if (a === undefined) return b === undefined;
   if (b === undefined) return a === undefined;
-  const keys = Object.keys(a);
+  const keysA = Object.keys(a);
 
-  for (const key of keys) if (!(key in b)) return false;
+  for (const key of keysA) if (!(key in b)) return false;
 
-  for (const key of keys) if (String(a[key]) !== String(b[key])) return false;
+  for (const key of keysA) if (String(a[key]) !== String(b[key])) return false;
 
-  return keys.length === Object.keys(b).length;
+  return keysA.length === Object.keys(b).length;
 }
 
 function useIsActive(link, params, paramsIsEqual = paramsEq) {
   const state = solidJs.useContext(Context).state;
   const getIsActiveByName = solidJs.createMemo(() => isActive(state.route.name, link));
-  return solidJs.createMemo(() => getIsActiveByName() && params !== undefined ? paramsIsEqual(state.route.params, params) : true);
+  return solidJs.createMemo(() => getIsActiveByName() && (params === undefined || paramsIsEqual(state.route.params, params)));
 }
 /**
  * Find whether 'link' is an ancestor of, or equal to, 'here'
@@ -36,7 +36,7 @@ function useIsActive(link, params, paramsIsEqual = paramsEq) {
  */
 
 function isActive(here, link) {
-  return link.startsWith(here);
+  return link === here || link.startsWith(here);
 }
 
 const _tmpl$ = web.template(`<button></button>`, 2),

@@ -87,7 +87,7 @@ export default function createSolidRouter<
   ) => Router5<Deps> | [Router5<Deps>, ...Unsubscribe[]];
   routes: Routes;
   onStart?: (router: Router5<Deps>) => void;
-  linkNavActiveClass?: string;
+  navActiveClass?: string;
   back?: () => void;
   forward?: () => void;
 }): SolidRouter<Deps, RM> {

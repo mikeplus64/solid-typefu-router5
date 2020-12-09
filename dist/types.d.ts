@@ -51,7 +51,7 @@ export declare type ParseParams<A extends string, Acc = {}> = A extends `:${infe
  * the leading ? or ?: consumed. So if the path is "/foo?page&id" the input to
  * this is expected to be "page&id"
  */
-export declare type _ParseQueryParams1<QP, Acc = {}, ParamSfix extends string = ""> = QP extends `${infer Param}&${ParamSfix}${infer Tail}` ? _ParseQueryParams1<Tail, Acc & AsOptParam<Param>, ParamSfix> : QP extends `${infer Param}` ? Acc & AsOptParam<Param> : Acc;
+declare type _ParseQueryParams1<QP, Acc = {}, ParamSfix extends string = ""> = QP extends `${infer Param}&${ParamSfix}${infer Tail}` ? _ParseQueryParams1<Tail, Acc & AsOptParam<Param>, ParamSfix> : QP extends `${infer Param}` ? Acc & AsOptParam<Param> : Acc;
 /**
  * Takes your `routes` and produces type metadata for consumption in this
  * library. The result is an array of [[RouteMeta]], one for each route.
