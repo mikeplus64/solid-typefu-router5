@@ -32,7 +32,7 @@ function useIsActive(link, params, paramsIsEqual = paramsEq) {
  */
 
 function isActive(here, link) {
-  return link === here || link.startsWith(here);
+  return link === here || here.startsWith(link + ".");
 }
 
 const _tmpl$ = template(`<button></button>`, 2),
@@ -64,7 +64,7 @@ function Link(props) {
     const cls = { ...linkProps.classList
     };
 
-    if (typeof linkProps.navActiveClass === "string") {
+    if (linkProps.nav && typeof linkProps.navActiveClass === "string") {
       cls[linkProps.navActiveClass] = isActive();
     }
 

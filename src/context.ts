@@ -46,5 +46,5 @@ export function useIsActive<Link extends RouteLike>(
  * Maybe useful for creating your own `Link` component.
  */
 export function isActive<Link extends RouteLike>(here: string, link: Link) {
-  return link === here || link.startsWith(here);
+  return link === here || here.startsWith(link + ".");
 }

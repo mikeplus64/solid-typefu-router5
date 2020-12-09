@@ -19,6 +19,7 @@ const routes = [
 
 const { Link, Router, Provider } = createSolidRouter({
   routes,
+  navActiveClass: "is-active",
   back: () => window.history.back(),
   forward: () => window.history.forward(),
   createRouter5: (routes) => {
@@ -82,6 +83,13 @@ const Users = (props: { page: number }) => (
   </>
 );
 
+const UsersEdit = () => (
+  <>
+    <h1>Edit users</h1>
+    <p>If you could edit the users here, here's where that would be. </p>{" "}
+  </>
+);
+
 const UserProfile = (props: { id: number }) => (
   <>
     <h1>User {props.id} profile</h1>
@@ -102,15 +110,26 @@ const App = () => {
             <Link to="@@back">Back</Link> / <Link to="@@forward">Forward</Link>
           </li>
           <li>
-            <Link to="home">Home</Link>
-          </li>
-          <li>
-            <Link to="users" params={{ page: "0" }}>
-              Users
+            <Link nav to="home">
+              Home
             </Link>
           </li>
           <li>
-            <Link to="about">About</Link>
+            <Link nav navIgnoreParams to="users" params={{ page: "0" }}>
+              Users
+            </Link>
+            <ul>
+              <li>
+                <Link nav navIgnoreParams to="users.edit">
+                  Edit
+                </Link>
+              </li>
+            </ul>
+          </li>
+          <li>
+            <Link nav to="about">
+              About
+            </Link>
           </li>
         </ul>
       </nav>
@@ -121,6 +140,9 @@ const App = () => {
           home: { render: Home },
           users: {
             fallback: (p) => <Users page={Number(p.params.page ?? 0)} />,
+            edit: {
+              render: () => <UsersEdit />,
+            },
             profile: {
               render: (p: { params: { id: string } }) => (
                 <UserProfile id={Number(p.params.id)} />

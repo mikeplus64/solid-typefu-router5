@@ -13,7 +13,7 @@
     "router5": "^8.0.1",
     "router5-plugin-browser": "^8.0.1",
     "solid-js": "^0.23.0",
-    "solid-typefu-router5": "^0.10.4"
+    "solid-typefu-router5": "^0.14.7"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",

@@ -4584,13 +4584,14 @@ solid-js@^0.23.0:
   resolved "https://registry.yarnpkg.com/solid-js/-/solid-js-0.23.0.tgz#260b9825f08da09aee17fcf503421294d86edc0e"
   integrity sha512-c7Sl4VbyO+I79wDAIHqK82iVUkjjyj6KGbqIwBmK44eH+smmnCvXre0V6XwhK71Ilp0Sm7nfA0jYPGZeGhmzow==
 
-solid-typefu-router5@^0.10.4:
-  version "0.10.4"
-  resolved "https://registry.yarnpkg.com/solid-typefu-router5/-/solid-typefu-router5-0.10.4.tgz#beff313077c939e20909fd97875bd4ede38dc036"
-  integrity sha512-I5bzN4cwMFmZXm6v7zXZpjDTAkBsIHB2H0P3UNfgEwDbM82PjZQ4+3Dfg7VGTKq73XACAFdnRirqlgyc5bQC4Q==
+solid-typefu-router5@^0.14.7:
+  version "0.14.7"
+  resolved "https://registry.yarnpkg.com/solid-typefu-router5/-/solid-typefu-router5-0.14.7.tgz#410935319dea36b5efb3c39a5a1fdd08c27ae114"
+  integrity sha512-195MBO/N/kas97AheN8oKVHj9TLjFBrvDg/lpmPBNjC9yeemFyUtgazm6738z7NmDUDYrK7u5pfDp2fdrRPeOw==
   dependencies:
     "@babel/runtime" "*"
     ts-essentials "^7.0.0"
+    ts-toolbelt "^8.0.7"
 
 source-map-resolve@^0.5.0:
   version "0.5.3"
@@ -4937,6 +4938,11 @@ ts-essentials@^7.0.0:
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/ts-essentials/-/ts-essentials-7.0.0.tgz#eb807945d65e258bae8914f541543758f879f6c5"
   integrity sha512-DptrzFAwb5afnsTdKxfScHqLbVZHl7YsxvDT+iT8tbXWFGSzbXALhfWlal25HBesqlX0NZd6wz9KBGnJcWScdQ==
+
+ts-toolbelt@^8.0.7:
+  version "8.0.7"
+  resolved "https://registry.yarnpkg.com/ts-toolbelt/-/ts-toolbelt-8.0.7.tgz#4dad2928831a811ee17dbdab6eb1919fc0a295bf"
+  integrity sha512-KICHyKxc5Nu34kyoODrEe2+zvuQQaubTJz7pnC5RQ19TH/Jged1xv+h8LBrouaSD310m75oAljYs59LNHkLDkQ==
 
 tslib@^1.10.0:
   version "1.13.0"

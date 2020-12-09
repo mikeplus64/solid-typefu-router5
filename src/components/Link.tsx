@@ -104,7 +104,7 @@ export default function Link<Route extends RouteMeta>(
 
   const getClassList = createMemo(() => {
     const cls: Record<string, any> = { ...linkProps.classList };
-    if (typeof linkProps.navActiveClass === "string") {
+    if (linkProps.nav && typeof linkProps.navActiveClass === "string") {
       cls[linkProps.navActiveClass] = isActive();
     }
     return cls;
