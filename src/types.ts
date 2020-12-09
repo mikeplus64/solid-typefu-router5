@@ -107,7 +107,7 @@ export type ParseParams<A extends string, Acc = {}> =
  * the leading ? or ?: consumed. So if the path is "/foo?page&id" the input to
  * this is expected to be "page&id"
  */
-export type _ParseQueryParams1<
+type _ParseQueryParams1<
   QP,
   Acc = {},
   ParamSfix extends string = ""
