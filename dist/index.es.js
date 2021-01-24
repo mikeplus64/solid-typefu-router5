@@ -287,7 +287,7 @@ function RouteStateMachine(tree, _assumed) {
       const child = routes[key];
       children.push({
         prefix: key,
-        children: traverse(next, child)
+        children: untrack(() => traverse(next, child))
       });
     }
 

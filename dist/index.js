@@ -291,7 +291,7 @@ function RouteStateMachine(tree, _assumed) {
       const child = routes[key];
       children.push({
         prefix: key,
-        children: traverse(next, child)
+        children: solidJs.untrack(() => traverse(next, child))
       });
     }
 
