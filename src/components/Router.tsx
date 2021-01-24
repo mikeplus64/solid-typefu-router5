@@ -63,7 +63,7 @@ export default function RouteStateMachine<
       const child = routes[key]!;
       children.push({
         prefix: key,
-        children: traverse(next, child),
+        children: untrack(() => traverse(next, child)),
       });
     }
     return () => (
