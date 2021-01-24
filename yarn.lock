@@ -286,21 +286,21 @@ ansi-styles@^3.2.1:
   dependencies:
     color-convert "^1.9.0"
 
-babel-plugin-jsx-dom-expressions@~0.24.0:
-  version "0.24.0"
-  resolved "https://registry.yarnpkg.com/babel-plugin-jsx-dom-expressions/-/babel-plugin-jsx-dom-expressions-0.24.0.tgz#d62719b80331fcebb3e0e9f022e9a46830ce05f0"
-  integrity sha512-P3I7tS+YabLnbv3ED1ApT7qyyipAEb65/PiN0hl4lEIfRO2YF17/bbgi07v8dXFLYvUoaqtsbTC/H9WL9EHagw==
+babel-plugin-jsx-dom-expressions@~0.24.7:
+  version "0.24.7"
+  resolved "https://registry.yarnpkg.com/babel-plugin-jsx-dom-expressions/-/babel-plugin-jsx-dom-expressions-0.24.7.tgz#5d0730aac0c0079906229bd387e4324f9668255c"
+  integrity sha512-WaBX9z81sL0NDRVjeXr1GhJPkIMbz9GiT42/I6RqouN4y4kf6hEaARbG7NMk6YKOmc31o64fb0mYo3gj78nYmQ==
   dependencies:
     "@babel/helper-module-imports" "^7.10.4"
     "@babel/plugin-syntax-jsx" "^7.10.4"
     "@babel/types" "^7.11.5"
 
-babel-preset-solid@^0.23.0:
-  version "0.23.0"
-  resolved "https://registry.yarnpkg.com/babel-preset-solid/-/babel-preset-solid-0.23.0.tgz#14a1131587c48dc2632707e44f3f3fe19123b553"
-  integrity sha512-+YFwSjbkme1XGVj3Zxy6hZD/yXE/QJneZxKb3q73j555N1m2Lk7aqFvqxehZq6z3USoxo6W5dMjK+5VQZr4InQ==
+babel-preset-solid@^0.23.8:
+  version "0.23.8"
+  resolved "https://registry.yarnpkg.com/babel-preset-solid/-/babel-preset-solid-0.23.8.tgz#90e5b6823cec1fcf67cd86fd89d9c4d369e1cf6e"
+  integrity sha512-LhdyOBc2h+Ny9K/eHWVDKQhfH0S0DOTcdRWo0L7jhP660XY2Jl8m2BkWGqsy6AST7SvcnhmoS8T0XHqaEFsGuA==
   dependencies:
-    babel-plugin-jsx-dom-expressions "~0.24.0"
+    babel-plugin-jsx-dom-expressions "~0.24.7"
 
 balanced-match@^1.0.0:
   version "1.0.0"
@@ -710,10 +710,10 @@ shelljs@^0.8.4:
     interpret "^1.0.0"
     rechoir "^0.6.2"
 
-solid-js@^0.23.0:
-  version "0.23.0"
-  resolved "https://registry.yarnpkg.com/solid-js/-/solid-js-0.23.0.tgz#260b9825f08da09aee17fcf503421294d86edc0e"
-  integrity sha512-c7Sl4VbyO+I79wDAIHqK82iVUkjjyj6KGbqIwBmK44eH+smmnCvXre0V6XwhK71Ilp0Sm7nfA0jYPGZeGhmzow==
+solid-js@^0.23.11:
+  version "0.23.11"
+  resolved "https://registry.yarnpkg.com/solid-js/-/solid-js-0.23.11.tgz#4af97d23628bf4527576cffaca01a3b678156967"
+  integrity sha512-AuDF3QWf99MMHkLjHN03OzvH7eyhCVOeMGmvKMb3ScFo5vkSgACN+GJs4K+DcUxx9TMbxMPHqodn4b1meD3sIw==
 
 source-map@^0.5.0:
   version "0.5.7"
