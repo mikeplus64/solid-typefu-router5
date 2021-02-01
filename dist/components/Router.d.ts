@@ -1,5 +1,5 @@
 import { JSX } from "solid-js";
-import { RouteLike, RouteMeta } from "../types";
+import { Descend, RouteLike, RouteMeta } from "../types";
 import { Any, List, Object } from "ts-toolbelt";
 import { UnionToIntersection } from "ts-essentials";
 /**
@@ -17,7 +17,8 @@ export declare type RouterRenderNode<Params> = {
         params: Params;
     }) => JSX.Element;
 };
-export declare type RSM<RM extends RouteMeta[]> = RouterRenderNode<undefined> & Any.Compute<UnionToIntersection<{
+export declare type RSM<RM extends RouteMeta[], Path extends string = ""> = Path extends "" ? RSM_<RM, undefined> : Descend<Path, RM> extends infer Inner ? Inner extends RouteMeta[] ? RSM_<Inner, Inner[number]["params"]> : never : never;
+declare type RSM_<RM extends RouteMeta[], P0> = RouterRenderNode<P0> & Any.Compute<UnionToIntersection<{
     [K in keyof RM]: RM[K] extends infer R ? R extends {
         nameArray: infer Name;
         params: infer Params;
@@ -43,4 +44,5 @@ export declare type RenderTreeLike = RenderNodeLike & {
  * renderer.
  */
 export default function RouteStateMachine<T extends RenderTreeLike, A extends RouteLike>(tree: T, _assumed?: A): JSX.Element;
+export {};
 //# sourceMappingURL=Router.d.ts.map

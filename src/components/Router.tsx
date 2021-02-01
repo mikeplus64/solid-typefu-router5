@@ -1,6 +1,6 @@
 import { JSX, untrack } from "solid-js";
 import { MatchRouteProps, SwitchRoutes } from "./Switch";
-import { RouteLike, RouteMeta } from "../types";
+import { Descend, RouteLike, RouteMeta } from "../types";
 import { useRoute } from "context";
 import { Any, List, Object } from "ts-toolbelt";
 import { UnionToIntersection } from "ts-essentials";
@@ -17,7 +17,18 @@ export type RouterRenderNode<Params> = {
   fallback?: (props: { params: Params }) => JSX.Element;
 };
 
-export type RSM<RM extends RouteMeta[]> = RouterRenderNode<undefined> &
+export type RSM<
+  RM extends RouteMeta[],
+  Path extends string = ""
+> = Path extends ""
+  ? RSM_<RM, undefined>
+  : Descend<Path, RM> extends infer Inner
+  ? Inner extends RouteMeta[]
+    ? RSM_<Inner, Inner[number]["params"]>
+    : never
+  : never;
+
+type RSM_<RM extends RouteMeta[], P0> = RouterRenderNode<P0> &
   Any.Compute<
     UnionToIntersection<
       {
