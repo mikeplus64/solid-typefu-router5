@@ -6,7 +6,6 @@ import {
   RoutesLike,
   RouteLike,
   RouterState,
-  Descend,
   RouteMeta,
   ReadRoutes,
 } from "./types";
@@ -18,17 +17,13 @@ import { ElementOf } from "ts-essentials";
 export { MatchRoute, ShowRoute, SwitchRoutes } from "./components/Switch";
 export { default as Context, useRoute, useIsActive, isActive } from "./context";
 
-export type { ReadRoutes, ParseParams, Descend } from "./types";
+export type { ReadRoutes, ParseParams } from "./types";
 
 export interface RouterComponent<RM extends RouteMeta[]> {
   (props: { children: RSM<RM>; assume?: undefined }): JSX.Element;
 
   <AssumeRoute extends ElementOf<RM>["name"]>(props: {
-    children: Descend<AssumeRoute, RM> extends infer D
-      ? D extends RouteMeta[]
-        ? RSM<D>
-        : never
-      : never;
+    children: RSM<RM, AssumeRoute>;
     assume: AssumeRoute;
   }): JSX.Element;
 }
