@@ -19,14 +19,14 @@ export type RouterRenderNode<Params> = {
 
 export type RSM<
   RM extends RouteMeta[],
-  Path extends string = ""
-> = Path extends ""
-  ? RSM_<RM, undefined>
-  : Descend<Path, RM> extends infer Inner
-  ? Inner extends RouteMeta[]
-    ? RSM_<Inner, Inner[number]["params"]>
+  Path extends string | undefined = undefined
+> = Path extends string
+  ? Descend<Path, RM> extends infer Inner
+    ? Inner extends RouteMeta[]
+      ? RSM_<Inner, Inner[number]["params"]>
+      : never
     : never
-  : never;
+  : RSM_<RM, undefined>;
 
 type RSM_<RM extends RouteMeta[], P0> = RouterRenderNode<P0> &
   Any.Compute<

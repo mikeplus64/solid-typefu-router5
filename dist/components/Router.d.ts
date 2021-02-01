@@ -17,7 +17,7 @@ export declare type RouterRenderNode<Params> = {
         params: Params;
     }) => JSX.Element;
 };
-export declare type RSM<RM extends RouteMeta[], Path extends string = ""> = Path extends "" ? RSM_<RM, undefined> : Descend<Path, RM> extends infer Inner ? Inner extends RouteMeta[] ? RSM_<Inner, Inner[number]["params"]> : never : never;
+export declare type RSM<RM extends RouteMeta[], Path extends string | undefined = undefined> = Path extends string ? Descend<Path, RM> extends infer Inner ? Inner extends RouteMeta[] ? RSM_<Inner, Inner[number]["params"]> : never : never : RSM_<RM, undefined>;
 declare type RSM_<RM extends RouteMeta[], P0> = RouterRenderNode<P0> & Any.Compute<UnionToIntersection<{
     [K in keyof RM]: RM[K] extends infer R ? R extends {
         nameArray: infer Name;
