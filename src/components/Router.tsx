@@ -1,4 +1,4 @@
-import { JSX, untrack } from "solid-js";
+import { JSX, createMemo } from "solid-js";
 import { MatchRouteProps, SwitchRoutes } from "./Switch";
 import { Descend, RouteLike, RouteMeta } from "../types";
 import { useRoute } from "context";
@@ -23,27 +23,26 @@ export type RSM<
 > = Path extends string
   ? Descend<Path, RM> extends infer Inner
     ? Inner extends RouteMeta[]
-      ? RSM_<Inner, Inner[number]["params"]>
+      ? RSM_<Inner> & RouterRenderNode<Inner[number]["params"]>
       : never
     : never
-  : RSM_<RM, undefined>;
+  : RSM_<RM> & RouterRenderNode<undefined>;
 
-type RSM_<RM extends RouteMeta[], P0> = RouterRenderNode<P0> &
-  Any.Compute<
-    UnionToIntersection<
-      {
-        [K in keyof RM]: RM[K] extends infer R
-          ? R extends { nameArray: infer Name; params: infer Params }
-            ? Object.P.Record<
-                Extract<Name, string[]>,
-                RouterRenderNode<Params>,
-                ["?", "W"]
-              >
-            : never
-          : never;
-      }[List.Keys<RM>]
-    >
-  >;
+type RSM_<RM extends RouteMeta[]> = Any.Compute<
+  UnionToIntersection<
+    {
+      [K in keyof RM]: RM[K] extends infer R
+        ? R extends { nameArray: infer Name; params: infer Params }
+          ? Object.P.Record<
+              Extract<Name, string[]>,
+              RouterRenderNode<Params>,
+              ["?", "W"]
+            >
+          : never
+        : never;
+    }[List.Keys<RM>]
+  >
+>;
 
 export type RenderNodeLike = RouterRenderNode<any>;
 export type RouteNodeLike = { name: string; children?: RouteTreeLike };
@@ -74,7 +73,7 @@ export default function RouteStateMachine<
       const child = routes[key]!;
       children.push({
         prefix: key,
-        children: untrack(() => traverse(next, child)),
+        children: createMemo(() => traverse(next, child)),
       });
     }
     return () => (
@@ -86,7 +85,7 @@ export default function RouteStateMachine<
       </RenderHere>
     );
   }
-  return untrack(() => traverse([], tree));
+  return createMemo(() => traverse([], tree));
 }
 
 function nofallback() {
