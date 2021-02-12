@@ -1,5 +1,5 @@
 import { spread, effect, classList, setAttribute, template, delegateEvents, createComponent } from 'solid-js/web';
-import { createMemo, createContext, useContext, splitProps, assignProps, Show, Match, untrack, createState, batch, reconcile, onCleanup } from 'solid-js';
+import { createMemo, createContext, useContext, splitProps, assignProps, Show, Match, createState, batch, reconcile, onCleanup } from 'solid-js';
 
 const Context = createContext();
 function useRoute() {
@@ -287,7 +287,7 @@ function RouteStateMachine(tree, _assumed) {
       const child = routes[key];
       children.push({
         prefix: key,
-        children: untrack(() => traverse(next, child))
+        children: createMemo(() => traverse(next, child))
       });
     }
 
@@ -311,7 +311,7 @@ function RouteStateMachine(tree, _assumed) {
     });
   }
 
-  return untrack(() => traverse([], tree));
+  return createMemo(() => traverse([], tree));
 }
 
 function nofallback() {

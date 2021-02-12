@@ -29,9 +29,7 @@ export declare type RoutesLike<Deps> = DeepReadonly<Route<Deps>[]>;
 /**
  * Parse a route name ("foo.bar") into its components (["foo", "bar"])
  */
-export declare type ToRouteArray<A> = _ToRouteArray<A>;
-declare type _ToRouteArray<A> = A extends string ? A extends `${infer X}.${infer XS}` ? _ToRouteArray1<XS, [X]> : [A] : [];
-declare type _ToRouteArray1<A, Acc extends string[]> = A extends string ? A extends `${infer X}.${infer XS}` ? _ToRouteArray1<XS, [...Acc, X]> : Acc : Acc;
+export declare type ToRouteArray<A extends string> = SepBy<A, ".">;
 export declare type AsParam<ParamName extends string> = {
     [P in ParamName]: string;
 };
@@ -43,9 +41,13 @@ export declare type AsOptParam<ParamName extends string> = {
  *
  * See https://router5.js.org/guides/path-syntax
  */
-export declare type ParseParams<A extends string, Acc = {}> = A extends `:${infer Param}<${any}>/${infer Tail}` ? ParseParams<Tail, Acc & AsParam<Param>> : A extends `:${infer Param}<${any}>` ? Acc & AsParam<Param> : A extends `:${infer Param}/${infer Tail}` ? ParseParams<Tail, Acc & AsParam<Param>> : A extends `:${infer Param}` ? AsParam<Param> : A extends `;${infer Param}<${any}>/${infer Tail}` ? ParseParams<Tail, Acc & AsOptParam<Param>> : A extends `;${infer Param}<${any}>` ? Acc & AsOptParam<Param> : A extends `;${infer Param}/${infer Tail}` ? ParseParams<Tail, Acc & AsOptParam<Param>> : A extends `;${infer Param}` ? Acc & AsOptParam<Param> : A extends `${any}?${infer QP}/${infer Tail}` ? QP extends `:${infer QP1}` ? _ParseQueryParams1<QP1, Acc & ParseParams<Tail>, ":"> : _ParseQueryParams1<QP, Acc & ParseParams<Tail>, ""> : A extends `${any}?${infer QP}` ? QP extends `:${infer QP1}` ? _ParseQueryParams1<QP1, Acc, ":"> : _ParseQueryParams1<QP, Acc, ""> : A extends `*${infer Param}` ? {
+export declare type ParseParams<Path extends string, Acc = {}> = SepBy<Path, "/"> extends infer Segs ? {
+    [K in keyof Segs]: ParseSeg<Extract<Segs[K], string>>;
+} : Acc & ParseSeg<Path>;
+declare type ParseSeg<Path> = Path extends `${any}?${infer Params}` ? ParseSegParams<`?${Params}`> : Path extends `${any}&${infer Params}` ? ParseSegParams<`&${Params}`> : Path extends `${any}:${infer Params}` ? ParseSegParams<`:${Params}`> : Path extends `${any};${infer Params}` ? ParseSegParams<`;${Params}`> : {};
+declare type ParseSegParams<A, Acc = {}> = A extends "" ? Acc : A extends `:${infer Param}<${any}>${infer Tail}` ? ParseSegParams<Tail, Acc & AsParam<Param>> : A extends `;${infer Param}<${any}>${infer Tail}` ? ParseSegParams<Tail, Acc & AsOptParam<Param>> : A extends `;${infer Param}${infer Tail}` ? ParseSegParams<Tail, Acc & AsOptParam<Param>> : A extends `?${infer QP}` ? QP extends `:${infer QP1}` ? _ParseQueryParams1<QP1, Acc, ":"> : _ParseQueryParams1<QP, Acc, ""> : A extends `*${infer Param}` ? {
     [P in Param]?: string[];
-} : A extends `/${infer Tail}` ? ParseParams<Tail, Acc> : A extends `${any}/${infer Tail}` ? ParseParams<Tail, Acc> : Acc;
+} : Acc;
 /**
  * Begin parsing query parameters starting at a parameter that has already had
  * the leading ? or ?: consumed. So if the path is "/foo?page&id" the input to
@@ -57,17 +59,18 @@ declare type _ParseQueryParams1<QP, Acc = {}, ParamSfix extends string = ""> = Q
  * library. The result is an array of [[RouteMeta]], one for each route.
  */
 export declare type ReadRoutes<Tree> = _RouteQueue<Tree> extends infer Q ? _ReadRoutesQueue<Q> : never;
-declare type _RouteQueue<Tree, Ctx extends any[] = [], Acc extends any[] = []> = Tree extends readonly [infer Node, ...infer Tail] ? Node extends {
-    children: infer Children;
-} ? _RouteQueue<Tail, Ctx, _RouteQueue<Children, [...Ctx, Node], [...Acc, [...Ctx, Node]]>> : _RouteQueue<Tail, Ctx, [...Acc, [...Ctx, Node]]> : Acc;
 declare type _ReadRoutesQueue<Q, Acc extends any[] = []> = Q extends [
     infer X,
     ...infer XS
 ] ? _ReadRoutesQueue<XS, [...Acc, _ReadRoute<X>]> : Acc;
+declare type _RouteQueue<Tree, Ctx extends any[] = [], Acc extends any[] = []> = Tree extends readonly [infer Node, ...infer Tail] ? Node extends {
+    children: infer Children;
+} ? _RouteQueue<Tail, Ctx, _RouteQueue<Children, [...Ctx, Node], [...Acc, [...Ctx, Node]]>> : _RouteQueue<Tail, Ctx, [...Acc, [...Ctx, Node]]> : Acc;
 declare type _ReadRoute<R> = R extends _RouteNode[] ? _MkName<R> extends infer Name ? {
     nameArray: Name;
     name: Intercalate<Name, ".">;
     params: ParseParams<Extract<Concat<_MkPath<R>>, string>>;
+    paramsArray: Concat<_MkPath<R>>;
 } : never : never;
 declare type _MkName<R extends _RouteNode[]> = {
     [K in keyof R]: K extends `${number}` ? Extract<R[K], _RouteNode>["name"] : R[K];
@@ -103,6 +106,7 @@ export declare type Descend<Path extends string, RM extends RouteMeta[]> = ListO
 /****************
  * Utility types
  ****************/
+declare type SepBy<S extends string, Sep extends string, Acc extends string[] = []> = S extends `${infer X}${Sep}${infer XS}` ? SepBy<XS, Sep, [...Acc, X]> : [...Acc, S];
 declare type StripPrefix<Str, Start extends string> = Str extends Start ? never : Str extends `${Start}.${infer Tail}` ? Tail : never;
 declare type StartsWith<Str, Start extends string> = Str extends Start ? 0 : Str extends `${Start}.${any}` ? 0 : 1;
 export declare type Concat<T, Acc extends string = ""> = T extends [

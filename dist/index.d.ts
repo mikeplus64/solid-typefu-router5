@@ -10,13 +10,9 @@ export { MatchRoute, ShowRoute, SwitchRoutes } from "./components/Switch";
 export { default as Context, useRoute, useIsActive, isActive } from "./context";
 export type { ReadRoutes, ParseParams } from "./types";
 export interface RouterComponent<RM extends RouteMeta[]> {
-    (props: {
-        children: RSM<RM>;
-        assume?: undefined;
-    }): JSX.Element;
-    <AssumeRoute extends ElementOf<RM>["name"]>(props: {
+    <AssumeRoute extends undefined | ElementOf<RM>["name"] = undefined>(props: {
         children: RSM<RM, AssumeRoute>;
-        assume: AssumeRoute;
+        assume?: AssumeRoute;
     }): JSX.Element;
 }
 export interface LinkComponent<RM extends RouteMeta[]> {

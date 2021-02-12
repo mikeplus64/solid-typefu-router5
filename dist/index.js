@@ -291,7 +291,7 @@ function RouteStateMachine(tree, _assumed) {
       const child = routes[key];
       children.push({
         prefix: key,
-        children: solidJs.untrack(() => traverse(next, child))
+        children: solidJs.createMemo(() => traverse(next, child))
       });
     }
 
@@ -315,7 +315,7 @@ function RouteStateMachine(tree, _assumed) {
     });
   }
 
-  return solidJs.untrack(() => traverse([], tree));
+  return solidJs.createMemo(() => traverse([], tree));
 }
 
 function nofallback() {
