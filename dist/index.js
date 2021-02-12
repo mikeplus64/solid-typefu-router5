@@ -6,8 +6,17 @@ var web = require('solid-js/web');
 var solidJs = require('solid-js');
 
 const Context = solidJs.createContext();
-function useRoute() {
+function requireRouter() {
   const ctx = solidJs.useContext(Context);
+
+  if (ctx === undefined) {
+    throw Error("solid-typefu-router5: No router context available");
+  }
+
+  return ctx;
+}
+function useRoute() {
+  const ctx = requireRouter();
   return () => ctx.state.route;
 }
 
@@ -25,7 +34,7 @@ function paramsEq(a, b) {
 }
 
 function useIsActive(link, params, paramsIsEqual = paramsEq) {
-  const state = solidJs.useContext(Context).state;
+  const state = requireRouter().state;
   const getIsActiveByName = solidJs.createMemo(() => isActive(state.route.name, link));
   return solidJs.createMemo(() => getIsActiveByName() && (params === undefined || paramsIsEqual(state.route.params, params)));
 }
@@ -45,9 +54,9 @@ function Link(props) {
   const {
     router: router5,
     config
-  } = solidJs.useContext(Context);
+  } = requireRouter();
   let [linkProps, innerProps] = solidJs.splitProps(props, ["type", "onClick", "classList", "to", "params", "nav", "navIgnoreParams", "navActiveClass", "disabled", "back", "forward", "display"]);
-  linkProps = solidJs.assignProps({
+  linkProps = solidJs.mergeProps({
     navActiveClass: config.navActiveClass,
     back: config.back,
     forward: config.forward
@@ -98,10 +107,10 @@ function Link(props) {
     ev.target.blur();
   }
 
-  return () => linkProps.display === "button" ? (() => {
+  return solidJs.createMemo(() => linkProps.display === "button" ? (() => {
     const _el$ = _tmpl$.cloneNode(true);
 
-    _el$.__click = onClick;
+    web.addEventListener(_el$, "click", onClick, true);
 
     web.spread(_el$, innerProps, false, false);
 
@@ -121,7 +130,7 @@ function Link(props) {
   })() : linkProps.to.startsWith("@@") ? (() => {
     const _el$2 = _tmpl$.cloneNode(true);
 
-    _el$2.__click = onClick;
+    web.addEventListener(_el$2, "click", onClick, true);
 
     web.spread(_el$2, innerProps, false, false);
 
@@ -131,7 +140,7 @@ function Link(props) {
   })() : (() => {
     const _el$3 = _tmpl$2.cloneNode(true);
 
-    _el$3.__click = onClick;
+    web.addEventListener(_el$3, "click", onClick, true);
 
     web.spread(_el$3, innerProps, false, false);
 
@@ -148,7 +157,7 @@ function Link(props) {
     });
 
     return _el$3;
-  })();
+  })());
 }
 
 const alwaysInactive = () => false;
