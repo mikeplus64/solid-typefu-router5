@@ -1,6 +1,6 @@
 import { RouteMeta } from "../types";
-import Context, { useIsActive } from "../context";
-import { JSX, assignProps, createMemo, splitProps, useContext } from "solid-js";
+import { requireRouter, useIsActive } from "../context";
+import { JSX, createMemo, splitProps, mergeProps } from "solid-js";
 import { RequiredKeys } from "ts-essentials";
 
 export type LinkNav<Route extends RouteMeta> =
@@ -57,7 +57,7 @@ export interface LinkConfig {
 export default function Link<Route extends RouteMeta>(
   props: LinkProps<Route>
 ): JSX.Element {
-  const { router: router5, config } = useContext(Context);
+  const { router: router5, config } = requireRouter();
 
   let [linkProps, innerProps] = splitProps(props, [
     "type",
@@ -74,7 +74,7 @@ export default function Link<Route extends RouteMeta>(
     "display",
   ]);
 
-  linkProps = assignProps(
+  linkProps = mergeProps(
     {
       navActiveClass: config.navActiveClass,
       back: config.back,
@@ -129,7 +129,7 @@ export default function Link<Route extends RouteMeta>(
     ev.target.blur();
   }
 
-  return () =>
+  return createMemo(() =>
     linkProps.display === "button" ? (
       <button
         {...(innerProps as any)}
@@ -150,7 +150,8 @@ export default function Link<Route extends RouteMeta>(
         href={getHref()}
         onClick={onClick}
       />
-    );
+    )
+  );
 }
 
 const alwaysInactive = () => false;

@@ -5,8 +5,16 @@ const Context = createContext<RouterContextValue>();
 
 export default Context;
 
-export function useRoute(): () => RouteState {
+export function requireRouter(): RouterContextValue {
   const ctx = useContext(Context);
+  if (ctx === undefined) {
+    throw Error("solid-typefu-router5: No router context available");
+  }
+  return ctx;
+}
+
+export function useRoute(): () => RouteState {
+  const ctx = requireRouter();
   return () => ctx.state.route;
 }
 
@@ -31,7 +39,7 @@ export function useIsActive<Link extends RouteLike>(
     b: undefined | Record<string, any>
   ) => boolean = paramsEq
 ): () => boolean {
-  const state = useContext(Context).state;
+  const state = requireRouter().state;
   const getIsActiveByName = createMemo(() => isActive(state.route.name, link));
   return createMemo(
     () =>
