@@ -12,13 +12,13 @@
     "date-fns": "^2.16.1",
     "router5": "^8.0.1",
     "router5-plugin-browser": "^8.0.1",
-    "solid-js": "^0.23.0",
-    "solid-typefu-router5": "^0.14.7"
+    "solid-js": "^0.24.0",
+    "solid-typefu-router5": "^0.16.0"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
     "@babel/plugin-transform-runtime": "^7.11.0",
-    "babel-preset-solid": "^0.23.0",
+    "babel-preset-solid": "^0.24.0",
     "parcel": "^1.12.4",
     "typescript": "^4.1.2"
   },
