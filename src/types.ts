@@ -71,9 +71,12 @@ type ParseSeg<Path> =
 
 type ParseSegParams<A, Acc = {}> = A extends ""
   ? Acc
-  : // url params w regex
-  A extends `:${infer Param}<${any}>${infer Tail}`
-  ? ParseSegParams<Tail, Acc & AsParam<Param>>
+  : // url param w regex
+  A extends `:${infer Param}<${any}>`
+  ? Acc & AsParam<Param>
+  : // url param
+  A extends `:${infer Param}`
+  ? Acc & AsParam<Param>
   : // matrix params w regex
   A extends `;${infer Param}<${any}>${infer Tail}`
   ? ParseSegParams<Tail, Acc & AsOptParam<Param>>
