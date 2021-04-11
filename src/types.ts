@@ -50,14 +50,13 @@ export type AsOptParam<ParamName extends string> = {
  *
  * See https://router5.js.org/guides/path-syntax
  */
-export type ParseParams<Path extends string, Acc = {}> = SepBy<
+export type ParseParams<Path extends string> = SepBy<
   Path,
   "/"
 > extends infer Segs
-  ? { [K in keyof Segs]: ParseSeg<Extract<Segs[K], string>> }
-  : Acc & ParseSeg<Path>;
+  ? { [K in keyof Segs]: ParseSeg<Segs[K]> }
+  : never;
 
-/*
 type ParseSeg<Path> =
   // if there is a nicer way of writing this let me know please
   Path extends `${any}?${infer Params}`
@@ -90,27 +89,6 @@ type ParseSegParams<A, Acc = {}> = A extends ""
   A extends `*${infer Param}`
   ? { [P in Param]?: string[] }
   : Acc;
-
-type Q = ParseSegParams<":asdf?foo">;
-
-type OptionalRegex = "" | `<${any}>`;
-*/
-
-/*
-type N<X> = X extends never ? undefined : X;
-
-type PP<X extends string> = X extends `${"" | `:${infer URLParam}`}`
-  ? { urlParam: N<URLParam> }
-  : never;
-
-type X = PP<"/:foobar<asdf>">;
-
-  // url params w/ regex
-
-
-    */
-
-type T = ParseParams<"/:a?x">;
 
 /**
  * Begin parsing query parameters starting at a parameter that has already had

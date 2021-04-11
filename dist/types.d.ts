@@ -41,9 +41,9 @@ export declare type AsOptParam<ParamName extends string> = {
  *
  * See https://router5.js.org/guides/path-syntax
  */
-export declare type ParseParams<Path extends string, Acc = {}> = SepBy<Path, "/"> extends infer Segs ? {
-    [K in keyof Segs]: ParseSeg<Extract<Segs[K], string>>;
-} : Acc & ParseSeg<Path>;
+export declare type ParseParams<Path extends string> = SepBy<Path, "/"> extends infer Segs ? {
+    [K in keyof Segs]: ParseSeg<Segs[K]>;
+} : never;
 declare type ParseSeg<Path> = Path extends `${any}?${infer Params}` ? ParseSegParams<`?${Params}`> : Path extends `${any}&${infer Params}` ? ParseSegParams<`&${Params}`> : Path extends `${any}:${infer Params}` ? ParseSegParams<`:${Params}`> : Path extends `${any};${infer Params}` ? ParseSegParams<`;${Params}`> : {};
 declare type ParseSegParams<A, Acc = {}> = A extends "" ? Acc : A extends `:${infer Param}<${any}>${infer Tail}` ? ParseSegParams<Tail, Acc & AsParam<Param>> : A extends `;${infer Param}<${any}>${infer Tail}` ? ParseSegParams<Tail, Acc & AsOptParam<Param>> : A extends `;${infer Param}${infer Tail}` ? ParseSegParams<Tail, Acc & AsOptParam<Param>> : A extends `?${infer QP}` ? QP extends `:${infer QP1}` ? _ParseQueryParams1<QP1, Acc, ":"> : _ParseQueryParams1<QP, Acc, ""> : A extends `*${infer Param}` ? {
     [P in Param]?: string[];
