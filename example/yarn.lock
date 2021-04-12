@@ -4599,10 +4599,10 @@ solid-js@^0.26.0:
   resolved "https://registry.yarnpkg.com/solid-js/-/solid-js-0.26.0.tgz#56ed103666f1d1c1dc7fdc1775d472317ec9da11"
   integrity sha512-dT5aSvJvlDCFWQP7J7HDTNdjk2M2DDQsjlbOGKX0J83q9oVOW+7gBuB965WwbFo0b1hvYtf5P3V3aRnT3t7b5Q==
 
-solid-typefu-router5@*:
-  version "0.24.3"
-  resolved "https://registry.yarnpkg.com/solid-typefu-router5/-/solid-typefu-router5-0.24.3.tgz#dcf243f4d95ec7090b2f8c2cdcb093e92b6b0a62"
-  integrity sha512-bOlB9X90uwWwu1U/UgweIMLUy0NgJiguUde8T9pvAxzqKpr0+/3dNvMtw3P0abdyF0j2KTVcBOapRwDxNhQUiQ==
+solid-typefu-router5@0.26.0-beta.1:
+  version "0.26.0-beta.1"
+  resolved "https://registry.yarnpkg.com/solid-typefu-router5/-/solid-typefu-router5-0.26.0-beta.1.tgz#a2d28a839c18f82dca9bf6adb39e45b43861bf7e"
+  integrity sha512-wdqVez2YzGKMH8RbBRwZ1Fy8U/ajYx3EYPhgZf1dxFFvtzOBIXKyJzDKTwVlPi6G1XXnTV8fQ4qBaldgxaBoVg==
   dependencies:
     "@babel/runtime" "^7.12.13"
     ts-essentials "^7.0.0"

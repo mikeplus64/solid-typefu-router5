@@ -1,5 +1,5 @@
 import { spread, effect, classList, setAttribute, template, delegateEvents, createComponent } from 'solid-js/web';
-import { createMemo, createContext, useContext, splitProps, mergeProps, Show, Match, createState, onCleanup } from 'solid-js';
+import { createMemo, createContext, useContext, splitProps, mergeProps, Show, Match, createState, reconcile, onCleanup } from 'solid-js';
 
 const Context = createContext();
 function requireRouter() {
@@ -30,9 +30,9 @@ function paramsEq(a, b) {
 }
 
 function useIsActive(link, params, paramsIsEqual = paramsEq) {
-  const state = requireRouter().state;
-  const getIsActiveByName = createMemo(() => isActive(state.route.name, link));
-  return createMemo(() => getIsActiveByName() && (params === undefined || paramsIsEqual(state.route.params, params)));
+  const route = useRoute();
+  const getIsActiveByName = createMemo(() => isActive(route().name, link));
+  return createMemo(() => getIsActiveByName() && (params === undefined || paramsIsEqual(route().params, params)));
 }
 /**
  * Find whether 'link' is an ancestor of, or equal to, 'here'
@@ -406,12 +406,15 @@ function createSolidRouter(config) {
         previousRoute: undefined
       });
       router.subscribe(rs => {
-        setState({
+        setState(reconcile({
           previousRoute: rs.previousRoute,
           route: { ...rs.route,
             nameArray: rs.route.name.split(".")
           }
-        });
+        }, {
+          key: null,
+          merge: false
+        }));
       });
       router.start();
       if (typeof config.onStart === "function") config.onStart(router);

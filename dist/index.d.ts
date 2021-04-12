@@ -1,14 +1,14 @@
-import { Route, Router as Router5 } from "router5";
-import { Unsubscribe } from "router5/dist/types/base";
+import { Router as Router5, Route } from "router5";
 import { DefaultDependencies } from "router5/dist/types/router";
+import { Unsubscribe } from "router5/dist/types/base";
 import { JSX } from "solid-js";
-import { ElementOf } from "ts-essentials";
+import { RoutesLike, RouteMeta, ReadRoutes } from "./types";
 import { LinkNav, LinkProps } from "./components/Link";
 import { RSM } from "./components/Router";
-import { ReadRoutes, RouteMeta, RoutesLike } from "./types";
+import { ElementOf } from "ts-essentials";
 export { MatchRoute, ShowRoute, SwitchRoutes } from "./components/Switch";
-export { default as Context, isActive, useIsActive, useRoute } from "./context";
-export type { ParseParams, ReadRoutes } from "./types";
+export { default as Context, useRoute, useIsActive, isActive } from "./context";
+export type { ReadRoutes, ParseParams } from "./types";
 export interface RouterComponent<RM extends RouteMeta[]> {
     <AssumeRoute extends undefined | ElementOf<RM>["name"] = undefined>(props: {
         children: RSM<RM, AssumeRoute>;

@@ -39,12 +39,12 @@ export function useIsActive<Link extends RouteLike>(
     b: undefined | Record<string, any>
   ) => boolean = paramsEq
 ): () => boolean {
-  const state = requireRouter().state;
-  const getIsActiveByName = createMemo(() => isActive(state.route.name, link));
+  const route = useRoute();
+  const getIsActiveByName = createMemo(() => isActive(route().name, link));
   return createMemo(
     () =>
       getIsActiveByName() &&
-      (params === undefined || paramsIsEqual(state.route.params, params))
+      (params === undefined || paramsIsEqual(route().params, params))
   );
 }
 
