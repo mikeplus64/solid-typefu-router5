@@ -110,7 +110,7 @@ function Link(props) {
   return solidJs.createMemo(() => linkProps.display === "button" ? (() => {
     const _el$ = _tmpl$.cloneNode(true);
 
-    web.addEventListener(_el$, "click", onClick, true);
+    _el$.$$click = onClick;
 
     web.spread(_el$, innerProps, false, false);
 
@@ -130,7 +130,7 @@ function Link(props) {
   })() : linkProps.to.startsWith("@@") ? (() => {
     const _el$2 = _tmpl$.cloneNode(true);
 
-    web.addEventListener(_el$2, "click", onClick, true);
+    _el$2.$$click = onClick;
 
     web.spread(_el$2, innerProps, false, false);
 
@@ -140,7 +140,7 @@ function Link(props) {
   })() : (() => {
     const _el$3 = _tmpl$2.cloneNode(true);
 
-    web.addEventListener(_el$3, "click", onClick, true);
+    _el$3.$$click = onClick;
 
     web.spread(_el$3, innerProps, false, false);
 
@@ -410,14 +410,11 @@ function createSolidRouter(config) {
         previousRoute: undefined
       });
       router.subscribe(rs => {
-        solidJs.batch(() => {
-          setState("previousRoute", solidJs.reconcile(rs.previousRoute));
-          setState("route", solidJs.reconcile({ ...rs.route,
+        setState({
+          previousRoute: rs.previousRoute,
+          route: { ...rs.route,
             nameArray: rs.route.name.split(".")
-          }, {
-            merge: false,
-            key: null
-          }));
+          }
         });
       });
       router.start();

@@ -1,23 +1,22 @@
-import { Router as Router5, Route } from "router5";
-import { DefaultDependencies } from "router5/dist/types/router";
+import { Route, Router as Router5 } from "router5";
 import { Unsubscribe } from "router5/dist/types/base";
-import { JSX, onCleanup, createState, reconcile, batch } from "solid-js";
-import {
-  RoutesLike,
-  RouteLike,
-  RouterState,
-  RouteMeta,
-  ReadRoutes,
-} from "./types";
-import Context from "./context";
+import { DefaultDependencies } from "router5/dist/types/router";
+import { createState, JSX, onCleanup } from "solid-js";
+import { ElementOf } from "ts-essentials";
 import Link, { LinkNav, LinkProps } from "./components/Link";
 import RouteStateMachine, { RenderTreeLike, RSM } from "./components/Router";
-import { ElementOf } from "ts-essentials";
+import Context from "./context";
+import {
+  ReadRoutes,
+  RouteLike,
+  RouteMeta,
+  RouterState,
+  RoutesLike,
+} from "./types";
 
 export { MatchRoute, ShowRoute, SwitchRoutes } from "./components/Switch";
-export { default as Context, useRoute, useIsActive, isActive } from "./context";
-
-export type { ReadRoutes, ParseParams } from "./types";
+export { default as Context, isActive, useIsActive, useRoute } from "./context";
+export type { ParseParams, ReadRoutes } from "./types";
 
 export interface RouterComponent<RM extends RouteMeta[]> {
   <AssumeRoute extends undefined | ElementOf<RM>["name"] = undefined>(props: {
@@ -128,15 +127,9 @@ export default function createSolidRouter<
       });
 
       router.subscribe((rs) => {
-        batch(() => {
-          setState("previousRoute", reconcile(rs.previousRoute));
-          setState(
-            "route",
-            reconcile(
-              { ...rs.route, nameArray: rs.route.name.split(".") },
-              { merge: false, key: null }
-            )
-          );
+        setState({
+          previousRoute: rs.previousRoute,
+          route: { ...rs.route, nameArray: rs.route.name.split(".") },
         });
       });
 

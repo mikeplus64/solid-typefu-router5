@@ -45,7 +45,7 @@ export declare type ParseParams<Path extends string> = SepBy<Path, "/"> extends 
     [K in keyof Segs]: ParseSeg<Segs[K]>;
 }[any]> : never;
 declare type ParseSeg<Path> = Path extends `${any}?${infer Params}` ? ParseSegParams<`?${Params}`> : Path extends `${any}&${infer Params}` ? ParseSegParams<`&${Params}`> : Path extends `${any}:${infer Params}` ? ParseSegParams<`:${Params}`> : Path extends `${any};${infer Params}` ? ParseSegParams<`;${Params}`> : {};
-declare type ParseSegParams<A, Acc = {}> = A extends "" ? Acc : A extends `:${infer Param}<${any}>${infer Tail}` ? ParseSegParams<Tail, Acc & AsParam<Param>> : A extends `;${infer Param}<${any}>${infer Tail}` ? ParseSegParams<Tail, Acc & AsOptParam<Param>> : A extends `;${infer Param}${infer Tail}` ? ParseSegParams<Tail, Acc & AsOptParam<Param>> : A extends `?${infer QP}` ? QP extends `:${infer QP1}` ? _ParseQueryParams1<QP1, Acc, ":"> : _ParseQueryParams1<QP, Acc, ""> : A extends `*${infer Param}` ? {
+declare type ParseSegParams<A, Acc = {}> = A extends "" ? Acc : A extends `:${infer Param}<${any}>` ? Acc & AsParam<Param> : A extends `:${infer Param}` ? Acc & AsParam<Param> : A extends `;${infer Param}<${any}>${infer Tail}` ? ParseSegParams<Tail, Acc & AsOptParam<Param>> : A extends `;${infer Param}${infer Tail}` ? ParseSegParams<Tail, Acc & AsOptParam<Param>> : A extends `?${infer QP}` ? QP extends `:${infer QP1}` ? _ParseQueryParams1<QP1, Acc, ":"> : _ParseQueryParams1<QP, Acc, ""> : A extends `*${infer Param}` ? {
     [P in Param]?: string[];
 } : Acc;
 /**

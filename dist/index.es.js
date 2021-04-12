@@ -1,5 +1,5 @@
-import { addEventListener, spread, effect, classList, setAttribute, template, delegateEvents, createComponent } from 'solid-js/web';
-import { createMemo, createContext, useContext, splitProps, mergeProps, Show, Match, createState, batch, reconcile, onCleanup } from 'solid-js';
+import { spread, effect, classList, setAttribute, template, delegateEvents, createComponent } from 'solid-js/web';
+import { createMemo, createContext, useContext, splitProps, mergeProps, Show, Match, createState, onCleanup } from 'solid-js';
 
 const Context = createContext();
 function requireRouter() {
@@ -106,7 +106,7 @@ function Link(props) {
   return createMemo(() => linkProps.display === "button" ? (() => {
     const _el$ = _tmpl$.cloneNode(true);
 
-    addEventListener(_el$, "click", onClick, true);
+    _el$.$$click = onClick;
 
     spread(_el$, innerProps, false, false);
 
@@ -126,7 +126,7 @@ function Link(props) {
   })() : linkProps.to.startsWith("@@") ? (() => {
     const _el$2 = _tmpl$.cloneNode(true);
 
-    addEventListener(_el$2, "click", onClick, true);
+    _el$2.$$click = onClick;
 
     spread(_el$2, innerProps, false, false);
 
@@ -136,7 +136,7 @@ function Link(props) {
   })() : (() => {
     const _el$3 = _tmpl$2.cloneNode(true);
 
-    addEventListener(_el$3, "click", onClick, true);
+    _el$3.$$click = onClick;
 
     spread(_el$3, innerProps, false, false);
 
@@ -406,14 +406,11 @@ function createSolidRouter(config) {
         previousRoute: undefined
       });
       router.subscribe(rs => {
-        batch(() => {
-          setState("previousRoute", reconcile(rs.previousRoute));
-          setState("route", reconcile({ ...rs.route,
+        setState({
+          previousRoute: rs.previousRoute,
+          route: { ...rs.route,
             nameArray: rs.route.name.split(".")
-          }, {
-            merge: false,
-            key: null
-          }));
+          }
         });
       });
       router.start();

@@ -806,10 +806,17 @@
     "@babel/types" "^7.4.4"
     esutils "^2.0.2"
 
-"@babel/runtime@*", "@babel/runtime@^7.11.0", "@babel/runtime@^7.4.4", "@babel/runtime@^7.8.4":
+"@babel/runtime@^7.11.0", "@babel/runtime@^7.4.4", "@babel/runtime@^7.8.4":
   version "7.12.13"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.12.13.tgz#0a21452352b02542db0ffb928ac2d3ca7cb6d66d"
   integrity sha512-8+3UMPBrjFa/6TtKi/7sehPKqfAm4g6K+YQjyyFOLUTxzOngcRZTlAVY8sc2CORJYqdHQY8gRPHmn+qo15rCBw==
+  dependencies:
+    regenerator-runtime "^0.13.4"
+
+"@babel/runtime@^7.12.13":
+  version "7.13.10"
+  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.13.10.tgz#47d42a57b6095f4468da440388fdbad8bebf0d7d"
+  integrity sha512-4QPkjJq6Ns3V/RgpEahRk+AGfL0eO6RHHtTWoNNr5mO49G6B5+X6d6THgWEAvTrznU5xYpbAlVKRYcsCgh/Akw==
   dependencies:
     regenerator-runtime "^0.13.4"
 
@@ -1094,21 +1101,21 @@ babel-plugin-dynamic-import-node@^2.3.3:
   dependencies:
     object.assign "^4.1.0"
 
-babel-plugin-jsx-dom-expressions@~0.25.4:
-  version "0.25.4"
-  resolved "https://registry.yarnpkg.com/babel-plugin-jsx-dom-expressions/-/babel-plugin-jsx-dom-expressions-0.25.4.tgz#c3341008f79e9b8c54774daec682dbc3b7c35135"
-  integrity sha512-0A5NvJfpOZV/6G5Mu5WfEDGJ3nthYgT911BgL8IT4pKBNjOCzdxMu2HaaiQtycVKw7ZB/0BfGnKZnB/tqOIlEw==
+babel-plugin-jsx-dom-expressions@~0.26.3:
+  version "0.26.3"
+  resolved "https://registry.yarnpkg.com/babel-plugin-jsx-dom-expressions/-/babel-plugin-jsx-dom-expressions-0.26.3.tgz#3b0e5056dd03639fe6f6bc950420f59741fe450b"
+  integrity sha512-TtcqjKrCzP9m8eMKBTxwdqTK5PlySn6+mYt6vJTbgQ7cCNtnurLUqPFN+ObG1dY60D2ZgUGc86/7O6plXDjsXg==
   dependencies:
     "@babel/helper-module-imports" "^7.10.4"
     "@babel/plugin-syntax-jsx" "^7.10.4"
     "@babel/types" "^7.11.5"
 
-babel-preset-solid@^0.24.0:
-  version "0.24.2"
-  resolved "https://registry.yarnpkg.com/babel-preset-solid/-/babel-preset-solid-0.24.2.tgz#a8e60e949b940f025c290935adacecf5e8cf049b"
-  integrity sha512-Ihm37tnVvE6BRDQIAunW9bI598L1+a6OwJS2KdZdMEQiX2fM7sVVc7w2wkpw0a5JP8haJQ92jyLL56OYCfEa9w==
+babel-preset-solid@^0.26.0:
+  version "0.26.0"
+  resolved "https://registry.yarnpkg.com/babel-preset-solid/-/babel-preset-solid-0.26.0.tgz#259033fd6b0d373e3fa2ea04c044ae14bf565684"
+  integrity sha512-gfTRKmItnKBp7udMXp1Mmsg5YZZZlo53yN6ePVRKQi/GSH17WR6vaa1TcpNIqwSL21pt8eteHbPDoLrByA4i+Q==
   dependencies:
-    babel-plugin-jsx-dom-expressions "~0.25.4"
+    babel-plugin-jsx-dom-expressions "~0.26.3"
 
 babel-runtime@^6.11.6, babel-runtime@^6.26.0:
   version "6.26.0"
@@ -4587,17 +4594,17 @@ snapdragon@^0.8.1:
     source-map-resolve "^0.5.0"
     use "^3.1.0"
 
-solid-js@^0.24.0:
-  version "0.24.5"
-  resolved "https://registry.yarnpkg.com/solid-js/-/solid-js-0.24.5.tgz#27c260f3a554a770da7be03a25af1617f17bbe9f"
-  integrity sha512-K6rdXdtKpqzJjfr+TCGNNyfLxW7xeOLYwW2UYax9QIover77WS3Wzaj8N9uqSRnDxWYJC9lGp0XXBDXHcbNbmQ==
+solid-js@^0.26.0:
+  version "0.26.0"
+  resolved "https://registry.yarnpkg.com/solid-js/-/solid-js-0.26.0.tgz#56ed103666f1d1c1dc7fdc1775d472317ec9da11"
+  integrity sha512-dT5aSvJvlDCFWQP7J7HDTNdjk2M2DDQsjlbOGKX0J83q9oVOW+7gBuB965WwbFo0b1hvYtf5P3V3aRnT3t7b5Q==
 
-solid-typefu-router5@^0.16.0:
-  version "0.15.0"
-  resolved "https://registry.yarnpkg.com/solid-typefu-router5/-/solid-typefu-router5-0.15.0.tgz#f8719b27c505a2fa73d470747d39e286ee36a322"
-  integrity sha512-DF+1r5QqFyLagAYR8jozw34Qw4/8Zl6EAP07/SRJaej/fSrSZ2SIxV34G541hCxxQPg/8jx0h/RN6C5qWTOIww==
+solid-typefu-router5@*:
+  version "0.24.3"
+  resolved "https://registry.yarnpkg.com/solid-typefu-router5/-/solid-typefu-router5-0.24.3.tgz#dcf243f4d95ec7090b2f8c2cdcb093e92b6b0a62"
+  integrity sha512-bOlB9X90uwWwu1U/UgweIMLUy0NgJiguUde8T9pvAxzqKpr0+/3dNvMtw3P0abdyF0j2KTVcBOapRwDxNhQUiQ==
   dependencies:
-    "@babel/runtime" "*"
+    "@babel/runtime" "^7.12.13"
     ts-essentials "^7.0.0"
     ts-toolbelt "^8.0.7"
 
