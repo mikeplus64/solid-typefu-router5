@@ -3,8 +3,8 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>&quot;context&quot; | solid-typefu-router5 - v0.13.1</title>
-	<meta name="description" content="Documentation for solid-typefu-router5 - v0.13.1">
+	<title>&quot;context&quot; | solid-typefu-router5 - v0.26.0</title>
+	<meta name="description" content="Documentation for solid-typefu-router5 - v0.26.0">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
 </head>
@@ -22,7 +22,7 @@
 						<li class="state loading">Preparing search index...</li>
 						<li class="state failure">The search index is not available</li>
 					</ul>
-					<a href="../index.html" class="title">solid-typefu-router5 - v0.13.1</a>
+					<a href="../index.html" class="title">solid-typefu-router5 - v0.26.0</a>
 				</div>
 				<div class="table-cell" id="tsd-widgets">
 					<div id="tsd-filter">
@@ -72,6 +72,7 @@
 							<h3>Functions</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-function tsd-parent-kind-module tsd-has-type-parameter"><a href="_context_.html#isactive" class="tsd-kind-icon">is<wbr>Active</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="_context_.html#requirerouter" class="tsd-kind-icon">require<wbr>Router</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-module tsd-has-type-parameter"><a href="_context_.html#useisactive" class="tsd-kind-icon">use<wbr>IsActive</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-module"><a href="_context_.html#useroute" class="tsd-kind-icon">use<wbr>Route</a></li>
 							</ul>
@@ -91,7 +92,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/69ca467/src/context.ts#L49">context.ts:49</a></li>
+									<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/943d6bb/src/context.ts#L56">src/context.ts:56</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -119,17 +120,34 @@
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module tsd-has-type-parameter">
-					<a name="useisactive" class="tsd-anchor"></a>
-					<h3>use<wbr>IsActive</h3>
-					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module tsd-has-type-parameter">
-						<li class="tsd-signature tsd-kind-icon">use<wbr>IsActive&lt;Link&gt;<span class="tsd-signature-symbol">(</span>link<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Link</span>, params<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span>, paramsIsEqual<span class="tsd-signature-symbol">?: </span>&lt;A, B&gt;<span class="tsd-signature-symbol">(</span>a<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">A</span>, b<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">B</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">boolean</span></li>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="requirerouter" class="tsd-anchor"></a>
+					<h3>require<wbr>Router</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">require<wbr>Router<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/_types_.routercontextvalue.html" class="tsd-signature-type">RouterContextValue</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/69ca467/src/context.ts#L27">context.ts:27</a></li>
+									<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/943d6bb/src/context.ts#L8">src/context.ts:8</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/_types_.routercontextvalue.html" class="tsd-signature-type">RouterContextValue</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module tsd-has-type-parameter">
+					<a name="useisactive" class="tsd-anchor"></a>
+					<h3>use<wbr>IsActive</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module tsd-has-type-parameter">
+						<li class="tsd-signature tsd-kind-icon">use<wbr>IsActive&lt;Link&gt;<span class="tsd-signature-symbol">(</span>link<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Link</span>, params<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span>, paramsIsEqual<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-symbol">(</span>a<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span>, b<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">boolean</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/943d6bb/src/context.ts#L34">src/context.ts:34</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-type-parameters-title">Type parameters</h4>
@@ -147,30 +165,21 @@
 									<h5><span class="tsd-flag ts-flagOptional">Optional</span> params: <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h5>
 								</li>
 								<li>
-									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> paramsIsEqual: &lt;A, B&gt;<span class="tsd-signature-symbol">(</span>a<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">A</span>, b<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">B</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> = paramsEq</span></h5>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> paramsIsEqual: <span class="tsd-signature-symbol">(</span>a<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span>, b<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> = paramsEq</span></h5>
 									<ul class="tsd-parameters">
 										<li class="tsd-parameter-signature">
-											<ul class="tsd-signatures tsd-kind-type-literal tsd-has-type-parameter">
-												<li class="tsd-signature tsd-kind-icon">&lt;A, B&gt;<span class="tsd-signature-symbol">(</span>a<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">A</span>, b<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">B</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+											<ul class="tsd-signatures tsd-kind-type-literal">
+												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>a<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span>, b<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
 											</ul>
 											<ul class="tsd-descriptions">
 												<li class="tsd-description">
-													<h4 class="tsd-type-parameters-title">Type parameters</h4>
-													<ul class="tsd-type-parameters">
-														<li>
-															<h4>A<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h4>
-														</li>
-														<li>
-															<h4>B<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h4>
-														</li>
-													</ul>
 													<h4 class="tsd-parameters-title">Parameters</h4>
 													<ul class="tsd-parameters">
 														<li>
-															<h5>a: <span class="tsd-signature-type">A</span></h5>
+															<h5>a: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h5>
 														</li>
 														<li>
-															<h5>b: <span class="tsd-signature-type">B</span></h5>
+															<h5>b: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h5>
 														</li>
 													</ul>
 													<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -200,24 +209,24 @@
 					<a name="useroute" class="tsd-anchor"></a>
 					<h3>use<wbr>Route</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
-						<li class="tsd-signature tsd-kind-icon">use<wbr>Route<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">RouteState</span></li>
+						<li class="tsd-signature tsd-kind-icon">use<wbr>Route<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><a href="../interfaces/_types_.routestate.html" class="tsd-signature-type">RouteState</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/69ca467/src/context.ts#L9">context.ts:9</a></li>
+									<li>Defined in <a href="https://github.com/mikeplus64/solid-typefu-router5/blob/943d6bb/src/context.ts#L16">src/context.ts:16</a></li>
 								</ul>
 							</aside>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">RouteState</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><a href="../interfaces/_types_.routestate.html" class="tsd-signature-type">RouteState</a></h4>
 							<ul class="tsd-parameters">
 								<li class="tsd-parameter-signature">
 									<ul class="tsd-signatures tsd-kind-type-literal">
-										<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">RouteState</span></li>
+										<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/_types_.routestate.html" class="tsd-signature-type">RouteState</a></li>
 									</ul>
 									<ul class="tsd-descriptions">
 										<li class="tsd-description">
-											<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">RouteState</span></h4>
+											<h4 class="tsd-returns-title">Returns <a href="../interfaces/_types_.routestate.html" class="tsd-signature-type">RouteState</a></h4>
 										</li>
 									</ul>
 								</li>
@@ -237,10 +246,10 @@
 						<a href="_components_link_.html">&quot;components/<wbr>Link&quot;</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="_components_matchroute_.html">&quot;components/<wbr>Match<wbr>Route&quot;</a>
+						<a href="_components_router_.html">&quot;components/<wbr>Router&quot;</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="_components_routetree_.html">&quot;components/<wbr>Route<wbr>Tree&quot;</a>
+						<a href="_components_switch_.html">&quot;components/<wbr>Switch&quot;</a>
 					</li>
 					<li class="current tsd-kind-module">
 						<a href="_context_.html">&quot;context&quot;</a>
@@ -257,6 +266,9 @@
 				<ul class="before-current">
 					<li class=" tsd-kind-function tsd-parent-kind-module tsd-has-type-parameter">
 						<a href="_context_.html#isactive" class="tsd-kind-icon">is<wbr>Active</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="_context_.html#requirerouter" class="tsd-kind-icon">require<wbr>Router</a>
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-module tsd-has-type-parameter">
 						<a href="_context_.html#useisactive" class="tsd-kind-icon">use<wbr>IsActive</a>
