@@ -300,7 +300,7 @@ function RouteStateMachine(tree, _assumed) {
       });
     }
 
-    return createMemo(() => createComponent(RenderHere, {
+    return untrack(() => createComponent(RenderHere, {
       get params() {
         return route().params;
       },

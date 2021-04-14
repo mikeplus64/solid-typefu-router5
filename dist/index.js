@@ -304,7 +304,7 @@ function RouteStateMachine(tree, _assumed) {
       });
     }
 
-    return solidJs.createMemo(() => web.createComponent(RenderHere, {
+    return solidJs.untrack(() => web.createComponent(RenderHere, {
       get params() {
         return route().params;
       },
