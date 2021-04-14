@@ -1,5 +1,5 @@
 import { spread, effect, classList, setAttribute, template, delegateEvents, createComponent } from 'solid-js/web';
-import { createMemo, createContext, useContext, splitProps, mergeProps, Show, Match, createState, reconcile, onCleanup } from 'solid-js';
+import { createMemo, createContext, useContext, splitProps, mergeProps, Show, Match, untrack, createState, reconcile, onCleanup } from 'solid-js';
 
 const Context = createContext();
 function requireRouter() {
@@ -296,11 +296,11 @@ function RouteStateMachine(tree, _assumed) {
       const child = routes[key];
       children.push({
         prefix: key,
-        children: createMemo(() => traverse(next, child))
+        children: () => traverse(next, child)
       });
     }
 
-    return () => createComponent(RenderHere, {
+    return createMemo(() => createComponent(RenderHere, {
       get params() {
         return route().params;
       },
@@ -317,10 +317,10 @@ function RouteStateMachine(tree, _assumed) {
         });
       }
 
-    });
+    }));
   }
 
-  return createMemo(() => traverse([], tree));
+  return untrack(() => traverse([], tree));
 }
 
 function nofallback() {

@@ -300,11 +300,11 @@ function RouteStateMachine(tree, _assumed) {
       const child = routes[key];
       children.push({
         prefix: key,
-        children: solidJs.createMemo(() => traverse(next, child))
+        children: () => traverse(next, child)
       });
     }
 
-    return () => web.createComponent(RenderHere, {
+    return solidJs.createMemo(() => web.createComponent(RenderHere, {
       get params() {
         return route().params;
       },
@@ -321,10 +321,10 @@ function RouteStateMachine(tree, _assumed) {
         });
       }
 
-    });
+    }));
   }
 
-  return solidJs.createMemo(() => traverse([], tree));
+  return solidJs.untrack(() => traverse([], tree));
 }
 
 function nofallback() {

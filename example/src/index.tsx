@@ -139,6 +139,13 @@ const App = () => {
           about: { render: About },
           home: { render: Home },
           users: {
+            render: (p) => (
+              <>
+                <h1>USERS</h1>
+                <hr />
+                <div>{p.children}</div>
+              </>
+            ),
             fallback: (p) => <Users page={Number(p.params.page ?? 0)} />,
             edit: {
               render: () => <UsersEdit />,

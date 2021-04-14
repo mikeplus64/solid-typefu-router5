@@ -8,6 +8,17 @@
        background: #aaa;
        font-family: bold;
      }
+
+     @keyframes unred {
+       from { background-color: red; }
+       to { background-color: rgba(0,0,0,0); }
+     }
+
+     * {
+       animation: unred;
+       animation-duration: 0.5s;
+     }
+
     </style>
   </head>
   <body>

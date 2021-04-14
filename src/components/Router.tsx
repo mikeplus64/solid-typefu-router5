@@ -1,4 +1,4 @@
-import { JSX, createMemo } from "solid-js";
+import { JSX, createMemo, untrack } from "solid-js";
 import { MatchRouteProps, SwitchRoutes } from "./Switch";
 import { Descend, RouteLike, RouteMeta } from "../types";
 import { useRoute } from "context";
@@ -73,19 +73,19 @@ export default function RouteStateMachine<
       const child = routes[key]!;
       children.push({
         prefix: key,
-        children: createMemo(() => traverse(next, child)),
+        children: () => traverse(next, child),
       });
     }
-    return () => (
+    return createMemo(() => (
       <RenderHere params={route().params as any}>
         <SwitchRoutes
           fallback={() => <RenderFallback params={route().params as any} />}
           children={children}
         />
       </RenderHere>
-    );
+    ));
   }
-  return createMemo(() => traverse([], tree));
+  return untrack(() => traverse([], tree));
 }
 
 function nofallback() {
