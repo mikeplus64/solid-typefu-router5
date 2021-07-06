@@ -71,10 +71,12 @@ export function SwitchRoutes(props: {
       return undefined;
     },
     undefined,
-    (a, b) => {
-      const same =
-        a === b || (a !== undefined && b !== undefined && a[0] === b[0]);
-      return same;
+    {
+      equals(a, b) {
+        const same =
+          a === b || (a !== undefined && b !== undefined && a[0] === b[0]);
+        return same;
+      },
     }
   );
   return createMemo(() => {
@@ -130,6 +132,6 @@ function createGetMatch(props: PathProps): () => [string, boolean] {
   return createMemo<[string, boolean]>(
     () => doesMatch(ctx, route().name, props),
     undefined,
-    (a, b) => a && a[1] === b[1]
+    { equals: (a, b) => a && a[1] === b[1] }
   );
 }

@@ -4,6 +4,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 var web = require('solid-js/web');
 var solidJs = require('solid-js');
+var store = require('solid-js/store');
 
 const Context = solidJs.createContext();
 function requireRouter() {
@@ -192,9 +193,12 @@ function SwitchRoutes(props) {
     }
 
     return undefined;
-  }, undefined, (a, b) => {
-    const same = a === b || a !== undefined && b !== undefined && a[0] === b[0];
-    return same;
+  }, undefined, {
+    equals(a, b) {
+      const same = a === b || a !== undefined && b !== undefined && a[0] === b[0];
+      return same;
+    }
+
   });
   return solidJs.createMemo(() => {
     const ix = getIndex();
@@ -273,7 +277,9 @@ function MatchRoute(props) {
 function createGetMatch(props) {
   const route = useRoute();
   const ctx = solidJs.useContext(MatchContext);
-  return solidJs.createMemo(() => doesMatch(ctx, route().name, props), undefined, (a, b) => a && a[1] === b[1]);
+  return solidJs.createMemo(() => doesMatch(ctx, route().name, props), undefined, {
+    equals: (a, b) => a && a[1] === b[1]
+  });
 }
 
 /**
@@ -403,14 +409,14 @@ function createSolidRouter(config) {
       const initialState = (_router$getState = router.getState()) !== null && _router$getState !== void 0 ? _router$getState : {
         name: ""
       };
-      const [state, setState] = solidJs.createState({
+      const [state, setState] = store.createStore({
         route: { ...initialState,
           nameArray: initialState.name.split(".")
         },
         previousRoute: undefined
       });
       router.subscribe(rs => {
-        setState(solidJs.reconcile({
+        setState(store.reconcile({
           previousRoute: rs.previousRoute,
           route: { ...rs.route,
             nameArray: rs.route.name.split(".")

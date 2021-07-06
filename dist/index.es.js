@@ -1,5 +1,6 @@
 import { spread, effect, classList, setAttribute, template, delegateEvents, createComponent } from 'solid-js/web';
-import { createMemo, createContext, useContext, splitProps, mergeProps, Show, Match, untrack, createState, reconcile, onCleanup } from 'solid-js';
+import { createMemo, createContext, useContext, splitProps, mergeProps, Show, Match, untrack, onCleanup } from 'solid-js';
+import { createStore, reconcile } from 'solid-js/store';
 
 const Context = createContext();
 function requireRouter() {
@@ -188,9 +189,12 @@ function SwitchRoutes(props) {
     }
 
     return undefined;
-  }, undefined, (a, b) => {
-    const same = a === b || a !== undefined && b !== undefined && a[0] === b[0];
-    return same;
+  }, undefined, {
+    equals(a, b) {
+      const same = a === b || a !== undefined && b !== undefined && a[0] === b[0];
+      return same;
+    }
+
   });
   return createMemo(() => {
     const ix = getIndex();
@@ -269,7 +273,9 @@ function MatchRoute(props) {
 function createGetMatch(props) {
   const route = useRoute();
   const ctx = useContext(MatchContext);
-  return createMemo(() => doesMatch(ctx, route().name, props), undefined, (a, b) => a && a[1] === b[1]);
+  return createMemo(() => doesMatch(ctx, route().name, props), undefined, {
+    equals: (a, b) => a && a[1] === b[1]
+  });
 }
 
 /**
@@ -399,7 +405,7 @@ function createSolidRouter(config) {
       const initialState = (_router$getState = router.getState()) !== null && _router$getState !== void 0 ? _router$getState : {
         name: ""
       };
-      const [state, setState] = createState({
+      const [state, setState] = createStore({
         route: { ...initialState,
           nameArray: initialState.name.split(".")
         },

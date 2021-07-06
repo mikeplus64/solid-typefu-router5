@@ -1,7 +1,7 @@
 import { ListOf } from "Object/_api";
 import { State as R5RouteState, Router as Router5, Route } from "router5";
 import { Unsubscribe } from "router5/dist/types/base";
-import { State } from "solid-js";
+import { Store } from "solid-js/store";
 import { DeepReadonly, UnionToIntersection } from "ts-essentials";
 export interface RouteState extends R5RouteState {
     nameArray: string[];
@@ -19,7 +19,7 @@ export interface RouterConfig<Deps, Routes> {
     forward?: () => void;
 }
 export interface RouterContextValue<Deps = any, Routes = any> {
-    state: State<RouterState>;
+    state: Store<RouterState>;
     /** Use this to make your own custom 'Link', buttons, navigation, etc. */
     router: Router5<Deps>;
     config: RouterConfig<Deps, Routes>;

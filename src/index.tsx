@@ -1,7 +1,8 @@
 import { Router as Router5, Route } from "router5";
 import { DefaultDependencies } from "router5/dist/types/router";
 import { Unsubscribe } from "router5/dist/types/base";
-import { JSX, onCleanup, createState, reconcile } from "solid-js";
+import { JSX, onCleanup } from "solid-js";
+import { createStore, reconcile } from "solid-js/store";
 import {
   RoutesLike,
   RouteLike,
@@ -86,7 +87,7 @@ export default function createSolidRouter<
 }): SolidRouter<Deps, RM> {
   let router: Router5<Deps>;
   let unsubs: Unsubscribe[];
-  const r = config.createRouter5((config.routes as any) as Route<Deps>[]);
+  const r = config.createRouter5(config.routes as any as Route<Deps>[]);
   if (Array.isArray(r)) {
     [router, ...unsubs] = r;
   } else {
@@ -119,7 +120,7 @@ export default function createSolidRouter<
 
     Provider: (props: { children: JSX.Element }): JSX.Element => {
       const initialState = router.getState() ?? { name: "" };
-      const [state, setState] = createState<RouterState>({
+      const [state, setState] = createStore<RouterState>({
         route: {
           ...initialState,
           nameArray: initialState.name.split("."),
