@@ -2,7 +2,7 @@ import { Router as Router5, Route } from "router5";
 import { DefaultDependencies } from "router5/dist/types/router";
 import { Unsubscribe } from "router5/dist/types/base";
 import { createEffect, JSX, onCleanup } from "solid-js";
-import { createStore, reconcile } from "solid-js/store";
+import { createStore } from "solid-js/store";
 import {
   RoutesLike,
   RouteLike,
@@ -130,16 +130,14 @@ export default function createSolidRouter<
 
       router.subscribe((rs) => {
         // sanity check, this does appear in the console
-        console.log("switching to", rs.route.name);
-        setState(
-          reconcile<RouterState>(
-            {
-              previousRoute: rs.previousRoute,
-              route: { ...rs.route, nameArray: rs.route.name.split(".") },
-            },
-            { key: null, merge: false }
-          )
-        );
+        console.log("switching", {
+          from: JSON.parse(JSON.stringify(state.route)),
+          to: JSON.parse(JSON.stringify(rs.route)),
+        });
+        setState({
+          previousRoute: rs.previousRoute,
+          route: { ...rs.route, nameArray: rs.route.name.split(".") },
+        });
       });
 
       // but this does not fire _ever_!
