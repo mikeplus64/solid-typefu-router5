@@ -1,7 +1,7 @@
 import { Router as Router5, Route } from "router5";
 import { DefaultDependencies } from "router5/dist/types/router";
 import { Unsubscribe } from "router5/dist/types/base";
-import { JSX, onCleanup } from "solid-js";
+import { createEffect, JSX, onCleanup } from "solid-js";
 import { createStore, reconcile } from "solid-js/store";
 import {
   RoutesLike,
@@ -129,6 +129,8 @@ export default function createSolidRouter<
       });
 
       router.subscribe((rs) => {
+        // sanity check, this does appear in the console
+        console.log("switching to", rs.route.name);
         setState(
           reconcile<RouterState>(
             {
@@ -138,6 +140,11 @@ export default function createSolidRouter<
             { key: null, merge: false }
           )
         );
+      });
+
+      // but this does not fire _ever_!
+      createEffect(() => {
+        console.log("switched to", state.route.name);
       });
 
       router.start();

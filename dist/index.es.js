@@ -1,5 +1,5 @@
 import { spread, effect, classList, setAttribute, template, delegateEvents, createComponent } from 'solid-js/web';
-import { createMemo, createContext, useContext, splitProps, mergeProps, Show, Match, untrack, onCleanup } from 'solid-js';
+import { createMemo, createContext, useContext, splitProps, mergeProps, Show, Match, untrack, createEffect, onCleanup } from 'solid-js';
 import { createStore, reconcile } from 'solid-js/store';
 
 const Context = createContext();
@@ -412,6 +412,8 @@ function createSolidRouter(config) {
         previousRoute: undefined
       });
       router.subscribe(rs => {
+        // sanity check, this does appear in the console
+        console.log("switching to", rs.route.name);
         setState(reconcile({
           previousRoute: rs.previousRoute,
           route: { ...rs.route,
@@ -421,6 +423,10 @@ function createSolidRouter(config) {
           key: null,
           merge: false
         }));
+      }); // but this does not fire _ever_!
+
+      createEffect(() => {
+        console.log("switched to", state.route.name);
       });
       router.start();
       if (typeof config.onStart === "function") config.onStart(router);

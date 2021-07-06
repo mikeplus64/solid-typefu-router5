@@ -416,6 +416,8 @@ function createSolidRouter(config) {
         previousRoute: undefined
       });
       router.subscribe(rs => {
+        // sanity check, this does appear in the console
+        console.log("switching to", rs.route.name);
         setState(store.reconcile({
           previousRoute: rs.previousRoute,
           route: { ...rs.route,
@@ -425,6 +427,10 @@ function createSolidRouter(config) {
           key: null,
           merge: false
         }));
+      }); // but this does not fire _ever_!
+
+      solidJs.createEffect(() => {
+        console.log("switched to", state.route.name);
       });
       router.start();
       if (typeof config.onStart === "function") config.onStart(router);
