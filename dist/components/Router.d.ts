@@ -1,7 +1,6 @@
 import { JSX } from "solid-js";
 import { Descend, RouteLike, RouteMeta } from "../types";
-import { Any, Object } from "ts-toolbelt";
-import { UnionToIntersection } from "ts-essentials";
+import { Any, Object, Union } from "ts-toolbelt";
 /**
  * Tells `solid-typefu-router5` how to render a node if the path leading to
  * it matches the current route name.
@@ -18,7 +17,7 @@ export declare type RouterRenderNode<Params> = {
     }) => JSX.Element;
 };
 export declare type RSM<RM extends RouteMeta[], Path extends string | undefined = undefined> = Path extends string ? Descend<Path, RM> extends infer Inner ? Inner extends RouteMeta[] ? RSM_<Inner> & RouterRenderNode<Inner[number]["params"]> : never : never : RSM_<RM> & RouterRenderNode<undefined>;
-declare type RSM_<RM extends RouteMeta[]> = Any.Compute<UnionToIntersection<{
+declare type RSM_<RM extends RouteMeta[]> = Any.Compute<Union.Merge<{
     [K in keyof RM]: RM[K] extends infer R ? R extends {
         nameArray: infer Name;
         params: infer Params;

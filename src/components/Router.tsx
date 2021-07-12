@@ -2,8 +2,7 @@ import { JSX, untrack } from "solid-js";
 import { MatchRouteProps, SwitchRoutes } from "./Switch";
 import { Descend, RouteLike, RouteMeta } from "../types";
 import { useRoute } from "context";
-import { Any, Object } from "ts-toolbelt";
-import { UnionToIntersection } from "ts-essentials";
+import { Any, Object, Union } from "ts-toolbelt";
 
 /**
  * Tells `solid-typefu-router5` how to render a node if the path leading to
@@ -29,7 +28,7 @@ export type RSM<
   : RSM_<RM> & RouterRenderNode<undefined>;
 
 type RSM_<RM extends RouteMeta[]> = Any.Compute<
-  UnionToIntersection<
+  Union.Merge<
     {
       [K in keyof RM]: RM[K] extends infer R
         ? R extends { nameArray: infer Name; params: infer Params }

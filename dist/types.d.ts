@@ -1,8 +1,7 @@
 import { State as R5RouteState, Router as Router5, Route } from "router5";
 import { Unsubscribe } from "router5/dist/types/base";
 import { Store } from "solid-js/store";
-import { DeepReadonly, UnionToIntersection } from "ts-essentials";
-import { Object, String } from "ts-toolbelt";
+import { Any, Object, String, Union } from "ts-toolbelt";
 export interface RouteState extends R5RouteState {
     nameArray: string[];
 }
@@ -25,7 +24,7 @@ export interface RouterContextValue<Deps = any, Routes = any> {
     config: RouterConfig<Deps, Routes>;
 }
 export declare type RouteLike = string;
-export declare type RoutesLike<Deps> = DeepReadonly<Route<Deps>[]>;
+export declare type RoutesLike<Deps> = readonly Object.Readonly<Route<Deps>, Any.Key, "deep">[];
 /**
  * Parse a route name ("foo.bar") into its components (["foo", "bar"])
  */
@@ -41,7 +40,7 @@ export declare type AsOptParam<ParamName extends string> = {
  *
  * See https://router5.js.org/guides/path-syntax
  */
-export declare type ParseParams<Path extends string> = String.Split<Path, "/"> extends infer Segs ? UnionToIntersection<{
+export declare type ParseParams<Path extends string> = String.Split<Path, "/"> extends infer Segs ? Union.Merge<{
     [K in keyof Segs]: ParseSeg<Segs[K]>;
 }[any]> : never;
 declare type ParseSeg<Path> = Path extends `${infer Prefix}?${infer Params}` ? ParseSegParams<`?${Params}`, ParseSegParams<Prefix>> : Path extends `${infer Prefix}&${infer Params}` ? ParseSegParams<`&${Params}`, ParseSegParams<Prefix>> : Path extends `${infer Prefix}:${infer Params}` ? ParseSegParams<`:${Params}`, ParseSegParams<Prefix>> : Path extends `${infer Prefix};${infer Params}` ? ParseSegParams<`;${Params}`, ParseSegParams<Prefix>> : {};

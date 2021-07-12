@@ -1,22 +1,21 @@
-import { Router as Router5, Route } from "router5";
-import { DefaultDependencies } from "router5/dist/types/router";
+import { Route, Router as Router5 } from "router5";
 import { Unsubscribe } from "router5/dist/types/base";
+import { DefaultDependencies } from "router5/dist/types/router";
 import { JSX } from "solid-js";
-import { RoutesLike, RouteMeta, ReadRoutes } from "./types";
 import { LinkNav, LinkProps } from "./components/Link";
 import { RSM } from "./components/Router";
-import { ElementOf } from "ts-essentials";
+import { ReadRoutes, RouteMeta, RoutesLike } from "./types";
 export { MatchRoute, ShowRoute, SwitchRoutes } from "./components/Switch";
-export { default as Context, useRoute, useIsActive, isActive } from "./context";
-export type { ReadRoutes, ParseParams } from "./types";
+export { default as Context, isActive, useIsActive, useRoute } from "./context";
+export type { ParseParams, ReadRoutes } from "./types";
 export interface RouterComponent<RM extends RouteMeta[]> {
-    <AssumeRoute extends undefined | ElementOf<RM>["name"] = undefined>(props: {
+    <AssumeRoute extends undefined | RM[number]["name"] = undefined>(props: {
         children: RSM<RM, AssumeRoute>;
         assume?: AssumeRoute;
     }): JSX.Element;
 }
 export interface LinkComponent<RM extends RouteMeta[]> {
-    (props: LinkProps<ElementOf<RM>>): JSX.Element;
+    (props: LinkProps<RM[number]>): JSX.Element;
 }
 export interface SolidRouter<Deps, RM extends RouteMeta[]> {
     Provider: (props: {
@@ -26,7 +25,7 @@ export interface SolidRouter<Deps, RM extends RouteMeta[]> {
     Router: RouterComponent<RM>;
     /** See [[createLink]] */
     Link: LinkComponent<RM>;
-    navigate(link: LinkNav<ElementOf<RM>>): void;
+    navigate(link: LinkNav<RM[number]>): void;
     router: Router5<Deps>;
 }
 /**
