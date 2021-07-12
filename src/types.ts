@@ -1,8 +1,8 @@
-import { ListOf } from "Object/_api";
 import { State as R5RouteState, Router as Router5, Route } from "router5";
 import { Unsubscribe } from "router5/dist/types/base";
 import { Store } from "solid-js/store";
 import { DeepReadonly, UnionToIntersection } from "ts-essentials";
+import { Object, String } from "ts-toolbelt";
 
 export interface RouteState extends R5RouteState {
   nameArray: string[];
@@ -37,7 +37,7 @@ export type RoutesLike<Deps> = DeepReadonly<Route<Deps>[]>;
 /**
  * Parse a route name ("foo.bar") into its components (["foo", "bar"])
  */
-export type ToRouteArray<A extends string> = SepBy<A, ".">;
+export type ToRouteArray<A extends string> = String.Split<A, ".">;
 
 export type AsParam<ParamName extends string> = { [P in ParamName]: string };
 
@@ -50,7 +50,7 @@ export type AsOptParam<ParamName extends string> = {
  *
  * See https://router5.js.org/guides/path-syntax
  */
-export type ParseParams<Path extends string> = SepBy<
+export type ParseParams<Path extends string> = String.Split<
   Path,
   "/"
 > extends infer Segs
@@ -59,14 +59,14 @@ export type ParseParams<Path extends string> = SepBy<
 
 type ParseSeg<Path> =
   // if there is a nicer way of writing this let me know please
-  Path extends `${any}?${infer Params}`
-    ? ParseSegParams<`?${Params}`>
-    : Path extends `${any}&${infer Params}`
-    ? ParseSegParams<`&${Params}`>
-    : Path extends `${any}:${infer Params}`
-    ? ParseSegParams<`:${Params}`>
-    : Path extends `${any};${infer Params}`
-    ? ParseSegParams<`;${Params}`>
+  Path extends `${infer Prefix}?${infer Params}`
+    ? ParseSegParams<`?${Params}`, ParseSegParams<Prefix>>
+    : Path extends `${infer Prefix}&${infer Params}`
+    ? ParseSegParams<`&${Params}`, ParseSegParams<Prefix>>
+    : Path extends `${infer Prefix}:${infer Params}`
+    ? ParseSegParams<`:${Params}`, ParseSegParams<Prefix>>
+    : Path extends `${infer Prefix};${infer Params}`
+    ? ParseSegParams<`;${Params}`, ParseSegParams<Prefix>>
     : {};
 
 type ParseSegParams<A, Acc = {}> = A extends ""
@@ -177,7 +177,10 @@ export interface RouteMeta {
 /**
  * Filter for routes that start with a specific path. The routes that fail to match get replaced with `never`
  */
-export type Descend<Path extends string, RM extends RouteMeta[]> = ListOf<
+export type Descend<
+  Path extends string,
+  RM extends RouteMeta[]
+> = Object.ListOf<
   {
     [K in keyof RM]-?: RM[K] extends RouteMeta
       ? {
@@ -199,14 +202,6 @@ export type Descend<Path extends string, RM extends RouteMeta[]> = ListOf<
 /****************
  * Utility types
  ****************/
-
-type SepBy<
-  S extends string,
-  Sep extends string,
-  Acc extends string[] = []
-> = S extends `${infer X}${Sep}${infer XS}`
-  ? SepBy<XS, Sep, [...Acc, X]>
-  : [...Acc, S];
 
 type StripPrefix<Str, Start extends string> = Str extends Start
   ? never

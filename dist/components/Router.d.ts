@@ -1,6 +1,6 @@
 import { JSX } from "solid-js";
 import { Descend, RouteLike, RouteMeta } from "../types";
-import { Any, List, Object } from "ts-toolbelt";
+import { Any, Object } from "ts-toolbelt";
 import { UnionToIntersection } from "ts-essentials";
 /**
  * Tells `solid-typefu-router5` how to render a node if the path leading to
@@ -26,7 +26,7 @@ declare type RSM_<RM extends RouteMeta[]> = Any.Compute<UnionToIntersection<{
         "?",
         "W"
     ]> : never : never;
-}[List.Keys<RM>]>>;
+}[Any.Keys<RM>]>>;
 export declare type RenderNodeLike = RouterRenderNode<any>;
 export declare type RouteNodeLike = {
     name: string;

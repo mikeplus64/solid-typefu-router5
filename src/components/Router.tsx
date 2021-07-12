@@ -2,7 +2,7 @@ import { JSX, untrack } from "solid-js";
 import { MatchRouteProps, SwitchRoutes } from "./Switch";
 import { Descend, RouteLike, RouteMeta } from "../types";
 import { useRoute } from "context";
-import { Any, List, Object } from "ts-toolbelt";
+import { Any, Object } from "ts-toolbelt";
 import { UnionToIntersection } from "ts-essentials";
 
 /**
@@ -40,7 +40,7 @@ type RSM_<RM extends RouteMeta[]> = Any.Compute<
             >
           : never
         : never;
-    }[List.Keys<RM>]
+    }[Any.Keys<RM>]
   >
 >;
 
