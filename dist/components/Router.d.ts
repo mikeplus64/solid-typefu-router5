@@ -1,5 +1,5 @@
 import { JSX } from "solid-js";
-import { Descend, RouteLike, RouteMeta } from "../types";
+import { Descend, RouteMeta } from "../types";
 import { Any, Object, Union } from "ts-toolbelt";
 /**
  * Tells `solid-typefu-router5` how to render a node if the path leading to
@@ -16,16 +16,13 @@ export declare type RouterRenderNode<Params> = {
         params: Params;
     }) => JSX.Element;
 };
-export declare type RSM<RM extends RouteMeta[], Path extends string | undefined = undefined> = Path extends string ? Descend<Path, RM> extends infer Inner ? Inner extends RouteMeta[] ? RSM_<Inner> & RouterRenderNode<Inner[number]["params"]> : never : never : RSM_<RM> & RouterRenderNode<undefined>;
-declare type RSM_<RM extends RouteMeta[]> = Any.Compute<Union.Merge<{
-    [K in keyof RM]: RM[K] extends infer R ? R extends {
-        nameArray: infer Name;
-        params: infer Params;
-    } ? Object.P.Record<Extract<Name, string[]>, RouterRenderNode<Params>, [
+export declare type RSM<RM extends [...RouteMeta[]], Path extends string[] | string | undefined = undefined> = Path extends string ? Descend<Path, RM> extends infer Inner ? Inner extends [...RouteMeta[]] ? _RSM<Inner> & RouterRenderNode<Inner[number]["params"]> : never : never : Path extends string[] ? Object.P.Pick<_RSM<RM> & RouterRenderNode<undefined>, Path> : _RSM<RM> & RouterRenderNode<undefined>;
+declare type _RSM<RM extends [...RouteMeta[]]> = Any.Compute<Union.IntersectOf<{
+    [K in keyof RM]: Object.P.Record<Extract<RM[K], RouteMeta>["nameArray"], RouterRenderNode<Extract<RM[K], RouteMeta>["params"]>, [
         "?",
         "W"
-    ]> : never : never;
-}[Any.Keys<RM>]>>;
+    ]>;
+}[number]>>;
 export declare type RenderNodeLike = RouterRenderNode<any>;
 export declare type RouteNodeLike = {
     name: string;
@@ -42,6 +39,6 @@ export declare type RenderTreeLike = RenderNodeLike & {
  * Also supports using routes to choose how to provide props to a single
  * renderer.
  */
-export default function RouteStateMachine<T extends RenderTreeLike, A extends RouteLike>(tree: T, _assumed?: A): JSX.Element;
+export default function RouteStateMachine<T extends RenderTreeLike, A extends string | string[]>(tree: T, _assumed?: A): JSX.Element;
 export {};
 //# sourceMappingURL=Router.d.ts.map

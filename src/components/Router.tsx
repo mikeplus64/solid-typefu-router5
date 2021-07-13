@@ -1,6 +1,6 @@
 import { JSX, untrack } from "solid-js";
 import { MatchRouteProps, SwitchRoutes } from "./Switch";
-import { Descend, RouteLike, RouteMeta } from "../types";
+import { Descend, RouteMeta } from "../types";
 import { useRoute } from "context";
 import { Any, Object, Union } from "ts-toolbelt";
 
@@ -17,29 +17,27 @@ export type RouterRenderNode<Params> = {
 };
 
 export type RSM<
-  RM extends RouteMeta[],
-  Path extends string | undefined = undefined
+  RM extends [...RouteMeta[]],
+  Path extends string[] | string | undefined = undefined
 > = Path extends string
   ? Descend<Path, RM> extends infer Inner
-    ? Inner extends RouteMeta[]
-      ? RSM_<Inner> & RouterRenderNode<Inner[number]["params"]>
+    ? Inner extends [...RouteMeta[]]
+      ? _RSM<Inner> & RouterRenderNode<Inner[number]["params"]>
       : never
     : never
-  : RSM_<RM> & RouterRenderNode<undefined>;
+  : Path extends string[]
+  ? Object.P.Pick<_RSM<RM> & RouterRenderNode<undefined>, Path>
+  : _RSM<RM> & RouterRenderNode<undefined>;
 
-type RSM_<RM extends RouteMeta[]> = Any.Compute<
-  Union.Merge<
+type _RSM<RM extends [...RouteMeta[]]> = Any.Compute<
+  Union.IntersectOf<
     {
-      [K in keyof RM]: RM[K] extends infer R
-        ? R extends { nameArray: infer Name; params: infer Params }
-          ? Object.P.Record<
-              Extract<Name, string[]>,
-              RouterRenderNode<Params>,
-              ["?", "W"]
-            >
-          : never
-        : never;
-    }[Any.Keys<RM>]
+      [K in keyof RM]: Object.P.Record<
+        Extract<RM[K], RouteMeta>["nameArray"],
+        RouterRenderNode<Extract<RM[K], RouteMeta>["params"]>,
+        ["?", "W"]
+      >;
+    }[number]
   >
 >;
 
@@ -57,7 +55,7 @@ export type RenderTreeLike = RenderNodeLike & { [k: string]: RenderTreeLike };
  */
 export default function RouteStateMachine<
   T extends RenderTreeLike,
-  A extends RouteLike
+  A extends string | string[]
 >(tree: T, _assumed?: A): JSX.Element {
   const route = useRoute();
   function traverse(path: string[], node: RenderTreeLike): JSX.Element {

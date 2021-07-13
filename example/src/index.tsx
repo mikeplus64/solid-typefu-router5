@@ -1,8 +1,13 @@
-import createSolidRouter, { useRoute } from "solid-typefu-router5";
+import createSolidRouter, {
+  useRoute,
+  RenderRoutes,
+  ReadRoutes,
+} from "solid-typefu-router5";
 import browserPluginFactory from "router5-plugin-browser";
 import { render } from "solid-js/web";
 import createRouter from "router5";
 import { For } from "solid-js";
+import { RSM } from "../../dist/components/Router";
 
 const routes = [
   { name: "home", path: "/" },
@@ -16,6 +21,12 @@ const routes = [
   },
   { name: "about", path: "/about" },
 ] as const;
+
+type Routes = ReadRoutes<typeof routes>;
+
+type RenderRoutes = RSM<Routes>;
+
+type UserRoutes = RenderRoutes["users"];
 
 const { Link, Router, Provider } = createSolidRouter({
   routes,
