@@ -57,7 +57,7 @@ export type ParseParams<Path extends string> = String.Split<
   Path,
   "/"
 > extends infer Segs
-  ? Union.Merge<{ [K in keyof Segs]: ParseSeg<Segs[K]> }[any]>
+  ? Any.Compute<Union.IntersectOf<ParseSeg<Segs[keyof Segs]>>>
   : never;
 
 type ParseSeg<Path> =

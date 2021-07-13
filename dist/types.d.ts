@@ -40,9 +40,7 @@ export declare type AsOptParam<ParamName extends string> = {
  *
  * See https://router5.js.org/guides/path-syntax
  */
-export declare type ParseParams<Path extends string> = String.Split<Path, "/"> extends infer Segs ? Union.Merge<{
-    [K in keyof Segs]: ParseSeg<Segs[K]>;
-}[any]> : never;
+export declare type ParseParams<Path extends string> = String.Split<Path, "/"> extends infer Segs ? Any.Compute<Union.IntersectOf<ParseSeg<Segs[keyof Segs]>>> : never;
 declare type ParseSeg<Path> = Path extends `${infer Prefix}?${infer Params}` ? ParseSegParams<`?${Params}`, ParseSegParams<Prefix>> : Path extends `${infer Prefix}&${infer Params}` ? ParseSegParams<`&${Params}`, ParseSegParams<Prefix>> : Path extends `${infer Prefix}:${infer Params}` ? ParseSegParams<`:${Params}`, ParseSegParams<Prefix>> : Path extends `${infer Prefix};${infer Params}` ? ParseSegParams<`;${Params}`, ParseSegParams<Prefix>> : {};
 declare type ParseSegParams<A, Acc = {}> = A extends "" ? Acc : A extends `:${infer Param}<${any}>` ? Acc & AsParam<Param> : A extends `:${infer Param}` ? Acc & AsParam<Param> : A extends `;${infer Param}<${any}>${infer Tail}` ? ParseSegParams<Tail, Acc & AsOptParam<Param>> : A extends `;${infer Param}${infer Tail}` ? ParseSegParams<Tail, Acc & AsOptParam<Param>> : A extends `?${infer QP}` ? QP extends `:${infer QP1}` ? _ParseQueryParams1<QP1, Acc, ":"> : _ParseQueryParams1<QP, Acc, ""> : A extends `*${infer Param}` ? {
     [P in Param]?: string[];
