@@ -177,46 +177,9 @@ export interface RouteMeta {
   params: {};
 }
 
-/**
- * Filter for routes that start with a specific path. The routes that fail to match get replaced with `never`
- */
-export type Descend<
-  Path extends string,
-  RM extends RouteMeta[]
-> = Object.ListOf<
-  {
-    [K in keyof RM]-?: RM[K] extends RouteMeta
-      ? {
-          1: never;
-          0: StripPrefix<RM[K]["name"], Path> extends infer Name
-            ? Name extends string
-              ? {
-                  name: Name;
-                  nameArray: ToRouteArray<Name>;
-                  params: RM[K]["params"];
-                }
-              : never
-            : never;
-        }[StartsWith<RM[K]["name"], Path>]
-      : never;
-  }
->;
-
 /****************
  * Utility types
  ****************/
-
-type StripPrefix<Str, Start extends string> = Str extends Start
-  ? never
-  : Str extends `${Start}.${infer Tail}`
-  ? Tail
-  : never;
-
-type StartsWith<Str, Start extends string> = Str extends Start
-  ? 0
-  : Str extends `${Start}.${any}`
-  ? 0
-  : 1;
 
 export type Concat<T, Acc extends string = ""> = T extends [
   infer X,

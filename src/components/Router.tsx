@@ -1,8 +1,8 @@
-import { JSX, untrack } from "solid-js";
-import { MatchRouteProps, SwitchRoutes } from "./Switch";
-import { Descend, RouteMeta } from "../types";
 import { useRoute } from "context";
-import { Any, Object, Union } from "ts-toolbelt";
+import { JSX, untrack } from "solid-js";
+import { Any, Object, Union, String } from "ts-toolbelt";
+import { RouteMeta } from "../types";
+import { MatchRouteProps, SwitchRoutes } from "./Switch";
 
 /**
  * Tells `solid-typefu-router5` how to render a node if the path leading to
@@ -20,14 +20,13 @@ export type RSM<
   RM extends [...RouteMeta[]],
   Path extends string[] | string | undefined = undefined
 > = Path extends string
-  ? Descend<Path, RM> extends infer Inner
-    ? Inner extends [...RouteMeta[]]
-      ? _RSM<Inner> & RouterRenderNode<Inner[number]["params"]>
-      : never
-    : never
+  ? Object.Path<_RSM0<RM>, String.Split<Path, ".">>
   : Path extends string[]
-  ? Object.P.Pick<_RSM<RM> & RouterRenderNode<undefined>, Path>
-  : _RSM<RM> & RouterRenderNode<undefined>;
+  ? Object.Path<_RSM0<RM>, Path>
+  : _RSM0<RM>;
+
+type _RSM0<RM extends [...RouteMeta[]]> = _RSM<RM> &
+  RouterRenderNode<undefined>;
 
 type _RSM<RM extends [...RouteMeta[]]> = Any.Compute<
   Union.IntersectOf<

@@ -1,6 +1,6 @@
 import { JSX } from "solid-js";
-import { Descend, RouteMeta } from "../types";
-import { Any, Object, Union } from "ts-toolbelt";
+import { Any, Object, Union, String } from "ts-toolbelt";
+import { RouteMeta } from "../types";
 /**
  * Tells `solid-typefu-router5` how to render a node if the path leading to
  * it matches the current route name.
@@ -16,7 +16,8 @@ export declare type RouterRenderNode<Params> = {
         params: Params;
     }) => JSX.Element;
 };
-export declare type RSM<RM extends [...RouteMeta[]], Path extends string[] | string | undefined = undefined> = Path extends string ? Descend<Path, RM> extends infer Inner ? Inner extends [...RouteMeta[]] ? _RSM<Inner> & RouterRenderNode<Inner[number]["params"]> : never : never : Path extends string[] ? Object.P.Pick<_RSM<RM> & RouterRenderNode<undefined>, Path> : _RSM<RM> & RouterRenderNode<undefined>;
+export declare type RSM<RM extends [...RouteMeta[]], Path extends string[] | string | undefined = undefined> = Path extends string ? Object.Path<_RSM0<RM>, String.Split<Path, ".">> : Path extends string[] ? Object.Path<_RSM0<RM>, Path> : _RSM0<RM>;
+declare type _RSM0<RM extends [...RouteMeta[]]> = _RSM<RM> & RouterRenderNode<undefined>;
 declare type _RSM<RM extends [...RouteMeta[]]> = Any.Compute<Union.IntersectOf<{
     [K in keyof RM]: Object.P.Record<Extract<RM[K], RouteMeta>["nameArray"], RouterRenderNode<Extract<RM[K], RouteMeta>["params"]>, [
         "?",
