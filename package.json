@@ -1,6 +1,6 @@
 {
   "name": "solid-typefu-router5",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Router5 based routing library for solid-js with TypeScript",
   "repository": "https://github.com/mikeplus64/solid-typefu-router5",
   "homepage": "https://mikeplus64.github.io/solid-typefu-router5/",
@@ -54,7 +54,7 @@
   },
   "peerDependencies": {
     "router5": "*",
-    "solid-js": "^0.26.0"
+    "solid-js": "^1.0.0"
   },
   "scripts": {
     "prepare": "rollup -c",
