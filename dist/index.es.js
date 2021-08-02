@@ -1,4 +1,4 @@
-import { spread, effect, classList, setAttribute, template, delegateEvents, createComponent } from 'solid-js/web';
+import { spread, effect, classList, addEventListener, setAttribute, template, delegateEvents, createComponent } from 'solid-js/web';
 import { createMemo, createContext, useContext, splitProps, mergeProps, Show, Match, untrack, onCleanup } from 'solid-js';
 import { createStore, reconcile } from 'solid-js/store';
 
@@ -52,7 +52,7 @@ function Link(props) {
     router: router5,
     config
   } = requireRouter();
-  let [linkProps, innerProps] = splitProps(props, ["type", "onClick", "classList", "to", "params", "nav", "navIgnoreParams", "navActiveClass", "disabled", "back", "forward", "display"]);
+  let [linkProps, innerProps] = splitProps(props, ["type", "onClick", "classList", "to", "params", "nav", "navIgnoreParams", "navActiveClass", "disabled", "back", "forward", "display", "openInNewTab"]);
   linkProps = mergeProps({
     navActiveClass: config.navActiveClass,
     back: config.back,
@@ -137,20 +137,26 @@ function Link(props) {
   })() : (() => {
     const _el$3 = _tmpl$2.cloneNode(true);
 
-    _el$3.$$click = onClick;
+    addEventListener(_el$3, "click", linkProps.openInNewTab ? undefined : onClick, true);
 
     spread(_el$3, innerProps, false, false);
 
     effect(_p$ => {
       const _v$3 = getClassList(),
-            _v$4 = getHref();
+            _v$4 = getHref(),
+            _v$5 = linkProps.openInNewTab ? "_blank" : undefined,
+            _v$6 = linkProps.openInNewTab ? "noopener noreferrer" : undefined;
 
       _p$._v$3 = classList(_el$3, _v$3, _p$._v$3);
       _v$4 !== _p$._v$4 && setAttribute(_el$3, "href", _p$._v$4 = _v$4);
+      _v$5 !== _p$._v$5 && setAttribute(_el$3, "target", _p$._v$5 = _v$5);
+      _v$6 !== _p$._v$6 && setAttribute(_el$3, "rel", _p$._v$6 = _v$6);
       return _p$;
     }, {
       _v$3: undefined,
-      _v$4: undefined
+      _v$4: undefined,
+      _v$5: undefined,
+      _v$6: undefined
     });
 
     return _el$3;

@@ -29,26 +29,28 @@ type RequiresParams<Params> = keyof Params extends never
  * - `params`
  * - `disabled`
  * - `onClick`
- * - `innerProps`
  * - `disabledProps`
  */
-export type LinkProps<Route extends RouteMeta> = {
-  nav?: boolean;
-  navActiveClass?: string;
-  navIgnoreParams?: boolean;
-  children?: JSX.Element;
-  onClick?: (
-    ev: MouseEvent & {
-      target: HTMLElement;
-      currentTarget: HTMLElement;
-    }
-  ) => void;
-  back?: () => void;
-  forward?: () => void;
-  display?: "button";
-  disabled?: boolean;
-} & LinkNav<Route> &
-  Omit<JSX.IntrinsicElements["a" | "button"], "onClick" | "href" | "children">;
+export type LinkProps<Route extends RouteMeta> = Object.Merge<
+  Omit<JSX.IntrinsicElements["a"], "onClick">,
+  {
+    nav?: boolean;
+    navActiveClass?: string;
+    navIgnoreParams?: boolean;
+    openInNewTab?: boolean;
+    children?: JSX.Element;
+    onClick?: (
+      ev: MouseEvent & {
+        target: HTMLElement;
+        currentTarget: HTMLElement;
+      }
+    ) => void;
+    back?: () => void;
+    forward?: () => void;
+    display?: "button";
+    disabled?: boolean;
+  } & LinkNav<Route>
+>;
 
 export interface LinkConfig {
   navActiveClass: string;
@@ -72,6 +74,7 @@ export default function Link<Route extends RouteMeta>(
     "back",
     "forward",
     "display",
+    "openInNewTab",
   ]);
 
   linkProps = mergeProps(
@@ -148,7 +151,9 @@ export default function Link<Route extends RouteMeta>(
         {...(innerProps as any)}
         classList={getClassList()}
         href={getHref()}
-        onClick={onClick}
+        target={linkProps.openInNewTab ? "_blank" : undefined}
+        rel={linkProps.openInNewTab ? "noopener noreferrer" : undefined}
+        onClick={linkProps.openInNewTab ? undefined : onClick}
       />
     )
   );

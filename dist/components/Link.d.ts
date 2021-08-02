@@ -29,13 +29,13 @@ declare type RequiresParams<Params> = keyof Params extends never ? 0 : Object.Re
  * - `params`
  * - `disabled`
  * - `onClick`
- * - `innerProps`
  * - `disabledProps`
  */
-export declare type LinkProps<Route extends RouteMeta> = {
+export declare type LinkProps<Route extends RouteMeta> = Object.Merge<Omit<JSX.IntrinsicElements["a"], "onClick">, {
     nav?: boolean;
     navActiveClass?: string;
     navIgnoreParams?: boolean;
+    openInNewTab?: boolean;
     children?: JSX.Element;
     onClick?: (ev: MouseEvent & {
         target: HTMLElement;
@@ -45,7 +45,7 @@ export declare type LinkProps<Route extends RouteMeta> = {
     forward?: () => void;
     display?: "button";
     disabled?: boolean;
-} & LinkNav<Route> & Omit<JSX.IntrinsicElements["a" | "button"], "onClick" | "href" | "children">;
+} & LinkNav<Route>>;
 export interface LinkConfig {
     navActiveClass: string;
 }
