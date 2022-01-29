@@ -1,5 +1,5 @@
-import { spread, effect, classList, addEventListener, setAttribute, template, delegateEvents, createComponent } from 'solid-js/web';
-import { createMemo, createContext, useContext, splitProps, mergeProps, Show, Match, untrack, onCleanup } from 'solid-js';
+import { template, delegateEvents, spread, effect, classList, addEventListener, setAttribute, createComponent } from 'solid-js/web';
+import { createContext, createMemo, useContext, splitProps, mergeProps, Show, Match, untrack, onCleanup } from 'solid-js';
 import { createStore, reconcile } from 'solid-js/store';
 
 const Context = createContext();
@@ -454,6 +454,5 @@ function createSolidRouter(config) {
   };
 }
 
-export default createSolidRouter;
-export { Context, MatchRoute, ShowRoute, SwitchRoutes, isActive, useIsActive, useRoute };
+export { Context, MatchRoute, ShowRoute, SwitchRoutes, createSolidRouter as default, isActive, useIsActive, useRoute };
 //# sourceMappingURL=index.es.js.map

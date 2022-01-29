@@ -1,4 +1,5 @@
 import { createContext, useContext, createMemo } from "solid-js";
+import { DeepReadonly } from "solid-js/store";
 import { RouterContextValue, RouteState, RouteLike } from "./types";
 
 const Context = createContext<RouterContextValue>();
@@ -13,7 +14,7 @@ export function requireRouter(): RouterContextValue {
   return ctx;
 }
 
-export function useRoute(): () => RouteState {
+export function useRoute(): () => DeepReadonly<RouteState> {
   const ctx = requireRouter();
   return () => ctx.state.route;
 }
