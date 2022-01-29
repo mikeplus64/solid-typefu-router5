@@ -1,39 +1,37 @@
-import typescript from 'rollup-plugin-typescript2';
-import babel from '@rollup/plugin-babel';
-import pkg from './package.json';
+import typescript from "rollup-plugin-typescript2";
+import babel from "@rollup/plugin-babel";
+import pkg from "./package.json";
 
 export default {
-  input: 'src/index.tsx',
+  input: "src/index.tsx",
 
   output: [
-    { file: pkg.main, format: 'cjs', exports: 'named', sourcemap: true },
-    { file: pkg.module, format: 'es', sourcemap: true },
+    { file: pkg.main, format: "cjs", exports: "named", sourcemap: true },
+    { file: pkg.module, format: "es", sourcemap: true },
   ],
 
   plugins: [
     typescript({
-      typescript: require('typescript'),
+      typescript: require("typescript"),
       clean: true,
-      exclude: 'node_modules/**',
-      tsconfig: './tsconfig.json',
+      tsconfig: "./tsconfig.json",
+      tsconfigOverride: {
+        exclude: ["node_modules/**", "**/*.d.spec.ts", "**/*.spec.ts"],
+      },
     }),
 
     babel({
-      babelHelpers: 'runtime',
-      extensions: ['.ts', '.tsx'],
-      exclude: 'node_modules/**',
-      presets: ['solid'],
+      babelHelpers: "runtime",
+      extensions: [".ts", ".tsx"],
+      exclude: ["node_modules/**", /\.spec\./],
+      presets: ["solid"],
       plugins: [
-        '@babel/plugin-transform-runtime',
-        '@babel/plugin-proposal-optional-chaining',
-        '@babel/plugin-proposal-nullish-coalescing-operator',
+        "@babel/plugin-transform-runtime",
+        "@babel/plugin-proposal-optional-chaining",
+        "@babel/plugin-proposal-nullish-coalescing-operator",
       ],
     }),
   ],
 
-  external: [
-    /@babel\/runtime/,
-    /solid-js/,
-    /^router5/,
-  ],
+  external: [/@babel\/runtime/, /solid-js/, /^router5/],
 };

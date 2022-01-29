@@ -1,7 +1,34 @@
 import { State as R5RouteState, Router as Router5, Route } from "router5";
 import { Unsubscribe } from "router5/dist/types/base";
 import { Store } from "solid-js/store";
+import { JSX } from "solid-js";
 import { Any, Object, String, Union } from "ts-toolbelt";
+export declare type RouteTreeLike = readonly RouteNodeLike[];
+export declare type RenderNodeLike = RouterRenderNode<any>;
+export interface RouteNodeLike {
+    readonly name: string;
+    readonly children?: RouteTreeLike;
+}
+export declare type RenderTreeLike = RenderNodeLike & {
+    readonly [k: string]: RenderTreeLike;
+};
+export declare type RouterRenderFn<Params = {}> = (props: {
+    children?: JSX.Element;
+    params: Params;
+}) => JSX.Element;
+export declare type RouterFallbackRenderFn<Params = {}> = (props: {
+    params: Params;
+}) => JSX.Element;
+/**
+ * Tells `solid-typefu-router5` how to render a node if the path leading to
+ * it matches the current route name.
+ */
+export declare type RouterRenderNode<Params = {}> = {
+    /** Defaults to rendering the children. */
+    render?: RouterRenderFn<Params>;
+    /** Fallback children to use if none are available to give to [[render]]. Default: nothing */
+    fallback?: RouterFallbackRenderFn<Params>;
+};
 export interface RouteState extends R5RouteState {
     nameArray: string[];
 }
@@ -9,7 +36,7 @@ export interface RouterState {
     route: RouteState;
     previousRoute: undefined | R5RouteState;
 }
-export interface RouterConfig<Deps, Routes> {
+export interface RouterConfig<Deps, Routes extends RouteTreeLike> {
     createRouter5: (routes: Route<Deps>[]) => Router5<Deps> | [Router5<Deps>, ...Unsubscribe[]];
     onStart?: (router: Router5<Deps>) => void;
     routes: Routes;
@@ -17,7 +44,7 @@ export interface RouterConfig<Deps, Routes> {
     back?: () => void;
     forward?: () => void;
 }
-export interface RouterContextValue<Deps = any, Routes = any> {
+export interface RouterContextValue<Deps = any, Routes extends RouteTreeLike = any> {
     state: Store<RouterState>;
     /** Use this to make your own custom 'Link', buttons, navigation, etc. */
     router: Router5<Deps>;
@@ -55,7 +82,7 @@ declare type _ParseQueryParams1<QP, Acc = {}, ParamSfix extends string = ""> = Q
  * Takes your `routes` and produces type metadata for consumption in this
  * library. The result is an array of [[RouteMeta]], one for each route.
  */
-export declare type ReadRoutes<Tree> = _RouteQueue<Tree> extends infer Q ? _ReadRoutesQueue<Q> : never;
+export declare type ReadRoutes<Tree extends RouteTreeLike> = _RouteQueue<Tree> extends infer Q ? _ReadRoutesQueue<Q> : never;
 declare type _ReadRoutesQueue<Q, Acc extends any[] = []> = Q extends [
     infer X,
     ...infer XS
@@ -67,7 +94,7 @@ declare type _ReadRoute<R> = R extends _RouteNode[] ? _MkName<R> extends infer N
     nameArray: Name;
     name: Intercalate<Name, ".">;
     params: ParseParams<Extract<Concat<_MkPath<R>>, string>>;
-    paramsArray: Concat<_MkPath<R>>;
+    path: Concat<_MkPath<R>>;
 } : never : never;
 declare type _MkName<R extends _RouteNode[]> = {
     [K in keyof R]: K extends `${number}` ? Extract<R[K], _RouteNode>["name"] : R[K];
@@ -86,6 +113,7 @@ export interface RouteMeta {
     name: string;
     nameArray: string[];
     params: {};
+    path: string;
 }
 /****************
  * Utility types
