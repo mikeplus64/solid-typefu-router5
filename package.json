@@ -49,7 +49,7 @@
     "solid-js": "^1.3.4",
     "ts-jest": "^27.1.3",
     "ts-node": "^10.4.0",
-    "typedoc": "^0.17.8",
+    "typedoc": "^0.22.11",
     "typescript": "^4.2.4"
   },
   "dependencies": {
@@ -61,8 +61,8 @@
     "solid-js": "^1.3.4"
   },
   "scripts": {
-    "prepare": "rollup -c",
-    "docs": "typedoc --out docs --excludeNotExported --includeVersion && touch docs/.nojekyll",
+    "prepare": "rm -r ./dist && rollup -c",
+    "docs": "typedoc --out docs --includeVersion ./src/index.tsx && touch docs/.nojekyll",
     "bump": "./bump.sh",
     "test": "jest"
   }

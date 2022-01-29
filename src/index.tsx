@@ -8,16 +8,39 @@ import RouteStateMachine, { RSM } from "./components/Router";
 import Context from "./context";
 import {
   ReadRoutes,
+  RenderTreeLike,
   RouteLike,
   RouteMeta,
   RouterState,
   RoutesLike,
-  RenderTreeLike,
 } from "./types";
 
-export { MatchRoute, ShowRoute, SwitchRoutes } from "./components/Switch";
+export type { LinkNav } from "./components/Link";
+export type { RSM } from "./components/Router";
+export {
+  MatchRoute,
+  MatchRouteProps,
+  ShowRoute,
+  ShowRouteProps,
+  SwitchRoutes,
+} from "./components/Switch";
 export { default as Context, isActive, useIsActive, useRoute } from "./context";
-export type { ParseParams, ReadRoutes } from "./types";
+export type {
+  ParseParams,
+  ReadRoutes,
+  RenderNodeLike,
+  RenderTreeLike,
+  RouteLike,
+  RouteMeta,
+  RouteNodeLike,
+  RouterContextValue,
+  RouterFallbackRenderFn,
+  RouterRenderFn,
+  RouterRenderNode,
+  RoutesLike,
+  RouteState,
+  RouteTreeLike,
+} from "./types";
 
 export interface RouterComponent<RM extends RouteMeta[]> {
   <
