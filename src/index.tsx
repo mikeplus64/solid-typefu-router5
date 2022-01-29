@@ -4,7 +4,7 @@ import { DefaultDependencies } from "router5/dist/types/router";
 import { JSX, onCleanup } from "solid-js";
 import { createStore, reconcile } from "solid-js/store";
 import Link, { LinkNav, LinkProps } from "./components/Link";
-import RouteStateMachine, { RenderTreeLike, RSM } from "./components/Router";
+import RouteStateMachine, { RSM } from "./components/Router";
 import Context from "./context";
 import {
   ReadRoutes,
@@ -12,6 +12,7 @@ import {
   RouteMeta,
   RouterState,
   RoutesLike,
+  RenderTreeLike,
 } from "./types";
 
 export { MatchRoute, ShowRoute, SwitchRoutes } from "./components/Switch";
