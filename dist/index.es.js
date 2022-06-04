@@ -1,4 +1,4 @@
-import { template, delegateEvents, createComponent, spread, effect, classList, addEventListener, setAttribute } from 'solid-js/web';
+import { delegateEvents, createComponent, spread, effect, classList, addEventListener, setAttribute, template } from 'solid-js/web';
 import { createContext, createMemo, useContext, mergeProps, splitProps, Show, Match, untrack, onCleanup } from 'solid-js';
 import { createStore, reconcile } from 'solid-js/store';
 
@@ -65,8 +65,8 @@ function isActive(here, link) {
   return RouteActive.Inactive;
 }
 
-const _tmpl$ = template(`<button></button>`, 2),
-      _tmpl$2 = template(`<a></a>`, 2);
+const _tmpl$ = /*#__PURE__*/template(`<button></button>`, 2),
+      _tmpl$2 = /*#__PURE__*/template(`<a></a>`, 2);
 function Link(props) {
   const {
     router: router5,
@@ -303,7 +303,7 @@ function createGetMatch(props) {
   const route = useRoute();
   const ctx = useContext(MatchContext);
   return createMemo(() => doesMatch(ctx, route().name, props), undefined, {
-    equals: (a, b) => a && a[1] === b[1]
+    equals: (a, b) => a !== undefined && (a === null || a === void 0 ? void 0 : a[1]) === (b === null || b === void 0 ? void 0 : b[1])
   });
 }
 

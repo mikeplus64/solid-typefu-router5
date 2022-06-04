@@ -69,8 +69,8 @@ function isActive(here, link) {
   return exports.RouteActive.Inactive;
 }
 
-const _tmpl$ = web.template(`<button></button>`, 2),
-      _tmpl$2 = web.template(`<a></a>`, 2);
+const _tmpl$ = /*#__PURE__*/web.template(`<button></button>`, 2),
+      _tmpl$2 = /*#__PURE__*/web.template(`<a></a>`, 2);
 function Link(props) {
   const {
     router: router5,
@@ -307,7 +307,7 @@ function createGetMatch(props) {
   const route = useRoute();
   const ctx = solidJs.useContext(MatchContext);
   return solidJs.createMemo(() => doesMatch(ctx, route().name, props), undefined, {
-    equals: (a, b) => a && a[1] === b[1]
+    equals: (a, b) => a !== undefined && (a === null || a === void 0 ? void 0 : a[1]) === (b === null || b === void 0 ? void 0 : b[1])
   });
 }
 
