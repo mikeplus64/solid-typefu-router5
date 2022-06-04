@@ -37,16 +37,36 @@ function paramsEq(a, b) {
 function useIsActive(link, params, paramsIsEqual = paramsEq) {
   const route = useRoute();
   const getIsActiveByName = solidJs.createMemo(() => isActive(route().name, link));
-  return solidJs.createMemo(() => getIsActiveByName() && (params === undefined || paramsIsEqual(route().params, params)));
+  return solidJs.createMemo(() => {
+    const active = getIsActiveByName();
+
+    if (active !== exports.RouteActive.Inactive) {
+      const paramsEq = params === undefined || paramsIsEqual(route().params, params) ? exports.RouteActive.EqualParams : exports.RouteActive.Inactive;
+      return active | paramsEq;
+    }
+
+    return exports.RouteActive.Inactive;
+  });
 }
+exports.RouteActive = void 0;
+
+(function (RouteActive) {
+  RouteActive[RouteActive["Inactive"] = 0] = "Inactive";
+  RouteActive[RouteActive["ActiveRoutePrefix"] = 1] = "ActiveRoutePrefix";
+  RouteActive[RouteActive["ActiveRouteExact"] = 3] = "ActiveRouteExact";
+  RouteActive[RouteActive["EqualParams"] = 4] = "EqualParams";
+})(exports.RouteActive || (exports.RouteActive = {}));
 /**
  * Find whether 'link' is an ancestor of, or equal to, 'here'
  *
  * Maybe useful for creating your own `Link` component.
  */
 
+
 function isActive(here, link) {
-  return link === here || here.startsWith(link + ".");
+  if (link === here) return exports.RouteActive.ActiveRouteExact;
+  if (here.startsWith(link + ".")) return exports.RouteActive.ActiveRoutePrefix;
+  return exports.RouteActive.Inactive;
 }
 
 const _tmpl$ = web.template(`<button></button>`, 2),
@@ -56,7 +76,7 @@ function Link(props) {
     router: router5,
     config
   } = requireRouter();
-  let [linkProps, innerProps] = solidJs.splitProps(props, ["type", "onClick", "classList", "to", "params", "nav", "navIgnoreParams", "navActiveClass", "disabled", "back", "forward", "display", "openInNewTab"]);
+  let [linkProps, innerProps] = solidJs.splitProps(props, ["type", "onClick", "classList", "to", "params", "navIgnoreParams", "navActiveClassList", "disabled", "back", "forward", "display", "openInNewTab"]);
   linkProps = solidJs.mergeProps({
     navActiveClass: config.navActiveClass,
     back: config.back,
@@ -75,14 +95,11 @@ function Link(props) {
     return undefined;
   });
   const getClassList = solidJs.createMemo(() => {
-    const cls = { ...linkProps.classList
-    };
-
-    if (linkProps.nav && typeof linkProps.navActiveClass === "string") {
-      cls[linkProps.navActiveClass] = isActive();
+    if (linkProps.navActiveClassList !== undefined) {
+      return solidJs.mergeProps(linkProps.navActiveClassList(isActive()), linkProps.classList);
     }
 
-    return cls;
+    return solidJs.mergeProps(linkProps.classList);
   });
 
   function onClick(ev) {
@@ -166,8 +183,14 @@ function Link(props) {
     return _el$3;
   })());
 }
+function createLink(defaultProps) {
+  return givenProps => {
+    const props = solidJs.mergeProps(defaultProps, givenProps);
+    return web.createComponent(Link, props);
+  };
+}
 
-const alwaysInactive = () => false;
+const alwaysInactive = () => exports.RouteActive.Inactive;
 
 web.delegateEvents(["click"]);
 
@@ -390,7 +413,7 @@ function createSolidRouter(config) {
   }
 
   return {
-    Link,
+    Link: config.defaultLinkProps !== undefined ? createLink(config.defaultLinkProps) : Link,
     navigate: opts => {
       var _config$forward, _config$back, _opts$params;
 

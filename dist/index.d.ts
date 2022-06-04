@@ -5,9 +5,11 @@ import { JSX } from "solid-js";
 import { LinkNav, LinkProps } from "./components/Link";
 import { RSM } from "./components/Router";
 import { ReadRoutes, RouteMeta, RoutesLike } from "./types";
-export { MatchRoute, ShowRoute, SwitchRoutes } from "./components/Switch";
-export { default as Context, isActive, useIsActive, useRoute } from "./context";
-export type { ParseParams, ReadRoutes } from "./types";
+export type { LinkNav } from "./components/Link";
+export type { RSM } from "./components/Router";
+export { MatchRoute, MatchRouteProps, ShowRoute, ShowRouteProps, SwitchRoutes, } from "./components/Switch";
+export { default as Context, isActive, useIsActive, useRoute, RouteActive, } from "./context";
+export type { ParseParams, ReadRoutes, RenderNodeLike, RenderTreeLike, RouteLike, RouteMeta, RouteNodeLike, RouterContextValue, RouterFallbackRenderFn, RouterRenderFn, RouterRenderNode, RoutesLike, RouteState, RouteTreeLike, } from "./types";
 export interface RouterComponent<RM extends RouteMeta[]> {
     <AssumeRoute extends undefined | RM[number]["name" | "nameArray"] = undefined>(props: {
         children: RSM<RM, AssumeRoute>;
@@ -61,8 +63,8 @@ export default function createSolidRouter<Routes extends RoutesLike<Deps>, RM ex
     createRouter5: (routes: Route<Deps>[]) => Router5<Deps> | [Router5<Deps>, ...Unsubscribe[]];
     routes: Routes;
     onStart?: (router: Router5<Deps>) => void;
-    navActiveClass?: string;
     back?: () => void;
     forward?: () => void;
+    defaultLinkProps?: LinkProps<RM[number]>;
 }): SolidRouter<Deps, RM>;
 //# sourceMappingURL=index.d.ts.map

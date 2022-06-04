@@ -1,5 +1,5 @@
-import { template, delegateEvents, spread, effect, classList, addEventListener, setAttribute, createComponent } from 'solid-js/web';
-import { createContext, createMemo, useContext, splitProps, mergeProps, Show, Match, untrack, onCleanup } from 'solid-js';
+import { template, delegateEvents, createComponent, spread, effect, classList, addEventListener, setAttribute } from 'solid-js/web';
+import { createContext, createMemo, useContext, mergeProps, splitProps, Show, Match, untrack, onCleanup } from 'solid-js';
 import { createStore, reconcile } from 'solid-js/store';
 
 const Context = createContext();
@@ -33,16 +33,36 @@ function paramsEq(a, b) {
 function useIsActive(link, params, paramsIsEqual = paramsEq) {
   const route = useRoute();
   const getIsActiveByName = createMemo(() => isActive(route().name, link));
-  return createMemo(() => getIsActiveByName() && (params === undefined || paramsIsEqual(route().params, params)));
+  return createMemo(() => {
+    const active = getIsActiveByName();
+
+    if (active !== RouteActive.Inactive) {
+      const paramsEq = params === undefined || paramsIsEqual(route().params, params) ? RouteActive.EqualParams : RouteActive.Inactive;
+      return active | paramsEq;
+    }
+
+    return RouteActive.Inactive;
+  });
 }
+var RouteActive;
+
+(function (RouteActive) {
+  RouteActive[RouteActive["Inactive"] = 0] = "Inactive";
+  RouteActive[RouteActive["ActiveRoutePrefix"] = 1] = "ActiveRoutePrefix";
+  RouteActive[RouteActive["ActiveRouteExact"] = 3] = "ActiveRouteExact";
+  RouteActive[RouteActive["EqualParams"] = 4] = "EqualParams";
+})(RouteActive || (RouteActive = {}));
 /**
  * Find whether 'link' is an ancestor of, or equal to, 'here'
  *
  * Maybe useful for creating your own `Link` component.
  */
 
+
 function isActive(here, link) {
-  return link === here || here.startsWith(link + ".");
+  if (link === here) return RouteActive.ActiveRouteExact;
+  if (here.startsWith(link + ".")) return RouteActive.ActiveRoutePrefix;
+  return RouteActive.Inactive;
 }
 
 const _tmpl$ = template(`<button></button>`, 2),
@@ -52,7 +72,7 @@ function Link(props) {
     router: router5,
     config
   } = requireRouter();
-  let [linkProps, innerProps] = splitProps(props, ["type", "onClick", "classList", "to", "params", "nav", "navIgnoreParams", "navActiveClass", "disabled", "back", "forward", "display", "openInNewTab"]);
+  let [linkProps, innerProps] = splitProps(props, ["type", "onClick", "classList", "to", "params", "navIgnoreParams", "navActiveClassList", "disabled", "back", "forward", "display", "openInNewTab"]);
   linkProps = mergeProps({
     navActiveClass: config.navActiveClass,
     back: config.back,
@@ -71,14 +91,11 @@ function Link(props) {
     return undefined;
   });
   const getClassList = createMemo(() => {
-    const cls = { ...linkProps.classList
-    };
-
-    if (linkProps.nav && typeof linkProps.navActiveClass === "string") {
-      cls[linkProps.navActiveClass] = isActive();
+    if (linkProps.navActiveClassList !== undefined) {
+      return mergeProps(linkProps.navActiveClassList(isActive()), linkProps.classList);
     }
 
-    return cls;
+    return mergeProps(linkProps.classList);
   });
 
   function onClick(ev) {
@@ -162,8 +179,14 @@ function Link(props) {
     return _el$3;
   })());
 }
+function createLink(defaultProps) {
+  return givenProps => {
+    const props = mergeProps(defaultProps, givenProps);
+    return createComponent(Link, props);
+  };
+}
 
-const alwaysInactive = () => false;
+const alwaysInactive = () => RouteActive.Inactive;
 
 delegateEvents(["click"]);
 
@@ -386,7 +409,7 @@ function createSolidRouter(config) {
   }
 
   return {
-    Link,
+    Link: config.defaultLinkProps !== undefined ? createLink(config.defaultLinkProps) : Link,
     navigate: opts => {
       var _config$forward, _config$back, _opts$params;
 
@@ -454,5 +477,5 @@ function createSolidRouter(config) {
   };
 }
 
-export { Context, MatchRoute, ShowRoute, SwitchRoutes, createSolidRouter as default, isActive, useIsActive, useRoute };
+export { Context, MatchRoute, RouteActive, ShowRoute, SwitchRoutes, createSolidRouter as default, isActive, useIsActive, useRoute };
 //# sourceMappingURL=index.es.js.map

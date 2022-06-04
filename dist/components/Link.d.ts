@@ -1,6 +1,7 @@
 import { RouteMeta } from "../types";
+import { RouteActive } from "../context";
 import { JSX } from "solid-js";
-import { Object } from "ts-toolbelt";
+import { O } from "ts-toolbelt";
 export declare type LinkNav<Route extends RouteMeta> = {
     to: "@@back" | "@@forward";
     params?: undefined;
@@ -17,7 +18,7 @@ export declare type LinkNav<Route extends RouteMeta> = {
         params: Params;
     };
 }[RequiresParams<Params>] : never);
-declare type RequiresParams<Params> = keyof Params extends never ? 0 : Object.RequiredKeys<Extract<Params, object>> extends never ? 0 : 1;
+declare type RequiresParams<Params> = keyof Params extends never ? 0 : O.RequiredKeys<Extract<Params, object>> extends never ? 0 : 1;
 /** Props for making a `Link` component.
  *
  * @remarks
@@ -31,10 +32,10 @@ declare type RequiresParams<Params> = keyof Params extends never ? 0 : Object.Re
  * - `onClick`
  * - `disabledProps`
  */
-export declare type LinkProps<Route extends RouteMeta> = Object.Merge<Omit<JSX.IntrinsicElements["a"], "onClick">, {
+export declare type LinkProps<Route extends RouteMeta> = O.Merge<Omit<JSX.IntrinsicElements["a"], "onClick">, {
     nav?: boolean;
-    navActiveClass?: string;
     navIgnoreParams?: boolean;
+    navActiveClassList?: (state: RouteActive) => Record<string, boolean>;
     openInNewTab?: boolean;
     children?: JSX.Element;
     onClick?: (ev: MouseEvent & {
@@ -46,9 +47,7 @@ export declare type LinkProps<Route extends RouteMeta> = Object.Merge<Omit<JSX.I
     display?: "button";
     disabled?: boolean;
 } & LinkNav<Route>>;
-export interface LinkConfig {
-    navActiveClass: string;
-}
-export default function Link<Route extends RouteMeta>(props: LinkProps<Route>): JSX.Element;
+export declare function Link<Route extends RouteMeta>(props: LinkProps<Route>): JSX.Element;
+export declare function createLink<Route extends RouteMeta>(defaultProps: LinkProps<Route>): (props: LinkProps<Route>) => JSX.Element;
 export {};
 //# sourceMappingURL=Link.d.ts.map
