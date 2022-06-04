@@ -1,5 +1,5 @@
-import { delegateEvents, createComponent, spread, effect, classList, addEventListener, setAttribute, template } from 'solid-js/web';
-import { createContext, createMemo, useContext, mergeProps, splitProps, Show, Match, untrack, onCleanup } from 'solid-js';
+import { delegateEvents, spread, effect, classList, addEventListener, setAttribute, template, createComponent } from 'solid-js/web';
+import { createContext, createMemo, useContext, splitProps, mergeProps, Show, Match, untrack, onCleanup } from 'solid-js';
 import { createStore, reconcile } from 'solid-js/store';
 
 const Context = createContext();
@@ -35,6 +35,9 @@ function useIsActive(link, params, paramsIsEqual = paramsEq) {
   const getIsActiveByName = createMemo(() => isActive(route().name, link));
   return createMemo(() => {
     const active = getIsActiveByName();
+    console.log(link, {
+      active
+    });
 
     if (active !== RouteActive.Inactive) {
       const paramsEq = params === undefined || paramsIsEqual(route().params, params) ? RouteActive.EqualParams : RouteActive.Inactive;
@@ -73,8 +76,7 @@ function Link(props) {
     config
   } = requireRouter();
   let [linkProps, innerProps] = splitProps(props, ["type", "onClick", "classList", "to", "params", "navIgnoreParams", "navActiveClassList", "disabled", "back", "forward", "display", "openInNewTab"]);
-  linkProps = mergeProps({
-    navActiveClass: config.navActiveClass,
+  linkProps = mergeProps(config.defaultLinkProps, {
     back: config.back,
     forward: config.forward
   }, linkProps);
@@ -178,12 +180,6 @@ function Link(props) {
 
     return _el$3;
   })());
-}
-function createLink(defaultProps) {
-  return givenProps => {
-    const props = mergeProps(defaultProps, givenProps);
-    return createComponent(Link, props);
-  };
 }
 
 const alwaysInactive = () => RouteActive.Inactive;
@@ -409,7 +405,7 @@ function createSolidRouter(config) {
   }
 
   return {
-    Link: config.defaultLinkProps !== undefined ? createLink(config.defaultLinkProps) : Link,
+    Link,
     navigate: opts => {
       var _config$forward, _config$back, _opts$params;
 

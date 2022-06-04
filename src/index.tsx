@@ -3,7 +3,7 @@ import { Unsubscribe } from "router5/dist/types/base";
 import { DefaultDependencies } from "router5/dist/types/router";
 import { JSX, onCleanup } from "solid-js";
 import { createStore, reconcile } from "solid-js/store";
-import { createLink, Link, LinkNav, LinkProps } from "./components/Link";
+import { Link, LinkNav, LinkProps } from "./components/Link";
 import RouteStateMachine, { RSM } from "./components/Router";
 import Context from "./context";
 import {
@@ -11,6 +11,7 @@ import {
   RenderTreeLike,
   RouteLike,
   RouteMeta,
+  RouterConfig,
   RouterState,
   RoutesLike,
 } from "./types";
@@ -105,16 +106,7 @@ export default function createSolidRouter<
   Routes extends RoutesLike<Deps>,
   RM extends ReadRoutes<Routes>,
   Deps = DefaultDependencies
->(config: {
-  createRouter5: (
-    routes: Route<Deps>[]
-  ) => Router5<Deps> | [Router5<Deps>, ...Unsubscribe[]];
-  routes: Routes;
-  onStart?: (router: Router5<Deps>) => void;
-  back?: () => void;
-  forward?: () => void;
-  defaultLinkProps?: LinkProps<RM[number]>;
-}): SolidRouter<Deps, RM> {
+>(config: RouterConfig<Deps, Routes, RM>): SolidRouter<Deps, RM> {
   let router: Router5<Deps>;
   let unsubs: Unsubscribe[];
   const r = config.createRouter5(config.routes as any as Route<Deps>[]);
@@ -126,10 +118,7 @@ export default function createSolidRouter<
   }
 
   return {
-    Link:
-      config.defaultLinkProps !== undefined
-        ? createLink(config.defaultLinkProps)
-        : Link,
+    Link,
 
     navigate: (opts: any) => {
       switch (opts.to) {

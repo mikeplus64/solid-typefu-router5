@@ -19,18 +19,13 @@ export declare type LinkNav<Route extends RouteMeta> = {
     };
 }[RequiresParams<Params>] : never);
 declare type RequiresParams<Params> = keyof Params extends never ? 0 : O.RequiredKeys<Extract<Params, object>> extends never ? 0 : 1;
-/** Props for making a `Link` component.
+/**
+ * Props for making a `Link` component.
  *
  * @remarks
  *
- * Only some of the props are reactive; the rest are static at the time of
- * creating the link. The reactive props available are:
- *
- * - `to`
- * - `params`
- * - `disabled`
- * - `onClick`
- * - `disabledProps`
+ * You can set default values for any link props using the `defaultLinkProps`
+ * option in the initial configuration.
  */
 export declare type LinkProps<Route extends RouteMeta> = O.Merge<Omit<JSX.IntrinsicElements["a"], "onClick">, {
     nav?: boolean;
@@ -48,6 +43,5 @@ export declare type LinkProps<Route extends RouteMeta> = O.Merge<Omit<JSX.Intrin
     disabled?: boolean;
 } & LinkNav<Route>>;
 export declare function Link<Route extends RouteMeta>(props: LinkProps<Route>): JSX.Element;
-export declare function createLink<Route extends RouteMeta>(defaultProps: LinkProps<Route>): (props: LinkProps<Route>) => JSX.Element;
 export {};
 //# sourceMappingURL=Link.d.ts.map

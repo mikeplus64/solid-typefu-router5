@@ -44,6 +44,7 @@ export function useIsActive<Link extends RouteLike>(
   const getIsActiveByName = createMemo(() => isActive(route().name, link));
   return createMemo(() => {
     const active = getIsActiveByName();
+    console.log(link, { active });
     if (active !== RouteActive.Inactive) {
       const paramsEq =
         params === undefined || paramsIsEqual(route().params, params)

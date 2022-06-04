@@ -39,6 +39,9 @@ function useIsActive(link, params, paramsIsEqual = paramsEq) {
   const getIsActiveByName = solidJs.createMemo(() => isActive(route().name, link));
   return solidJs.createMemo(() => {
     const active = getIsActiveByName();
+    console.log(link, {
+      active
+    });
 
     if (active !== exports.RouteActive.Inactive) {
       const paramsEq = params === undefined || paramsIsEqual(route().params, params) ? exports.RouteActive.EqualParams : exports.RouteActive.Inactive;
@@ -77,8 +80,7 @@ function Link(props) {
     config
   } = requireRouter();
   let [linkProps, innerProps] = solidJs.splitProps(props, ["type", "onClick", "classList", "to", "params", "navIgnoreParams", "navActiveClassList", "disabled", "back", "forward", "display", "openInNewTab"]);
-  linkProps = solidJs.mergeProps({
-    navActiveClass: config.navActiveClass,
+  linkProps = solidJs.mergeProps(config.defaultLinkProps, {
     back: config.back,
     forward: config.forward
   }, linkProps);
@@ -182,12 +184,6 @@ function Link(props) {
 
     return _el$3;
   })());
-}
-function createLink(defaultProps) {
-  return givenProps => {
-    const props = solidJs.mergeProps(defaultProps, givenProps);
-    return web.createComponent(Link, props);
-  };
 }
 
 const alwaysInactive = () => exports.RouteActive.Inactive;
@@ -413,7 +409,7 @@ function createSolidRouter(config) {
   }
 
   return {
-    Link: config.defaultLinkProps !== undefined ? createLink(config.defaultLinkProps) : Link,
+    Link,
     navigate: opts => {
       var _config$forward, _config$back, _opts$params;
 

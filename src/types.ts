@@ -3,6 +3,7 @@ import { Unsubscribe } from "router5/dist/types/base";
 import { Store } from "solid-js/store";
 import { JSX } from "solid-js";
 import { Any, Object, String, Union } from "ts-toolbelt";
+import { LinkProps } from "components/Link";
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -49,7 +50,11 @@ export interface RouterState {
   previousRoute: undefined | R5RouteState;
 }
 
-export interface RouterConfig<Deps, Routes extends RouteTreeLike> {
+export interface RouterConfig<
+  Deps,
+  Routes extends RouteTreeLike,
+  RM extends RouteMeta[]
+> {
   createRouter5: (
     routes: Route<Deps>[]
   ) => Router5<Deps> | [Router5<Deps>, ...Unsubscribe[]];
@@ -58,16 +63,18 @@ export interface RouterConfig<Deps, Routes extends RouteTreeLike> {
   navActiveClass?: string;
   back?: () => void;
   forward?: () => void;
+  defaultLinkProps?: Partial<LinkProps<RM[number]>>;
 }
 
 export interface RouterContextValue<
   Deps = any,
-  Routes extends RouteTreeLike = any
+  Routes extends RouteTreeLike = any,
+  RM extends RouteMeta[] = any
 > {
   state: Store<RouterState>;
   /** Use this to make your own custom 'Link', buttons, navigation, etc. */
   router: Router5<Deps>;
-  config: RouterConfig<Deps, Routes>;
+  config: RouterConfig<Deps, Routes, RM>;
 }
 
 export type RouteLike = string;

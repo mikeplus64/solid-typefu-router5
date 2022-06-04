@@ -1,10 +1,9 @@
-import { Route, Router as Router5 } from "router5";
-import { Unsubscribe } from "router5/dist/types/base";
+import { Router as Router5 } from "router5";
 import { DefaultDependencies } from "router5/dist/types/router";
 import { JSX } from "solid-js";
 import { LinkNav, LinkProps } from "./components/Link";
 import { RSM } from "./components/Router";
-import { ReadRoutes, RouteMeta, RoutesLike } from "./types";
+import { ReadRoutes, RouteMeta, RouterConfig, RoutesLike } from "./types";
 export type { LinkNav } from "./components/Link";
 export type { RSM } from "./components/Router";
 export { MatchRoute, MatchRouteProps, ShowRoute, ShowRouteProps, SwitchRoutes, } from "./components/Switch";
@@ -59,12 +58,5 @@ export interface SolidRouter<Deps, RM extends RouteMeta[]> {
  * export const { Provider, Link, Router } = createSolidRouter({ routes, createRouter5, onStart });
  * ```
  */
-export default function createSolidRouter<Routes extends RoutesLike<Deps>, RM extends ReadRoutes<Routes>, Deps = DefaultDependencies>(config: {
-    createRouter5: (routes: Route<Deps>[]) => Router5<Deps> | [Router5<Deps>, ...Unsubscribe[]];
-    routes: Routes;
-    onStart?: (router: Router5<Deps>) => void;
-    back?: () => void;
-    forward?: () => void;
-    defaultLinkProps?: LinkProps<RM[number]>;
-}): SolidRouter<Deps, RM>;
+export default function createSolidRouter<Routes extends RoutesLike<Deps>, RM extends ReadRoutes<Routes>, Deps = DefaultDependencies>(config: RouterConfig<Deps, Routes, RM>): SolidRouter<Deps, RM>;
 //# sourceMappingURL=index.d.ts.map

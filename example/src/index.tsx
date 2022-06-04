@@ -1,8 +1,12 @@
-import createSolidRouter, { useRoute, ReadRoutes } from "solid-typefu-router5";
+import createSolidRouter, {
+  useRoute,
+  ReadRoutes,
+  RouteActive,
+} from "solid-typefu-router5";
 import browserPluginFactory from "router5-plugin-browser";
 import { render } from "solid-js/web";
 import createRouter from "router5";
-import { For } from "solid-js";
+import { createEffect, For } from "solid-js";
 import { RSM } from "../../dist/components/Router";
 
 const routes = [
@@ -26,7 +30,11 @@ type UserRoutes = RenderRoutes["users"];
 
 const { Link, Router, Provider } = createSolidRouter({
   routes,
-  navActiveClass: "is-active",
+  defaultLinkProps: {
+    navActiveClassList: (r) => ({
+      "is-active": r > RouteActive.Inactive,
+    }),
+  },
   back: () => window.history.back(),
   forward: () => window.history.forward(),
   createRouter5: (routes) => {
@@ -93,7 +101,7 @@ const Users = (props: { page: number }) => (
 const UsersEdit = () => (
   <>
     <h1>Edit users</h1>
-    <p>If you could edit the users here, here's where that would be. </p>{" "}
+    <p>If you could edit the users here, here is where that would be. </p>{" "}
   </>
 );
 
@@ -106,6 +114,10 @@ const UserProfile = (props: { id: number }) => (
 
 const App = () => {
   const route = useRoute();
+  createEffect(() => {
+    const r = route();
+    console.log("route changed!", r.name, { ...r.params });
+  });
   return (
     <div>
       <b>Route: </b>

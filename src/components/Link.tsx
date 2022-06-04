@@ -18,18 +18,13 @@ type RequiresParams<Params> = keyof Params extends never
   ? 0
   : 1;
 
-/** Props for making a `Link` component.
+/**
+ * Props for making a `Link` component.
  *
  * @remarks
  *
- * Only some of the props are reactive; the rest are static at the time of
- * creating the link. The reactive props available are:
- *
- * - `to`
- * - `params`
- * - `disabled`
- * - `onClick`
- * - `disabledProps`
+ * You can set default values for any link props using the `defaultLinkProps`
+ * option in the initial configuration.
  */
 export type LinkProps<Route extends RouteMeta> = O.Merge<
   Omit<JSX.IntrinsicElements["a"], "onClick">,
@@ -73,8 +68,8 @@ export function Link<Route extends RouteMeta>(
   ]);
 
   linkProps = mergeProps(
+    config.defaultLinkProps,
     {
-      navActiveClass: config.navActiveClass,
       back: config.back,
       forward: config.forward,
     },
@@ -154,15 +149,6 @@ export function Link<Route extends RouteMeta>(
       />
     )
   );
-}
-
-export function createLink<Route extends RouteMeta>(
-  defaultProps: LinkProps<Route>
-): (props: LinkProps<Route>) => JSX.Element {
-  return (givenProps) => {
-    const props = mergeProps(defaultProps, givenProps);
-    return <Link {...props} />;
-  };
 }
 
 const alwaysInactive = () => RouteActive.Inactive;
