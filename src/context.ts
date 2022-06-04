@@ -39,14 +39,27 @@ export function useIsActive<Link extends RouteLike>(
     a: undefined | Record<string, any>,
     b: undefined | Record<string, any>
   ) => boolean = paramsEq
-): () => boolean {
+): () => RouteActive {
   const route = useRoute();
   const getIsActiveByName = createMemo(() => isActive(route().name, link));
-  return createMemo(
-    () =>
-      getIsActiveByName() &&
-      (params === undefined || paramsIsEqual(route().params, params))
-  );
+  return createMemo(() => {
+    const active = getIsActiveByName();
+    if (active !== RouteActive.Inactive) {
+      const paramsEq =
+        params === undefined || paramsIsEqual(route().params, params)
+          ? RouteActive.EqualParams
+          : RouteActive.Inactive;
+      return active | paramsEq;
+    }
+    return RouteActive.Inactive;
+  });
+}
+
+export enum RouteActive {
+  Inactive = 0,
+  ActiveRoutePrefix = 0b001,
+  ActiveRouteExact = 0b011,
+  EqualParams = 0b100,
 }
 
 /**
@@ -54,6 +67,11 @@ export function useIsActive<Link extends RouteLike>(
  *
  * Maybe useful for creating your own `Link` component.
  */
-export function isActive<Link extends RouteLike>(here: string, link: Link) {
-  return link === here || here.startsWith(link + ".");
+export function isActive<Link extends RouteLike>(
+  here: string,
+  link: Link
+): RouteActive {
+  if (link === here) return RouteActive.ActiveRouteExact;
+  if (here.startsWith(link + ".")) return RouteActive.ActiveRoutePrefix;
+  return RouteActive.Inactive;
 }

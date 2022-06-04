@@ -129,9 +129,9 @@ export function MatchRoute(props: MatchRouteProps): JSX.Element {
 function createGetMatch(props: PathProps): () => [string, boolean] {
   const route = useRoute();
   const ctx = useContext(MatchContext);
-  return createMemo<[string, boolean]>(
+  return createMemo<[string, boolean], undefined>(
     () => doesMatch(ctx, route().name, props),
     undefined,
-    { equals: (a, b) => a && a[1] === b[1] }
+    { equals: (a, b) => a !== undefined && a?.[1] === b?.[1] }
   );
 }

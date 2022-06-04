@@ -1,7 +1,7 @@
 import { RouteMeta } from "../types";
-import { requireRouter, useIsActive } from "../context";
+import { requireRouter, RouteActive, useIsActive } from "../context";
 import { JSX, createMemo, splitProps, mergeProps } from "solid-js";
-import { Object } from "ts-toolbelt";
+import { O } from "ts-toolbelt";
 
 export type LinkNav<Route extends RouteMeta> =
   | { to: "@@back" | "@@forward"; params?: undefined }
@@ -14,7 +14,7 @@ export type LinkNav<Route extends RouteMeta> =
 
 type RequiresParams<Params> = keyof Params extends never
   ? 0
-  : Object.RequiredKeys<Extract<Params, object>> extends never
+  : O.RequiredKeys<Extract<Params, object>> extends never
   ? 0
   : 1;
 
@@ -31,12 +31,12 @@ type RequiresParams<Params> = keyof Params extends never
  * - `onClick`
  * - `disabledProps`
  */
-export type LinkProps<Route extends RouteMeta> = Object.Merge<
+export type LinkProps<Route extends RouteMeta> = O.Merge<
   Omit<JSX.IntrinsicElements["a"], "onClick">,
   {
     nav?: boolean;
-    navActiveClass?: string;
     navIgnoreParams?: boolean;
+    navActiveClassList?: (state: RouteActive) => Record<string, boolean>;
     openInNewTab?: boolean;
     children?: JSX.Element;
     onClick?: (
@@ -52,11 +52,7 @@ export type LinkProps<Route extends RouteMeta> = Object.Merge<
   } & LinkNav<Route>
 >;
 
-export interface LinkConfig {
-  navActiveClass: string;
-}
-
-export default function Link<Route extends RouteMeta>(
+export function Link<Route extends RouteMeta>(
   props: LinkProps<Route>
 ): JSX.Element {
   const { router: router5, config } = requireRouter();
@@ -67,9 +63,8 @@ export default function Link<Route extends RouteMeta>(
     "classList",
     "to",
     "params",
-    "nav",
     "navIgnoreParams",
-    "navActiveClass",
+    "navActiveClassList",
     "disabled",
     "back",
     "forward",
@@ -106,11 +101,13 @@ export default function Link<Route extends RouteMeta>(
   });
 
   const getClassList = createMemo(() => {
-    const cls: Record<string, any> = { ...linkProps.classList };
-    if (linkProps.nav && typeof linkProps.navActiveClass === "string") {
-      cls[linkProps.navActiveClass] = isActive();
+    if (linkProps.navActiveClassList !== undefined) {
+      return mergeProps(
+        linkProps.navActiveClassList(isActive()),
+        linkProps.classList
+      );
     }
-    return cls;
+    return mergeProps(linkProps.classList);
   });
 
   function onClick(
@@ -159,4 +156,13 @@ export default function Link<Route extends RouteMeta>(
   );
 }
 
-const alwaysInactive = () => false;
+export function createLink<Route extends RouteMeta>(
+  defaultProps: LinkProps<Route>
+): (props: LinkProps<Route>) => JSX.Element {
+  return (givenProps) => {
+    const props = mergeProps(defaultProps, givenProps);
+    return <Link {...props} />;
+  };
+}
+
+const alwaysInactive = () => RouteActive.Inactive;

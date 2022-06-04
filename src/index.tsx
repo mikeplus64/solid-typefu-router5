@@ -3,7 +3,7 @@ import { Unsubscribe } from "router5/dist/types/base";
 import { DefaultDependencies } from "router5/dist/types/router";
 import { JSX, onCleanup } from "solid-js";
 import { createStore, reconcile } from "solid-js/store";
-import Link, { LinkNav, LinkProps } from "./components/Link";
+import { createLink, Link, LinkNav, LinkProps } from "./components/Link";
 import RouteStateMachine, { RSM } from "./components/Router";
 import Context from "./context";
 import {
@@ -24,7 +24,13 @@ export {
   ShowRouteProps,
   SwitchRoutes,
 } from "./components/Switch";
-export { default as Context, isActive, useIsActive, useRoute } from "./context";
+export {
+  default as Context,
+  isActive,
+  useIsActive,
+  useRoute,
+  RouteActive,
+} from "./context";
 export type {
   ParseParams,
   ReadRoutes,
@@ -105,9 +111,9 @@ export default function createSolidRouter<
   ) => Router5<Deps> | [Router5<Deps>, ...Unsubscribe[]];
   routes: Routes;
   onStart?: (router: Router5<Deps>) => void;
-  navActiveClass?: string;
   back?: () => void;
   forward?: () => void;
+  defaultLinkProps?: LinkProps<RM[number]>;
 }): SolidRouter<Deps, RM> {
   let router: Router5<Deps>;
   let unsubs: Unsubscribe[];
@@ -120,7 +126,10 @@ export default function createSolidRouter<
   }
 
   return {
-    Link,
+    Link:
+      config.defaultLinkProps !== undefined
+        ? createLink(config.defaultLinkProps)
+        : Link,
 
     navigate: (opts: any) => {
       switch (opts.to) {
@@ -154,7 +163,7 @@ export default function createSolidRouter<
 
       router.subscribe((rs) => {
         setState(
-          reconcile<RouterState>(
+          reconcile<RouterState, RouterState>(
             {
               previousRoute: rs.previousRoute,
               route: { ...rs.route, nameArray: rs.route.name.split(".") },
