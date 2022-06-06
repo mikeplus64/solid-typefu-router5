@@ -2,12 +2,12 @@ import createSolidRouter, {
   useRoute,
   ReadRoutes,
   RouteActive,
+  RSM,
 } from "solid-typefu-router5";
 import browserPluginFactory from "router5-plugin-browser";
 import { render } from "solid-js/web";
 import createRouter from "router5";
-import { createEffect, For } from "solid-js";
-import { RSM } from "../../dist/components/Router";
+import { createEffect, createSignal, For } from "solid-js";
 
 const routes = [
   { name: "home", path: "/" },
@@ -114,13 +114,18 @@ const UserProfile = (props: { id: number }) => (
 
 const App = () => {
   const route = useRoute();
+  const [something, setSomething] = createSignal(0);
   createEffect(() => {
     const r = route();
     console.log("route changed!", r.name, { ...r.params });
   });
   return (
     <div>
+      <b>SolidJS test: </b> {something()}{" "}
+      <button onClick={() => setSomething((s) => s + 1)}>Increment</button>
+      <hr />
       <b>Route: </b>
+      <code>{route().name}</code>
       <code>{JSON.stringify(route())}</code>
       <hr />
       <nav class="nav">

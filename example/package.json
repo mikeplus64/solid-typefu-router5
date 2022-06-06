@@ -2,7 +2,6 @@
   "name": "solid-typefu-router5-example",
   "version": "1.0.0",
   "description": "",
-  "main": "index.html",
   "scripts": {
     "start": "parcel index.html --open",
     "build": "parcel build index.html"
@@ -12,14 +11,14 @@
     "date-fns": "^2.16.1",
     "router5": "^8.0.1",
     "router5-plugin-browser": "^8.0.1",
-    "solid-js": "^1.3.4",
-    "solid-typefu-router5": "*"
+    "solid-js": "^1.4.1",
+    "solid-typefu-router5": "^1.4.0-beta.0"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
     "@babel/plugin-transform-runtime": "^7.11.0",
-    "babel-preset-solid": "^1.3.4",
-    "parcel": "^1.12.4",
+    "babel-preset-solid": "^1.4.1",
+    "parcel": "2.6.0",
     "typescript": "^4.1.2"
   },
   "keywords": []

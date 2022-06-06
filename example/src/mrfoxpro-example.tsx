@@ -1,5 +1,5 @@
 // example by https://github.com/MrFoxPro
-import createSolidRouter, { useRoute } from "solid-typefu-router5";
+import createSolidRouter, { useRoute } from "./lib";
 import browserPluginFactory from "router5-plugin-browser";
 import { render } from "solid-js/web";
 import createRouter from "router5";
@@ -19,7 +19,11 @@ const routes = [
   },
 ] as const;
 
-const { Router, Provider: RouterProvider, navigate } = createSolidRouter({
+const {
+  Router,
+  Provider: RouterProvider,
+  navigate,
+} = createSolidRouter({
   routes,
   createRouter5: (routes) => {
     const router = createRouter(routes, {
