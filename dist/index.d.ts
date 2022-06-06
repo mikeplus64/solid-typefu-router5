@@ -4,7 +4,7 @@ import { JSX } from "solid-js";
 import { LinkNav, LinkProps } from "./components/Link";
 import { RSM } from "./components/Router";
 import { ReadRoutes, RouteMeta, RouterConfig, RoutesLike } from "./types";
-export type { LinkNav } from "./components/Link";
+export type { LinkProps, LinkNav } from "./components/Link";
 export type { RSM } from "./components/Router";
 export { MatchRoute, MatchRouteProps, ShowRoute, ShowRouteProps, SwitchRoutes, } from "./components/Switch";
 export { default as Context, isActive, useIsActive, useRoute, RouteActive, } from "./context";

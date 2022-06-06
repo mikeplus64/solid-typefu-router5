@@ -16,7 +16,7 @@ import {
   RoutesLike,
 } from "./types";
 
-export type { LinkNav } from "./components/Link";
+export type { LinkProps, LinkNav } from "./components/Link";
 export type { RSM } from "./components/Router";
 export {
   MatchRoute,

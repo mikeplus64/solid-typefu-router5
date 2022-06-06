@@ -56,7 +56,7 @@ exports.RouteActive = void 0;
 (function (RouteActive) {
   RouteActive[RouteActive["Inactive"] = 0] = "Inactive";
   RouteActive[RouteActive["ActiveRoutePrefix"] = 1] = "ActiveRoutePrefix";
-  RouteActive[RouteActive["ActiveRouteExact"] = 3] = "ActiveRouteExact";
+  RouteActive[RouteActive["ActiveRouteExact"] = 2] = "ActiveRouteExact";
   RouteActive[RouteActive["EqualParams"] = 4] = "EqualParams";
 })(exports.RouteActive || (exports.RouteActive = {}));
 /**
@@ -74,13 +74,22 @@ function isActive(here, link) {
 
 const _tmpl$ = /*#__PURE__*/web.template(`<button></button>`, 2),
       _tmpl$2 = /*#__PURE__*/web.template(`<a></a>`, 2);
+const defaultLinkProps = {
+  navActiveClassList: state => ({
+    "is-active": state > 0,
+    "is-active-prefix": (state & exports.RouteActive.ActiveRoutePrefix) === exports.RouteActive.ActiveRoutePrefix,
+    "is-active-exact": (state & exports.RouteActive.ActiveRouteExact) === exports.RouteActive.ActiveRouteExact
+  })
+};
 function Link(props) {
+  var _config$defaultLinkPr;
+
   const {
     router: router5,
     config
   } = requireRouter();
   let [linkProps, innerProps] = solidJs.splitProps(props, ["type", "onClick", "classList", "to", "params", "navIgnoreParams", "navActiveClassList", "disabled", "back", "forward", "display", "openInNewTab"]);
-  linkProps = solidJs.mergeProps(config.defaultLinkProps, {
+  linkProps = solidJs.mergeProps((_config$defaultLinkPr = config.defaultLinkProps) !== null && _config$defaultLinkPr !== void 0 ? _config$defaultLinkPr : defaultLinkProps, {
     back: config.back,
     forward: config.forward
   }, linkProps);

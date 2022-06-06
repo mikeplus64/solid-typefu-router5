@@ -8,7 +8,7 @@ export declare function useIsActive<Link extends RouteLike>(link: Link, params?:
 export declare enum RouteActive {
     Inactive = 0,
     ActiveRoutePrefix = 1,
-    ActiveRouteExact = 3,
+    ActiveRouteExact = 2,
     EqualParams = 4
 }
 /**

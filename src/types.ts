@@ -3,7 +3,7 @@ import { Unsubscribe } from "router5/dist/types/base";
 import { Store } from "solid-js/store";
 import { JSX } from "solid-js";
 import { Any, Object, String, Union } from "ts-toolbelt";
-import { LinkProps } from "components/Link";
+import { LinkProps } from "./components/Link";
 
 ////////////////////////////////////////////////////////////////////////////////
 //

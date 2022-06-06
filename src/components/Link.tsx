@@ -47,6 +47,16 @@ export type LinkProps<Route extends RouteMeta> = O.Merge<
   } & LinkNav<Route>
 >;
 
+const defaultLinkProps = {
+  navActiveClassList: (state: RouteActive): Record<string, boolean> => ({
+    "is-active": state > 0,
+    "is-active-prefix":
+      (state & RouteActive.ActiveRoutePrefix) === RouteActive.ActiveRoutePrefix,
+    "is-active-exact":
+      (state & RouteActive.ActiveRouteExact) === RouteActive.ActiveRouteExact,
+  }),
+};
+
 export function Link<Route extends RouteMeta>(
   props: LinkProps<Route>
 ): JSX.Element {
@@ -68,7 +78,7 @@ export function Link<Route extends RouteMeta>(
   ]);
 
   linkProps = mergeProps(
-    config.defaultLinkProps,
+    config.defaultLinkProps ?? defaultLinkProps,
     {
       back: config.back,
       forward: config.forward,

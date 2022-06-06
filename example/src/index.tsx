@@ -31,10 +31,11 @@ type UserRoutes = RenderRoutes["users"];
 const { Link, Router, Provider } = createSolidRouter({
   routes,
   defaultLinkProps: {
-    navActiveClassList: (r) => ({
-      "is-active": r > RouteActive.Inactive,
+    navActiveClassList: (s) => ({
+      "is-active": s > 0,
     }),
   },
+
   back: () => window.history.back(),
   forward: () => window.history.forward(),
   createRouter5: (routes) => {

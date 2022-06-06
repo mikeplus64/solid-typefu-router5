@@ -59,7 +59,7 @@ export function useIsActive<Link extends RouteLike>(
 export enum RouteActive {
   Inactive = 0,
   ActiveRoutePrefix = 0b001,
-  ActiveRouteExact = 0b011,
+  ActiveRouteExact = 0b010,
   EqualParams = 0b100,
 }
 
