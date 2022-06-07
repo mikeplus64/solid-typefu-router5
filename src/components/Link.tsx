@@ -1,5 +1,11 @@
 import { RouteMeta } from "../types";
-import { requireRouter, RouteActive, useIsActive } from "../context";
+import {
+  paramsEq,
+  paramsNeverEq,
+  requireRouter,
+  RouteActive,
+  useIsActive,
+} from "../context";
 import { JSX, createMemo, splitProps, mergeProps } from "solid-js";
 import { O } from "ts-toolbelt";
 
@@ -48,13 +54,19 @@ export type LinkProps<Route extends RouteMeta> = O.Merge<
 >;
 
 const defaultLinkProps = {
-  navActiveClassList: (state: RouteActive): Record<string, boolean> => ({
-    "is-active": state > 0,
-    "is-active-prefix":
-      (state & RouteActive.ActiveRoutePrefix) === RouteActive.ActiveRoutePrefix,
-    "is-active-exact":
-      (state & RouteActive.ActiveRouteExact) === RouteActive.ActiveRouteExact,
-  }),
+  navActiveClassList: (state: RouteActive): Record<string, boolean> => {
+    return {
+      link: true,
+      "is-active": state > 0,
+      "is-active-prefix":
+        (state & RouteActive.ActiveRoutePrefix) ===
+        RouteActive.ActiveRoutePrefix,
+      "is-active-exact":
+        (state & RouteActive.ActiveRouteExact) === RouteActive.ActiveRouteExact,
+      "has-equal-params":
+        (state & RouteActive.EqualParams) === RouteActive.EqualParams,
+    };
+  },
 };
 
 export function Link<Route extends RouteMeta>(
@@ -68,6 +80,7 @@ export function Link<Route extends RouteMeta>(
     "classList",
     "to",
     "params",
+    "nav",
     "navIgnoreParams",
     "navActiveClassList",
     "disabled",
@@ -89,8 +102,8 @@ export function Link<Route extends RouteMeta>(
   const isActive =
     typeof linkProps.to === "string"
       ? useIsActive(
-          linkProps.to,
-          linkProps.navIgnoreParams ? undefined : linkProps.params
+          () => props,
+          linkProps.navIgnoreParams ? paramsNeverEq : paramsEq
         )
       : alwaysInactive;
 

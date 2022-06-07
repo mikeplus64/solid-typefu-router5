@@ -1,6 +1,6 @@
 import { createContext, useContext, createMemo } from "solid-js";
-import { DeepReadonly } from "solid-js/store";
 import { RouterContextValue, RouteState, RouteLike } from "./types";
+import { O, Any } from "ts-toolbelt";
 
 const Context = createContext<RouterContextValue>();
 
@@ -14,45 +14,46 @@ export function requireRouter(): RouterContextValue {
   return ctx;
 }
 
-export function useRoute(): () => DeepReadonly<RouteState> {
+export function useRoute(): () => O.Readonly<RouteState, Any.Key, "deep"> {
   const ctx = requireRouter();
   return () => ctx.state.route;
 }
 
-function paramsEq(
-  a: undefined | Record<string, any>,
-  b: undefined | Record<string, any>
+export function paramsEq(
+  current: undefined | Record<string, any>,
+  target: undefined | Record<string, any>
 ): boolean {
-  if (a === b) return true;
-  if (a === undefined) return b === undefined;
-  if (b === undefined) return a === undefined;
-  const keysA = Object.keys(a!);
-  for (const key of keysA) if (!(key in b)) return false;
-  for (const key of keysA) if (String(a[key]) !== String(b[key])) return false;
-  return keysA.length === Object.keys(b!).length;
+  if (current === target) return true;
+  if (current === undefined) return target === undefined;
+  if (target === undefined) return current === undefined;
+  for (const key of Object.keys(target)) {
+    if (!(key in current) || current[key] !== target[key]) return false;
+  }
+  return true;
+}
+
+export function paramsNeverEq() {
+  return false;
 }
 
 export function useIsActive<Link extends RouteLike>(
-  link: Link,
-  params?: Record<string, any>,
+  getLink: () => { to: Link; params?: Record<string, any> },
   paramsIsEqual: (
     a: undefined | Record<string, any>,
     b: undefined | Record<string, any>
   ) => boolean = paramsEq
 ): () => RouteActive {
-  const route = useRoute();
-  const getIsActiveByName = createMemo(() => isActive(route().name, link));
+  const getRoute = useRoute();
   return createMemo(() => {
-    const active = getIsActiveByName();
-    console.log(link, { active });
-    if (active !== RouteActive.Inactive) {
-      const paramsEq =
-        params === undefined || paramsIsEqual(route().params, params)
-          ? RouteActive.EqualParams
-          : RouteActive.Inactive;
-      return active | paramsEq;
+    const link = getLink();
+    const route = getRoute();
+    const active = isActive(route.name, link.to);
+    if (active > 0) {
+      if (paramsIsEqual(route.params, link.params)) {
+        return active | RouteActive.EqualParams;
+      }
     }
-    return RouteActive.Inactive;
+    return active;
   });
 }
 

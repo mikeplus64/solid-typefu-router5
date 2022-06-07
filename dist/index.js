@@ -20,35 +20,34 @@ function useRoute() {
   const ctx = requireRouter();
   return () => ctx.state.route;
 }
+function paramsEq(current, target) {
+  if (current === target) return true;
+  if (current === undefined) return target === undefined;
+  if (target === undefined) return current === undefined;
 
-function paramsEq(a, b) {
-  if (a === b) return true;
-  if (a === undefined) return b === undefined;
-  if (b === undefined) return a === undefined;
-  const keysA = Object.keys(a);
+  for (const key of Object.keys(target)) {
+    if (!(key in current) || current[key] !== target[key]) return false;
+  }
 
-  for (const key of keysA) if (!(key in b)) return false;
-
-  for (const key of keysA) if (String(a[key]) !== String(b[key])) return false;
-
-  return keysA.length === Object.keys(b).length;
+  return true;
 }
-
-function useIsActive(link, params, paramsIsEqual = paramsEq) {
-  const route = useRoute();
-  const getIsActiveByName = solidJs.createMemo(() => isActive(route().name, link));
+function paramsNeverEq() {
+  return false;
+}
+function useIsActive(getLink, paramsIsEqual = paramsEq) {
+  const getRoute = useRoute();
   return solidJs.createMemo(() => {
-    const active = getIsActiveByName();
-    console.log(link, {
-      active
-    });
+    const link = getLink();
+    const route = getRoute();
+    const active = isActive(route.name, link.to);
 
-    if (active !== exports.RouteActive.Inactive) {
-      const paramsEq = params === undefined || paramsIsEqual(route().params, params) ? exports.RouteActive.EqualParams : exports.RouteActive.Inactive;
-      return active | paramsEq;
+    if (active > 0) {
+      if (paramsIsEqual(route.params, link.params)) {
+        return active | exports.RouteActive.EqualParams;
+      }
     }
 
-    return exports.RouteActive.Inactive;
+    return active;
   });
 }
 exports.RouteActive = void 0;
@@ -75,11 +74,15 @@ function isActive(here, link) {
 const _tmpl$ = /*#__PURE__*/web.template(`<button></button>`, 2),
       _tmpl$2 = /*#__PURE__*/web.template(`<a></a>`, 2);
 const defaultLinkProps = {
-  navActiveClassList: state => ({
-    "is-active": state > 0,
-    "is-active-prefix": (state & exports.RouteActive.ActiveRoutePrefix) === exports.RouteActive.ActiveRoutePrefix,
-    "is-active-exact": (state & exports.RouteActive.ActiveRouteExact) === exports.RouteActive.ActiveRouteExact
-  })
+  navActiveClassList: state => {
+    return {
+      link: true,
+      "is-active": state > 0,
+      "is-active-prefix": (state & exports.RouteActive.ActiveRoutePrefix) === exports.RouteActive.ActiveRoutePrefix,
+      "is-active-exact": (state & exports.RouteActive.ActiveRouteExact) === exports.RouteActive.ActiveRouteExact,
+      "has-equal-params": (state & exports.RouteActive.EqualParams) === exports.RouteActive.EqualParams
+    };
+  }
 };
 function Link(props) {
   var _config$defaultLinkPr;
@@ -88,12 +91,12 @@ function Link(props) {
     router: router5,
     config
   } = requireRouter();
-  let [linkProps, innerProps] = solidJs.splitProps(props, ["type", "onClick", "classList", "to", "params", "navIgnoreParams", "navActiveClassList", "disabled", "back", "forward", "display", "openInNewTab"]);
+  let [linkProps, innerProps] = solidJs.splitProps(props, ["type", "onClick", "classList", "to", "params", "nav", "navIgnoreParams", "navActiveClassList", "disabled", "back", "forward", "display", "openInNewTab"]);
   linkProps = solidJs.mergeProps((_config$defaultLinkPr = config.defaultLinkProps) !== null && _config$defaultLinkPr !== void 0 ? _config$defaultLinkPr : defaultLinkProps, {
     back: config.back,
     forward: config.forward
   }, linkProps);
-  const isActive = typeof linkProps.to === "string" ? useIsActive(linkProps.to, linkProps.navIgnoreParams ? undefined : linkProps.params) : alwaysInactive;
+  const isActive = typeof linkProps.to === "string" ? useIsActive(() => props, linkProps.navIgnoreParams ? paramsNeverEq : paramsEq) : alwaysInactive;
   const getHref = solidJs.createMemo(() => {
     if (typeof linkProps.to === "string" && !linkProps.to.startsWith("@@")) {
       try {
