@@ -1,5 +1,5 @@
-import { delegateEvents, spread, effect, classList, addEventListener, setAttribute, template, createComponent } from 'solid-js/web';
-import { createContext, createMemo, useContext, splitProps, mergeProps, Show, Match, untrack, onCleanup } from 'solid-js';
+import { delegateEvents, spread, effect, classList, addEventListener, setAttribute, template, createComponent, memo } from 'solid-js/web';
+import { createContext, createMemo, useContext, splitProps, mergeProps, Show, Match, onCleanup } from 'solid-js';
 import { createStore, reconcile } from 'solid-js/store';
 
 const Context = createContext();
@@ -238,13 +238,19 @@ function SwitchRoutes(props) {
 
     if (ix !== undefined) {
       const [i, target] = ix;
+      let children = props.children[i].children; // the following avoids infinite loops where the reactive scope would leak
+      // outside of the memo
+
+      if (typeof children === "function") {
+        children = createMemo(children);
+      } else {
+        // XXX maybe unnecessary
+        children = createMemo(() => children);
+      }
+
       return createComponent(MatchContext.Provider, {
         value: target,
-
-        get children() {
-          return props.children[i].children;
-        }
-
+        children: children
       });
     }
 
@@ -343,7 +349,7 @@ function RouteStateMachine(tree, _assumed) {
       });
     }
 
-    return untrack(() => createComponent(RenderHere, {
+    return () => createComponent(RenderHere, {
       get params() {
         return route().params;
       },
@@ -360,10 +366,10 @@ function RouteStateMachine(tree, _assumed) {
         });
       }
 
-    }));
+    });
   }
 
-  return untrack(() => traverse([], tree));
+  return createMemo(() => traverse([], tree));
 }
 
 function nofallback() {
@@ -371,7 +377,7 @@ function nofallback() {
 }
 
 function passthru(props) {
-  return props.children;
+  return memo(() => props.children);
 }
 
 /**

@@ -83,10 +83,17 @@ export function SwitchRoutes(props: {
     const ix = getIndex();
     if (ix !== undefined) {
       const [i, target] = ix;
+      let children = props.children[i].children;
+      // the following avoids infinite loops where the reactive scope would leak
+      // outside of the memo
+      if (typeof children === "function") {
+        children = createMemo(children);
+      } else {
+        // XXX maybe unnecessary
+        children = createMemo(() => children);
+      }
       return (
-        <MatchContext.Provider value={target}>
-          {props.children[i].children}
-        </MatchContext.Provider>
+        <MatchContext.Provider value={target}>{children}</MatchContext.Provider>
       );
     }
     return props.fallback;

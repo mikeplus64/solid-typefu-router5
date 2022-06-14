@@ -242,13 +242,19 @@ function SwitchRoutes(props) {
 
     if (ix !== undefined) {
       const [i, target] = ix;
+      let children = props.children[i].children; // the following avoids infinite loops where the reactive scope would leak
+      // outside of the memo
+
+      if (typeof children === "function") {
+        children = solidJs.createMemo(children);
+      } else {
+        // XXX maybe unnecessary
+        children = solidJs.createMemo(() => children);
+      }
+
       return web.createComponent(MatchContext.Provider, {
         value: target,
-
-        get children() {
-          return props.children[i].children;
-        }
-
+        children: children
       });
     }
 
@@ -347,7 +353,7 @@ function RouteStateMachine(tree, _assumed) {
       });
     }
 
-    return solidJs.untrack(() => web.createComponent(RenderHere, {
+    return () => web.createComponent(RenderHere, {
       get params() {
         return route().params;
       },
@@ -364,10 +370,10 @@ function RouteStateMachine(tree, _assumed) {
         });
       }
 
-    }));
+    });
   }
 
-  return solidJs.untrack(() => traverse([], tree));
+  return solidJs.createMemo(() => traverse([], tree));
 }
 
 function nofallback() {
@@ -375,7 +381,7 @@ function nofallback() {
 }
 
 function passthru(props) {
-  return props.children;
+  return web.memo(() => props.children);
 }
 
 /**

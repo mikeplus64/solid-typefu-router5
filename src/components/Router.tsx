@@ -1,5 +1,5 @@
 import { useRoute } from "context";
-import { JSX, untrack } from "solid-js";
+import { createMemo, JSX } from "solid-js";
 import { Any, Object, Union, String } from "ts-toolbelt";
 import { RouteMeta, RouterRenderNode, RenderTreeLike } from "../types";
 import { MatchRouteProps, SwitchRoutes } from "./Switch";
@@ -54,16 +54,16 @@ export default function RouteStateMachine<
         children: () => traverse(next, child),
       });
     }
-    return untrack(() => (
+    return () => (
       <RenderHere params={route().params as any}>
         <SwitchRoutes
           fallback={() => <RenderFallback params={route().params as any} />}
           children={children}
         />
       </RenderHere>
-    ));
+    );
   }
-  return untrack(() => traverse([], tree));
+  return createMemo(() => traverse([], tree));
 }
 
 function nofallback() {
@@ -71,5 +71,5 @@ function nofallback() {
 }
 
 function passthru(props: { children?: JSX.Element; params: any }): JSX.Element {
-  return props.children;
+  return <>{props.children}</>;
 }
