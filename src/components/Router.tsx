@@ -1,7 +1,7 @@
 import { useRoute } from "context";
-import { createMemo, JSX } from "solid-js";
-import { Any, Object, Union, String } from "ts-toolbelt";
-import { RouteMeta, RouterRenderNode, RenderTreeLike } from "../types";
+import { createMemo, JSX, untrack } from "solid-js";
+import { Any, Object, String, Union } from "ts-toolbelt";
+import { RenderTreeLike, RouteMeta, RouterRenderNode } from "../types";
 import { MatchRouteProps, SwitchRoutes } from "./Switch";
 
 export type RSM<
@@ -38,6 +38,7 @@ export default function RouteStateMachine<
   T extends RenderTreeLike,
   A extends string | string[]
 >(tree: T, _assumed?: A): JSX.Element {
+  // const owner = getOwner();
   const route = useRoute();
   function traverse(path: string[], node: RenderTreeLike): JSX.Element {
     const children: MatchRouteProps[] = [];
@@ -51,19 +52,20 @@ export default function RouteStateMachine<
       const child = routes[key]!;
       children.push({
         prefix: key,
-        children: () => traverse(next, child),
+        children: () => untrack(() => traverse(next, child)),
       });
     }
-    return () => (
-      <RenderHere params={route().params as any}>
-        <SwitchRoutes
-          fallback={() => <RenderFallback params={route().params as any} />}
-          children={children}
-        />
-      </RenderHere>
-    );
+    return () =>
+      untrack(() => (
+        <RenderHere params={route().params as any}>
+          <SwitchRoutes
+            fallback={() => <RenderFallback params={route().params as any} />}
+            children={children}
+          />
+        </RenderHere>
+      ));
   }
-  return createMemo(() => traverse([], tree));
+  return untrack(() => createMemo(() => traverse([], tree)));
 }
 
 function nofallback() {

@@ -1,14 +1,48 @@
-import { RouteMeta } from "../types";
-import {
-  paramsEq,
-  paramsNeverEq,
-  requireRouter,
-  RouteActive,
-  useIsActive,
-} from "../context";
-import { JSX, createMemo, splitProps, mergeProps } from "solid-js";
+import { createMemo, JSX, mergeProps, splitProps, untrack } from "solid-js";
 import { O } from "ts-toolbelt";
+import { IsActiveOptions, requireRouter, useIsActive } from "../context";
+import { RouteMeta } from "../types";
 
+/** See [[LinkOwnProps]] */
+export type LinkProps<Route extends RouteMeta> = LinkOwnProps<Route> &
+  LinkDisplayProps;
+
+export type LinkDisplayProps =
+  | ({ display: "button" } & LinkIntrinsicProps<"button">)
+  | ({ display?: undefined } & LinkIntrinsicProps<"a">);
+
+type LinkIntrinsicProps<Elem extends keyof JSX.IntrinsicElements> = Omit<
+  JSX.IntrinsicElements[Elem],
+  keyof LinkOwnProps<any>
+>;
+
+/**
+ * Props for making a `Link` component.
+ *
+ * @remarks
+ *
+ * You can set default values for any link props using the `defaultLinkProps`
+ * option in the initial configuration.
+ */
+export type LinkOwnProps<Route extends RouteMeta> = {
+  nav?: boolean;
+  navActiveClass?: string;
+  navIsActive?: IsActiveOptions;
+  openInNewTab?: boolean;
+  children?: JSX.Element;
+  onClick?: JSX.EventHandler<HTMLElement, MouseEvent>;
+  forward?: () => void;
+  back?: () => void;
+  disabled?: boolean;
+} & LinkNav<Route>;
+
+/**
+ * Navigation type supported by links
+ *
+ * Extends router5 to support special '@@back' and '@@forward' routes, and makes
+ * it optional to supply the 'params' object when there are no params to give,
+ * or they are all optional
+ */
 export type LinkNav<Route extends RouteMeta> =
   | { to: "@@back" | "@@forward"; params?: undefined }
   | (Route extends { name: infer Name; params: infer Params }
@@ -24,65 +58,20 @@ type RequiresParams<Params> = keyof Params extends never
   ? 0
   : 1;
 
-/**
- * Props for making a `Link` component.
- *
- * @remarks
- *
- * You can set default values for any link props using the `defaultLinkProps`
- * option in the initial configuration.
- */
-export type LinkProps<Route extends RouteMeta> = O.Merge<
-  Omit<JSX.IntrinsicElements["a"], "onClick">,
-  {
-    nav?: boolean;
-    navIgnoreParams?: boolean;
-    navActiveClassList?: (state: RouteActive) => Record<string, boolean>;
-    openInNewTab?: boolean;
-    children?: JSX.Element;
-    onClick?: (
-      ev: MouseEvent & {
-        target: HTMLElement;
-        currentTarget: HTMLElement;
-      }
-    ) => void;
-    back?: () => void;
-    forward?: () => void;
-    display?: "button";
-    disabled?: boolean;
-  } & LinkNav<Route>
->;
-
-const defaultLinkProps = {
-  navActiveClassList: (state: RouteActive): Record<string, boolean> => {
-    return {
-      link: true,
-      "is-active": state > 0,
-      "is-active-prefix":
-        (state & RouteActive.ActiveRoutePrefix) ===
-        RouteActive.ActiveRoutePrefix,
-      "is-active-exact":
-        (state & RouteActive.ActiveRouteExact) === RouteActive.ActiveRouteExact,
-      "has-equal-params":
-        (state & RouteActive.EqualParams) === RouteActive.EqualParams,
-    };
-  },
-};
-
 export function Link<Route extends RouteMeta>(
   props: LinkProps<Route>
 ): JSX.Element {
   const { router: router5, config } = requireRouter();
 
-  let [linkProps, innerProps] = splitProps(props, [
+  let [linkProps, innerProps] = splitProps(props as SimpleLinkProps<Route>, [
     "type",
     "onClick",
     "classList",
     "to",
     "params",
     "nav",
-    "navIgnoreParams",
-    "navActiveClassList",
+    "navIsActive",
+    "navActiveClass",
     "disabled",
     "back",
     "forward",
@@ -99,18 +88,11 @@ export function Link<Route extends RouteMeta>(
     linkProps
   ) as any;
 
-  const isActive =
-    typeof linkProps.to === "string"
-      ? useIsActive(
-          () => props,
-          linkProps.navIgnoreParams ? paramsNeverEq : paramsEq
-        )
-      : alwaysInactive;
-
-  const getHref: () => string | undefined = createMemo(() => {
-    if (typeof linkProps.to === "string" && !linkProps.to.startsWith("@@")) {
+  const getHref = createMemo(() => {
+    const { to, params } = linkProps;
+    if (typeof to === "string" && !to.startsWith("@@")) {
       try {
-        return router5.buildPath(linkProps.to, linkProps.params);
+        return router5.buildPath(to, params);
       } catch (err) {
         console.warn("<Link> buildPath failed:", err);
       }
@@ -118,15 +100,30 @@ export function Link<Route extends RouteMeta>(
     return undefined;
   });
 
-  const getClassList = createMemo(() => {
-    if (linkProps.navActiveClassList !== undefined) {
-      return mergeProps(
-        linkProps.navActiveClassList(isActive()),
-        linkProps.classList
-      );
-    }
-    return mergeProps(linkProps.classList);
-  });
+  //
+  // micro-opt: if we dont have a 'nav' prop then dont make memos for isActive
+  // and getClassList at all
+  //
+
+  const haveNavProp = untrack(() => "nav" in linkProps);
+
+  const isActive = !haveNavProp
+    ? alwaysInactive
+    : createMemo(() => {
+        const { to, nav, navIsActive } = linkProps;
+        if (!nav || typeof to !== "string") return alwaysInactive;
+        return useIsActive(() => props, navIsActive);
+      });
+
+  const getClassList = !haveNavProp
+    ? () => linkProps.classList
+    : createMemo(() => {
+        const { navActiveClass, classList } = linkProps;
+        if (typeof navActiveClass === "string") {
+          return mergeProps({ [navActiveClass]: isActive() }, classList);
+        }
+        return classList;
+      });
 
   function onClick(
     ev: MouseEvent & { target: HTMLElement; currentTarget: HTMLElement }
@@ -141,7 +138,7 @@ export function Link<Route extends RouteMeta>(
         break;
       default:
         router5.navigate(linkProps.to!, linkProps.params ?? {});
-        if (typeof linkProps.onClick === "function") linkProps.onClick(ev);
+        linkProps.onClick?.(ev);
         break;
     }
     ev.target.blur();
@@ -174,4 +171,16 @@ export function Link<Route extends RouteMeta>(
   );
 }
 
-const alwaysInactive = () => RouteActive.Inactive;
+const defaultLinkProps: Partial<LinkProps<any>> = {
+  navActiveClass: "is-active",
+  navIsActive: {
+    ignoreQueryParams: true,
+    strictEquality: false,
+  },
+};
+
+const alwaysInactive = () => false;
+
+type SimpleLinkProps<Route extends RouteMeta> = LinkOwnProps<Route> & {
+  display?: "button";
+} & LinkIntrinsicProps<"button" | "a">;

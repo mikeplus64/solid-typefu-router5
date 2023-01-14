@@ -1,6 +1,6 @@
 import { JSX } from "solid-js";
-import { Any, Object, Union, String } from "ts-toolbelt";
-import { RouteMeta, RouterRenderNode, RenderTreeLike } from "../types";
+import { Any, Object, String, Union } from "ts-toolbelt";
+import { RenderTreeLike, RouteMeta, RouterRenderNode } from "../types";
 export declare type RSM<RM extends [...RouteMeta[]], Path extends string[] | string | undefined = undefined> = Path extends string ? Object.Path<_RSM0<RM>, String.Split<Path, ".">> : Path extends string[] ? Object.Path<_RSM0<RM>, Path> : _RSM0<RM>;
 declare type _RSM0<RM extends [...RouteMeta[]]> = _RSM<RM> & RouterRenderNode<{}>;
 declare type _RSM<RM extends [...RouteMeta[]]> = Any.Compute<Union.IntersectOf<{

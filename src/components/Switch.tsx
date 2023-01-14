@@ -1,10 +1,11 @@
 import {
-  JSX,
   createContext,
-  useContext,
+  createMemo,
+  JSX,
   Match,
   Show,
-  createMemo,
+  untrack,
+  useContext,
 } from "solid-js";
 import { useRoute } from "../context";
 
@@ -79,25 +80,20 @@ export function SwitchRoutes(props: {
       },
     }
   );
-  return createMemo(() => {
-    const ix = getIndex();
-    if (ix !== undefined) {
-      const [i, target] = ix;
-      let children = props.children[i].children;
-      // the following avoids infinite loops where the reactive scope would leak
-      // outside of the memo
-      if (typeof children === "function") {
-        children = createMemo(children);
-      } else {
-        // XXX maybe unnecessary
-        children = createMemo(() => children);
+  return untrack(() =>
+    createMemo(() => {
+      const ix = getIndex();
+      if (ix !== undefined) {
+        const [i, target] = ix;
+        return (
+          <MatchContext.Provider value={target}>
+            {props.children[i].children}
+          </MatchContext.Provider>
+        );
       }
-      return (
-        <MatchContext.Provider value={target}>{children}</MatchContext.Provider>
-      );
-    }
-    return props.fallback;
-  });
+      return props.fallback;
+    })
+  );
 }
 
 export type ShowRouteProps = MatchRouteProps & { fallback?: JSX.Element };

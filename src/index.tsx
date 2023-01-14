@@ -16,7 +16,7 @@ import {
   RoutesLike,
 } from "./types";
 
-export type { LinkProps, LinkNav } from "./components/Link";
+export type { LinkNav, LinkProps } from "./components/Link";
 export type { RSM } from "./components/Router";
 export {
   MatchRoute,
@@ -25,13 +25,7 @@ export {
   ShowRouteProps,
   SwitchRoutes,
 } from "./components/Switch";
-export {
-  default as Context,
-  isActive,
-  useIsActive,
-  useRoute,
-  RouteActive,
-} from "./context";
+export { default as Context, useIsActive, useRoute } from "./context";
 export type {
   ParseParams,
   ReadRoutes,

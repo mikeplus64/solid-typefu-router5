@@ -4,10 +4,10 @@ import { JSX } from "solid-js";
 import { LinkNav, LinkProps } from "./components/Link";
 import { RSM } from "./components/Router";
 import { ReadRoutes, RouteMeta, RouterConfig, RoutesLike } from "./types";
-export type { LinkProps, LinkNav } from "./components/Link";
+export type { LinkNav, LinkProps } from "./components/Link";
 export type { RSM } from "./components/Router";
 export { MatchRoute, MatchRouteProps, ShowRoute, ShowRouteProps, SwitchRoutes, } from "./components/Switch";
-export { default as Context, isActive, useIsActive, useRoute, RouteActive, } from "./context";
+export { default as Context, useIsActive, useRoute } from "./context";
 export type { ParseParams, ReadRoutes, RenderNodeLike, RenderTreeLike, RouteLike, RouteMeta, RouteNodeLike, RouterContextValue, RouterFallbackRenderFn, RouterRenderFn, RouterRenderNode, RoutesLike, RouteState, RouteTreeLike, } from "./types";
 export interface RouterComponent<RM extends RouteMeta[]> {
     <AssumeRoute extends undefined | RM[number]["name" | "nameArray"] = undefined>(props: {
